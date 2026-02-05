@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Monly</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><strong>Monly - Admin Dashboard</strong></li>
+            </ul>
+            <ul>
+                <li><a href="#" id="logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section>
+            <h2>System Overview</h2>
+            <div id="overview">
+                Loading system stats...
+            </div>
+        </section>
+
+        <section>
+            <h2>Users</h2>
+            <button onclick="showCreateUserModal()">Create New User</button>
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Balance</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersBody">
+                    <tr>
+                        <td colspan="4">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Tasks</h2>
+            <button onclick="showCreateTaskModal()">Create New Task</button>
+            <div id="tasksList">
+                Loading tasks...
+            </div>
+        </section>
+
+        <section>
+            <h2>Recent Transactions</h2>
+            <table id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>User</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsBody">
+                    <tr>
+                        <td colspan="5">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- Modals for create/edit forms -->
+    <div id="userModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('userModal')">&times;</span>
+            <h3 id="userModalTitle">Create User</h3>
+            <form id="userForm">
+                <label for="userUsername">Username</label>
+                <input type="text" id="userUsername" name="username" required>
+                <label for="userPassword">Password</label>
+                <input type="password" id="userPassword" name="password" required>
+                <label for="userRole">Role</label>
+                <select id="userRole" name="role" required>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="taskModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('taskModal')">&times;</span>
+            <h3 id="taskModalTitle">Create Task</h3>
+            <form id="taskForm">
+                <label for="taskName">Name</label>
+                <input type="text" id="taskName" name="name" required>
+                <label for="taskDescription">Description</label>
+                <textarea id="taskDescription" name="description" required></textarea>
+                <label for="taskReward">Reward Amount</label>
+                <input type="number" id="taskReward" name="reward_amount" step="0.01" required>
+                <label for="taskApproval">
+                    <input type="checkbox" id="taskApproval" name="requires_approval"> Requires Approval
+                </label>
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/dashboard-admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "login": {
+    "title": "Monly - Banque d'Argent de Poche",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "error": "Échec de connexion"
+  },
+  "dashboard": {
+    "user": {
+      "title": "Tableau de bord utilisateur",
+      "balance": "Votre solde",
+      "tasks": "Tâches disponibles",
+      "transactions": "Transactions récentes",
+      "complete": "Compléter la tâche",
+      "logout": "Déconnexion"
+    },
+    "admin": {
+      "title": "Tableau de bord administrateur",
+      "overview": "Aperçu du système",
+      "users": "Utilisateurs",
+      "tasks": "Tâches",
+      "transactions": "Transactions récentes",
+      "createUser": "Créer un nouvel utilisateur",
+      "createTask": "Créer une nouvelle tâche",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "logout": "Déconnexion"
+    }
+  }
+}

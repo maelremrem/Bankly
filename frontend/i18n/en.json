@@ -1,0 +1,31 @@
+{
+  "login": {
+    "title": "Monly - Pocket Money Bank",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Login",
+    "error": "Login failed"
+  },
+  "dashboard": {
+    "user": {
+      "title": "User Dashboard",
+      "balance": "Your Balance",
+      "tasks": "Available Tasks",
+      "transactions": "Recent Transactions",
+      "complete": "Complete Task",
+      "logout": "Logout"
+    },
+    "admin": {
+      "title": "Admin Dashboard",
+      "overview": "System Overview",
+      "users": "Users",
+      "tasks": "Tasks",
+      "transactions": "Recent Transactions",
+      "createUser": "Create New User",
+      "createTask": "Create New Task",
+      "edit": "Edit",
+      "delete": "Delete",
+      "logout": "Logout"
+    }
+  }
+}
