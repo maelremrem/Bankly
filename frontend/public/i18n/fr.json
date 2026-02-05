@@ -13,6 +13,7 @@
     "filter": "Filtrer",
     "apply": "Appliquer",
     "clear": "Effacer",
+    "status": "Statut",
     "actions": "Actions",
     "yes": "Oui",
     "no": "Non",
@@ -24,9 +25,24 @@
     "approved": "Approuvé",
     "rejected": "Rejeté"
   },
+  "theme": {
+    "label": "Thème",
+    "light": "Clair",
+    "dark": "Sombre"
+  },
   "languages": {
     "en": "Anglais",
-    "fr": "Français"
+    "fr": "Français",
+    "label": "Langue"
+  },
+  "menu": {
+    "overview": "Aperçu",
+    "users": "Utilisateurs",
+    "tasks": "Tâches",
+    "allowances": "Allocations",
+    "advances": "Avances",
+    "transactions": "Transactions",
+    "reversals": "Annulations"
   },
   "login": {
     "title": "Bankly - Banque d'Argent de Poche",
@@ -46,6 +62,7 @@
     },
     "admin": {
       "title": "Tableau de bord administrateur",
+      "pageTitle": "Tableau de bord administrateur - Bankly",
       "overview": {
         "title": "Aperçu du système",
         "totalUsers": "Total des utilisateurs",
@@ -109,7 +126,15 @@
         "filterType": "Type",
         "filterStart": "Date de début",
         "filterEnd": "Date de fin",
-        "reverse": "Annuler"
+        "reverse": "Annuler",
+        "types": {
+          "allowance": "Allocation",
+          "task": "Tâche",
+          "advance": "Avance",
+          "manual": "Manuel",
+          "reversal": "Annulation",
+          "reversalUndo": "Rétablir l'annulation"
+        }
       },
       "reversals": {
         "title": "Annulations",
@@ -129,6 +154,7 @@
     "confirmDeleteAllowance": "Voulez-vous vraiment supprimer cette allocation ?",
     "confirmReverseTransaction": "Voulez-vous vraiment annuler cette transaction ?",
     "confirmUndoReversal": "Voulez-vous vraiment restaurer cette annulation ?",
+    "passwordRequired": "Le mot de passe est requis pour créer un utilisateur.",
     "networkError": "Erreur réseau. Veuillez réessayer.",
     "loadFailed": "Échec du chargement des données.",
     "saved": "Enregistré avec succès.",

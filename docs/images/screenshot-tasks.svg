@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="640" viewBox="0 0 1024 640">
+  <rect width="100%" height="100%" fill="#fff7f2" />
+  <g transform="translate(48,40)">
+    <rect width="928" height="560" rx="16" fill="#fff" stroke="#ffd5bf" stroke-width="2" />
+    <text x="40" y="46" font-family="sans-serif" font-size="20" font-weight="700" fill="#333">Tasks & Rewards</text>
+
+    <!-- task list -->
+    <g transform="translate(40,100)">
+      <rect width="880" height="56" rx="10" fill="#fffaef" />
+      <text x="20" y="36" font-family="sans-serif" font-size="18" fill="#333">Wash dishes — Reward: $2</text>
+    </g>
+
+    <g transform="translate(40,170)">
+      <rect width="880" height="56" rx="10" fill="#fff" />
+      <text x="20" y="36" font-family="sans-serif" font-size="18" fill="#333">Make bed — Reward: $1</text>
+    </g>
+
+    <g transform="translate(40,240)">
+      <rect width="880" height="56" rx="10" fill="#fff" />
+      <text x="20" y="36" font-family="sans-serif" font-size="18" fill="#333">Take out trash — Reward: $1</text>
+    </g>
+
+    <!-- playful emoji -->
+    <text x="780" y="560" font-family="sans-serif" font-size="20" fill="#ff8a65">👟🏆</text>
+    <text x="40" y="540" font-family="sans-serif" font-size="14" fill="#666">Approve tasks to give instant rewards — celebrate the wins! 🎉</text>
+  </g>
+</svg>

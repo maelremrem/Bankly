@@ -49,6 +49,13 @@
             const value = t(key);
             if (value) el.setAttribute('title', value);
         });
+
+        const ariaLabels = root.querySelectorAll('[data-i18n-aria-label]');
+        ariaLabels.forEach((el) => {
+            const key = el.getAttribute('data-i18n-aria-label');
+            const value = t(key);
+            if (value) el.setAttribute('aria-label', value);
+        });
     }
 
     async function init(preferredLang) {

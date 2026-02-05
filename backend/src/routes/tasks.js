@@ -6,6 +6,15 @@ const logger = require('../config/logger');
 
 const router = express.Router();
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Get all tasks (admin only)
 router.get('/', requireAuth, requireAdmin, async (req, res) => {
   try {
@@ -19,6 +28,49 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   } catch (error) {
     logger.error('Error fetching tasks', { error });
     res.status(500).json({ success: false, error: 'Failed to fetch tasks' });
+  }
+});
+
+// Get all tasks (admin only) - HTML fragment for HTMX
+router.get('/html', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const tasks = await db.allAsync(`
+      SELECT id, name, description, reward_amount, requires_approval, created_at
+      FROM tasks
+      ORDER BY created_at DESC
+    `);
+
+    if (!tasks || tasks.length === 0) {
+      return res.send('<tr><td colspan="6" data-i18n="common.noData">No data</td></tr>');
+    }
+
+    const html = tasks.map((task) => {
+      const approval = task.requires_approval
+        ? '<span class="tag warning" data-i18n="dashboard.admin.tasks.requiresApproval">Requires Approval</span>'
+        : '<span class="tag success" data-i18n="dashboard.admin.tasks.autoApproval">Auto Approval</span>';
+
+      return `
+        <tr>
+          <td>${escapeHtml(task.name)}</td>
+          <td>${escapeHtml(task.description || '')}</td>
+          <td>${escapeHtml(Number(task.reward_amount || 0).toFixed(2))}</td>
+          <td>${approval}</td>
+          <td>${escapeHtml(task.created_at)}</td>
+          <td>
+            <div class="table-actions">
+              <button data-action="review-task" data-id="${task.id}" data-i18n="dashboard.admin.tasks.review">Review Completions</button>
+              <button data-action="edit-task" data-id="${task.id}" data-i18n="common.edit">Edit</button>
+              <button class="danger" data-action="delete-task" data-id="${task.id}" data-i18n="common.delete">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    return res.send(html);
+  } catch (error) {
+    logger.error('Error fetching tasks html', { error });
+    res.status(500).send('');
   }
 });
 
@@ -248,6 +300,64 @@ router.get('/:id/completions', requireAuth, requireAdmin, [
   } catch (error) {
     logger.error('Error fetching task completions', { error, taskId: id });
     res.status(500).json({ success: false, error: 'Failed to fetch task completions' });
+  }
+});
+
+// Get task completions (admin only) - HTML fragment for HTMX
+router.get('/:id/completions/html', requireAuth, requireAdmin, [
+  param('id').isInt().withMessage('Invalid task ID')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).send('');
+  }
+
+  const { id } = req.params;
+
+  try {
+    const completions = await db.allAsync(`
+      SELECT tc.*, u.username, t.name as task_name
+      FROM task_completions tc
+      JOIN users u ON tc.user_id = u.id
+      JOIN tasks t ON tc.task_id = t.id
+      WHERE tc.task_id = ?
+      ORDER BY tc.submitted_at DESC
+    `, [id]);
+
+    if (!completions || completions.length === 0) {
+      return res.send('<tr><td colspan="5" data-i18n="common.noData">No data</td></tr>');
+    }
+
+    const html = completions.map((completion) => {
+      const status = completion.status || 'pending';
+      const statusTagMap = {
+        pending: 'warning',
+        approved: 'success',
+        rejected: 'danger'
+      };
+      const statusClass = statusTagMap[status] || 'neutral';
+      const actions = status === 'pending'
+        ? `
+          <button data-action="approve-completion" data-id="${completion.id}" data-i18n="common.approve">Approve</button>
+          <button class="danger" data-action="reject-completion" data-id="${completion.id}" data-i18n="common.reject">Reject</button>
+        `
+        : '';
+
+      return `
+        <tr>
+          <td>${escapeHtml(completion.username || '')}</td>
+          <td>${escapeHtml(completion.task_name || '')}</td>
+          <td><span class="tag ${statusClass}" data-i18n="common.${status}">${escapeHtml(status)}</span></td>
+          <td>${escapeHtml(completion.submitted_at || completion.created_at || '')}</td>
+          <td><div class="table-actions">${actions}</div></td>
+        </tr>
+      `;
+    }).join('');
+
+    return res.send(html);
+  } catch (error) {
+    logger.error('Error fetching task completions html', { error, taskId: id });
+    res.status(500).send('');
   }
 });
 

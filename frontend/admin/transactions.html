@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Transactions</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="topbar">
+        <nav class="container">
+            <ul>
+                <li><strong data-i18n="dashboard.admin.title">Admin Dashboard</strong></li>
+            </ul>
+            <ul class="nav-actions">
+                <li><small id="currentUser"></small></li>
+                <li>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="themeToggle" role="switch">
+                        <span data-i18n="theme.label">Theme</span>
+                        <span id="themeModeLabel" data-i18n="theme.light">Light</span>
+                    </label>
+                </li>
+                <li>
+                    <select id="languageSelect" data-i18n-aria-label="languages.label">
+                        <option value="en" data-i18n="languages.en">English</option>
+                        <option value="fr" data-i18n="languages.fr">French</option>
+                    </select>
+                </li>
+                <li><a href="#" id="logout" data-i18n="dashboard.admin.logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="menu-bar">
+        <nav class="container menu-links" hx-boost="true" hx-target="main" hx-select="main" hx-swap="innerHTML" hx-push-url="true">
+            <a href="/admin/dashboard.html" data-i18n="menu.overview">Overview</a>
+            <a href="/admin/users.html" data-i18n="menu.users">Users</a>
+            <a href="/admin/tasks.html" data-i18n="menu.tasks">Tasks</a>
+            <a href="/admin/allowances.html" data-i18n="menu.allowances">Allowances</a>
+            <a href="/admin/advances.html" data-i18n="menu.advances">Advances</a>
+            <a class="active" href="/admin/transactions.html" data-i18n="menu.transactions">Transactions</a>
+            <a href="/admin/reversals.html" data-i18n="menu.reversals">Reversals</a>
+        </nav>
+    </div>
+
+    <main class="container" id="pageContent">
+        <section>
+            <header class="section-header">
+                <h2 data-i18n="dashboard.admin.transactions.title">Transactions</h2>
+                <div class="toolbar">
+                    <button id="transactionCreateBtn" data-i18n="dashboard.admin.transactions.create">Create Manual Transaction</button>
+                </div>
+            </header>
+            <form id="transactionFilterForm" class="filters-grid" hx-get="/api/transactions/html" hx-target="#transactionsBody" hx-swap="innerHTML">
+                <label>
+                    <span data-i18n="dashboard.admin.transactions.filterUser">User</span>
+                    <select id="transactionUserFilter" name="userId"></select>
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.transactions.filterType">Type</span>
+                    <select id="transactionTypeFilter" name="type">
+                        <option value="" data-i18n="common.filter">Filter</option>
+                        <option value="allowance" data-i18n="dashboard.admin.transactions.types.allowance">Allowance</option>
+                        <option value="task" data-i18n="dashboard.admin.transactions.types.task">Task</option>
+                        <option value="advance" data-i18n="dashboard.admin.transactions.types.advance">Advance</option>
+                        <option value="manual" data-i18n="dashboard.admin.transactions.types.manual">Manual</option>
+                        <option value="reversal" data-i18n="dashboard.admin.transactions.types.reversal">Reversal</option>
+                        <option value="reversal_undo" data-i18n="dashboard.admin.transactions.types.reversalUndo">Undo Reversal</option>
+                    </select>
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.transactions.filterStart">Start Date</span>
+                    <input id="transactionStart" name="startDate" type="date">
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.transactions.filterEnd">End Date</span>
+                    <input id="transactionEnd" name="endDate" type="date">
+                </label>
+                <div class="filter-actions">
+                    <button id="transactionFilterBtn" type="submit" class="secondary" data-i18n="common.apply">Apply</button>
+                    <button id="transactionClearBtn" type="button" class="secondary" data-i18n="common.clear">Clear</button>
+                </div>
+            </form>
+            <div class="table-scroll">
+                <table id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th data-i18n="dashboard.admin.transactions.createdAt">Date</th>
+                            <th data-i18n="dashboard.admin.transactions.user">User</th>
+                            <th data-i18n="dashboard.admin.transactions.type">Type</th>
+                            <th data-i18n="dashboard.admin.transactions.amount">Amount</th>
+                            <th data-i18n="dashboard.admin.transactions.description">Description</th>
+                            <th data-i18n="common.actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsBody" hx-get="/api/transactions/html" hx-trigger="load, refreshTransactions" hx-target="#transactionsBody" hx-swap="innerHTML">
+                        <tr>
+                            <td colspan="6" data-i18n="common.loading">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+        <div id="transactionModal" class="modal" aria-hidden="true">
+            <div class="modal-content">
+                <button class="close" data-action="close" data-target="transactionModal" data-i18n-aria-label="common.close">&times;</button>
+                <h3 data-i18n="dashboard.admin.transactions.create">Create Manual Transaction</h3>
+                <form id="transactionForm">
+                    <label>
+                        <span data-i18n="dashboard.admin.transactions.user">User</span>
+                        <select id="transactionUser" required></select>
+                    </label>
+                    <label>
+                        <span data-i18n="dashboard.admin.transactions.type">Type</span>
+                        <input type="text" id="transactionType" value="manual" required>
+                    </label>
+                    <label>
+                        <span data-i18n="dashboard.admin.transactions.amount">Amount</span>
+                        <input type="number" id="transactionAmount" step="0.01" required>
+                    </label>
+                    <label>
+                        <span data-i18n="dashboard.admin.transactions.description">Description</span>
+                        <textarea id="transactionDescription"></textarea>
+                    </label>
+                    <div class="modal-actions">
+                        <button type="submit" data-i18n="common.save">Save</button>
+                        <button type="button" class="secondary" data-action="close" data-target="transactionModal" data-i18n="common.cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/dashboard-admin.js"></script>
+</body>
+</html>

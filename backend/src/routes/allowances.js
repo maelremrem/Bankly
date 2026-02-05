@@ -6,6 +6,15 @@ const logger = require('../config/logger');
 
 const router = express.Router();
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // GET /api/allowances - Get all allowances (admin only)
 router.get('/', requireAuth, requireAdmin, async (req, res) => {
   try {
@@ -29,6 +38,54 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   } catch (error) {
     logger.error('Error fetching allowances', { error });
     res.status(500).json({ success: false, error: 'Failed to fetch allowances' });
+  }
+});
+
+// GET /api/allowances/html - HTML fragment for HTMX
+router.get('/html', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const allowances = await db.allAsync(`
+      SELECT
+        a.id,
+        a.user_id,
+        a.amount,
+        a.frequency,
+        a.next_payment_date,
+        a.enabled,
+        u.username
+      FROM allowances a
+      JOIN users u ON a.user_id = u.id
+      ORDER BY a.created_at DESC
+    `);
+
+    if (!allowances || allowances.length === 0) {
+      return res.send('<tr><td colspan="6" data-i18n="common.noData">No data</td></tr>');
+    }
+
+    const html = allowances.map((allowance) => {
+      const statusClass = allowance.enabled ? 'success' : 'neutral';
+      const statusKey = allowance.enabled ? 'common.enabled' : 'common.disabled';
+      return `
+        <tr>
+          <td>${escapeHtml(allowance.username || '')}</td>
+          <td>${escapeHtml(Number(allowance.amount || 0).toFixed(2))}</td>
+          <td data-i18n="frequency.${escapeHtml(allowance.frequency)}">${escapeHtml(allowance.frequency)}</td>
+          <td>${escapeHtml(allowance.next_payment_date || '')}</td>
+          <td><span class="tag ${statusClass}" data-i18n="${statusKey}">${allowance.enabled ? 'Enabled' : 'Disabled'}</span></td>
+          <td>
+            <div class="table-actions">
+              <button data-action="edit-allowance" data-id="${allowance.id}" data-i18n="common.edit">Edit</button>
+              <button class="danger" data-action="delete-allowance" data-id="${allowance.id}" data-i18n="common.delete">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    return res.send(html);
+  } catch (error) {
+    logger.error('Error fetching allowances html', { error });
+    res.status(500).send('');
   }
 });
 

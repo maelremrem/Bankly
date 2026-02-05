@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Advances</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="topbar">
+        <nav class="container">
+            <ul>
+                <li><strong data-i18n="dashboard.admin.title">Admin Dashboard</strong></li>
+            </ul>
+            <ul class="nav-actions">
+                <li><small id="currentUser"></small></li>
+                <li>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="themeToggle" role="switch">
+                        <span data-i18n="theme.label">Theme</span>
+                        <span id="themeModeLabel" data-i18n="theme.light">Light</span>
+                    </label>
+                </li>
+                <li>
+                    <select id="languageSelect" data-i18n-aria-label="languages.label">
+                        <option value="en" data-i18n="languages.en">English</option>
+                        <option value="fr" data-i18n="languages.fr">French</option>
+                    </select>
+                </li>
+                <li><a href="#" id="logout" data-i18n="dashboard.admin.logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="menu-bar">
+        <nav class="container menu-links" hx-boost="true" hx-target="main" hx-select="main" hx-swap="innerHTML" hx-push-url="true">
+            <a href="/admin/dashboard.html" data-i18n="menu.overview">Overview</a>
+            <a href="/admin/users.html" data-i18n="menu.users">Users</a>
+            <a href="/admin/tasks.html" data-i18n="menu.tasks">Tasks</a>
+            <a href="/admin/allowances.html" data-i18n="menu.allowances">Allowances</a>
+            <a class="active" href="/admin/advances.html" data-i18n="menu.advances">Advances</a>
+            <a href="/admin/transactions.html" data-i18n="menu.transactions">Transactions</a>
+            <a href="/admin/reversals.html" data-i18n="menu.reversals">Reversals</a>
+        </nav>
+    </div>
+
+    <main class="container" id="pageContent">
+        <section>
+            <header class="section-header">
+                <h2 data-i18n="dashboard.admin.advances.title">Advance Requests</h2>
+                <form id="advanceFilterForm" class="toolbar" hx-get="/api/advances/html" hx-target="#advancesBody" hx-swap="innerHTML" hx-include="#advanceStatusFilter">
+                    <select id="advanceStatusFilter" name="status" data-i18n-aria-label="dashboard.admin.advances.statusFilter">
+                        <option value="" data-i18n="common.filter">Filter</option>
+                        <option value="pending" data-i18n="common.pending">Pending</option>
+                        <option value="approved" data-i18n="common.approved">Approved</option>
+                        <option value="rejected" data-i18n="common.rejected">Rejected</option>
+                    </select>
+                    <button id="advanceFilterBtn" type="submit" class="secondary" data-i18n="common.apply">Apply</button>
+                    <button id="advanceClearBtn" type="button" class="secondary" data-i18n="common.clear">Clear</button>
+                </form>
+            </header>
+            <div class="table-scroll">
+                <table id="advancesTable">
+                    <thead>
+                        <tr>
+                            <th data-i18n="dashboard.admin.advances.user">User</th>
+                            <th data-i18n="dashboard.admin.advances.amount">Amount</th>
+                            <th data-i18n="dashboard.admin.advances.status">Status</th>
+                            <th data-i18n="dashboard.admin.advances.requestedAt">Requested</th>
+                            <th data-i18n="dashboard.admin.advances.reason">Reason</th>
+                            <th data-i18n="common.actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="advancesBody" hx-get="/api/advances/html" hx-trigger="load, refreshAdvances" hx-target="#advancesBody" hx-swap="innerHTML">
+                        <tr>
+                            <td colspan="6" data-i18n="common.loading">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+        <div id="advanceRejectModal" class="modal" aria-hidden="true">
+            <div class="modal-content">
+                <button class="close" data-action="close" data-target="advanceRejectModal" data-i18n-aria-label="common.close">&times;</button>
+                <h3 data-i18n="common.reject">Reject</h3>
+                <form id="advanceRejectForm">
+                    <input type="hidden" id="advanceRejectId">
+                    <label>
+                        <span data-i18n="dashboard.admin.advances.reason">Reason</span>
+                        <textarea id="advanceRejectReason"></textarea>
+                    </label>
+                    <div class="modal-actions">
+                        <button type="submit" data-i18n="common.save">Save</button>
+                        <button type="button" class="secondary" data-action="close" data-target="advanceRejectModal" data-i18n="common.cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/dashboard-admin.js"></script>
+</body>
+</html>

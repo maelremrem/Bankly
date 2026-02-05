@@ -5,6 +5,15 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function runAsync(sql, params = []) {
   return new Promise((resolve, reject) => {
     db.run(sql, params, function (err) {
@@ -118,6 +127,90 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Error fetching transactions:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch transactions' });
+  }
+});
+
+// GET /api/transactions/html - HTML fragment for HTMX
+router.get('/html', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const {
+      limit = 50,
+      userId,
+      type,
+      startDate,
+      endDate
+    } = req.query;
+
+    const params = [];
+    let whereClause = '';
+    const conditions = [];
+
+    if (userId) {
+      conditions.push('t.user_id = ?');
+      params.push(parseInt(userId));
+    }
+    if (type) {
+      conditions.push('t.type = ?');
+      params.push(type);
+    }
+    if (startDate) {
+      conditions.push('t.created_at >= ?');
+      params.push(startDate);
+    }
+    if (endDate) {
+      conditions.push('t.created_at <= ?');
+      params.push(endDate);
+    }
+
+    if (conditions.length > 0) {
+      whereClause = 'WHERE ' + conditions.join(' AND ');
+    }
+
+    const dataQuery = `
+      SELECT
+        t.id,
+        t.user_id,
+        t.type,
+        t.amount,
+        t.description,
+        t.created_at,
+        u.username
+      FROM transactions t
+      JOIN users u ON t.user_id = u.id
+      ${whereClause}
+      ORDER BY t.created_at DESC
+      LIMIT ?
+    `;
+
+    const dataParams = [...params, parseInt(limit)];
+    const transactions = await allAsync(dataQuery, dataParams);
+
+    if (!transactions || transactions.length === 0) {
+      return res.send('<tr><td colspan="6" data-i18n="common.noData">No data</td></tr>');
+    }
+
+    const html = transactions.map((tx) => {
+      const canReverse = !['reversal', 'reversal_undo'].includes(tx.type);
+      const reverseButton = canReverse
+        ? `<button data-action="reverse-transaction" data-id="${tx.id}" data-i18n="dashboard.admin.transactions.reverse">Reverse</button>`
+        : '';
+
+      return `
+        <tr>
+          <td>${escapeHtml(tx.created_at)}</td>
+          <td>${escapeHtml(tx.username || '')}</td>
+          <td>${escapeHtml(tx.type)}</td>
+          <td>${escapeHtml(Number(tx.amount || 0).toFixed(2))}</td>
+          <td>${escapeHtml(tx.description || '')}</td>
+          <td><div class="table-actions">${reverseButton}</div></td>
+        </tr>
+      `;
+    }).join('');
+
+    return res.send(html);
+  } catch (error) {
+    console.error('Error fetching transactions html:', error);
+    res.status(500).send('');
   }
 });
 
@@ -325,6 +418,45 @@ router.get('/reversals', requireAuth, requireAdmin, (req, res) => {
       const totalPages = Math.ceil(total / limit);
       return res.json({ success: true, data: { reversals: rows, meta: { total, page, limit, totalPages } } });
     });
+  });
+});
+
+// GET /api/transactions/reversals/html - HTML fragment for HTMX
+router.get('/reversals/html', requireAuth, requireAdmin, (req, res) => {
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
+  const offset = 0;
+
+  const dataSql = 'SELECT * FROM transaction_reversals ORDER BY reversed_at DESC LIMIT ? OFFSET ?';
+  const paramsData = [limit, offset];
+
+  db.all(dataSql, paramsData, (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('');
+    }
+    if (!rows || rows.length === 0) {
+      return res.send('<tr><td colspan="6" data-i18n="common.noData">No data</td></tr>');
+    }
+
+    const html = rows.map((rev) => {
+      const revertedLabel = rev.reverted ? 'Yes' : 'No';
+      const undoButton = rev.reverted
+        ? ''
+        : `<button data-action="undo-reversal" data-id="${rev.original_transaction_id}" data-i18n="dashboard.admin.reversals.undo">Undo</button>`;
+
+      return `
+        <tr>
+          <td>${escapeHtml(rev.original_transaction_id)}</td>
+          <td>${escapeHtml(rev.reversal_transaction_id)}</td>
+          <td>${escapeHtml(rev.reversed_by || '')}</td>
+          <td>${escapeHtml(rev.reversed_at || '')}</td>
+          <td data-i18n="common.${rev.reverted ? 'yes' : 'no'}">${revertedLabel}</td>
+          <td><div class="table-actions">${undoButton}</div></td>
+        </tr>
+      `;
+    }).join('');
+
+    return res.send(html);
   });
 });
 

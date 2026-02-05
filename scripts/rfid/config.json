@@ -1,0 +1,25 @@
+{
+  "rfid": {
+    "sda": 8,
+    "sck": 11,
+    "mosi": 10,
+    "miso": 9,
+    "irq": null,
+    "rst": 25
+  },
+  "mpr121": {
+    "sda": 2,
+    "scl": 3,
+    "irq": 4
+  },
+  "lcd": {
+    "address": "0x27",
+    "port": 1,
+    "cols": 16,
+    "rows": 2
+  },
+  "api": {
+    "base_url": "http://localhost:3000",
+    "rfid_login_endpoint": "/auth/rfid-login"
+  }
+}

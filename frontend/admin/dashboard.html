@@ -8,113 +8,223 @@
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-    <header>
-        <nav>
+    <header class="topbar">
+        <nav class="container">
             <ul>
-                <li><strong>Bankly - Admin Dashboard</strong></li>
+                <li><strong data-i18n="dashboard.admin.title">Admin Dashboard</strong></li>
             </ul>
-            <ul>
-                <li><a href="#" id="logout">Logout</a></li>
+            <ul class="nav-actions">
+                <li><small id="currentUser"></small></li>
+                <li>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="themeToggle" role="switch">
+                        <span data-i18n="theme.label">Theme</span>
+                        <span id="themeModeLabel" data-i18n="theme.light">Light</span>
+                    </label>
+                </li>
+                <li>
+                    <select id="languageSelect" data-i18n-aria-label="languages.label">
+                        <option value="en" data-i18n="languages.en">English</option>
+                        <option value="fr" data-i18n="languages.fr">French</option>
+                    </select>
+                </li>
+                <li><a href="#" id="logout" data-i18n="dashboard.admin.logout">Logout</a></li>
             </ul>
         </nav>
     </header>
 
-    <main class="container">
-        <section>
-            <h2>System Overview</h2>
-            <div id="overview">
-                Loading system stats...
-            </div>
-        </section>
+    <div class="menu-bar">
+        <nav class="container menu-links" hx-boost="true" hx-target="main" hx-select="main" hx-swap="innerHTML" hx-push-url="true">
+            <a class="active" href="/admin/dashboard.html" data-i18n="menu.overview">Overview</a>
+            <a href="/admin/users.html" data-i18n="menu.users">Users</a>
+            <a href="/admin/tasks.html" data-i18n="menu.tasks">Tasks</a>
+            <a href="/admin/allowances.html" data-i18n="menu.allowances">Allowances</a>
+            <a href="/admin/advances.html" data-i18n="menu.advances">Advances</a>
+            <a href="/admin/transactions.html" data-i18n="menu.transactions">Transactions</a>
+            <a href="/admin/reversals.html" data-i18n="menu.reversals">Reversals</a>
+        </nav>
+    </div>
 
+    <main class="container" id="pageContent">
         <section>
-            <h2>Users</h2>
-            <button onclick="showCreateUserModal()">Create New User</button>
-            <table id="usersTable">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Role</th>
-                        <th>Balance</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="usersBody">
-                    <tr>
-                        <td colspan="4">Loading...</td>
-                    </tr>
-                </tbody>
-            </table>
+            <header class="section-header">
+                <h2 data-i18n="dashboard.admin.overview.title">System Overview</h2>
+                <button id="refreshOverview" class="secondary" data-i18n="common.refresh" hx-get="/api/admin/overview/html" hx-target="#overviewCards" hx-swap="innerHTML">Refresh</button>
+            </header>
+            <div id="overviewCards" class="overview-grid" hx-get="/api/admin/overview/html" hx-trigger="load" hx-target="#overviewCards" hx-swap="innerHTML"></div>
         </section>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-        <section>
-            <h2>Tasks</h2>
-            <button onclick="showCreateTaskModal()">Create New Task</button>
-            <div id="tasksList">
-                Loading tasks...
-            </div>
-        </section>
+    <div id="userModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="userModal" data-i18n-aria-label="common.close">&times;</button>
+            <h3 id="userModalTitle" data-i18n="dashboard.admin.users.create">Create New User</h3>
+            <form id="userForm">
+                <input type="hidden" id="userId">
+                <label>
+                    <span data-i18n="dashboard.admin.users.username">Username</span>
+                    <input type="text" id="userUsername" required>
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.users.password">Password</span>
+                    <input type="password" id="userPassword" autocomplete="new-password">
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.users.role">Role</span>
+                    <select id="userRole" required>
+                        <option value="user" data-i18n="roles.user">User</option>
+                        <option value="admin" data-i18n="roles.admin">Admin</option>
+                    </select>
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.users.language">Language</span>
+                    <select id="userLanguage">
+                        <option value="en" data-i18n="languages.en">English</option>
+                        <option value="fr" data-i18n="languages.fr">French</option>
+                    </select>
+                </label>
+                <div class="modal-actions">
+                    <button type="submit" data-i18n="common.save">Save</button>
+                    <button type="button" class="secondary" data-action="close" data-target="userModal" data-i18n="common.cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        <section>
-            <h2>Recent Transactions</h2>
-            <table id="transactionsTable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>User</th>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody id="transactionsBody">
-                    <tr>
-                        <td colspan="5">Loading...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
+    <div id="taskModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="taskModal" data-i18n-aria-label="common.close">&times;</button>
+            <h3 id="taskModalTitle" data-i18n="dashboard.admin.tasks.create">Create New Task</h3>
+            <form id="taskForm">
+                <input type="hidden" id="taskId">
+                <label>
+                    <span data-i18n="dashboard.admin.tasks.name">Name</span>
+                    <input type="text" id="taskName" required>
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.tasks.description">Description</span>
+                    <textarea id="taskDescription"></textarea>
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.tasks.reward">Reward</span>
+                    <input type="number" id="taskReward" step="0.01" min="0" required>
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" id="taskApproval">
+                    <span data-i18n="dashboard.admin.tasks.requiresApproval">Requires Approval</span>
+                </label>
+                <div class="modal-actions">
+                    <button type="submit" data-i18n="common.save">Save</button>
+                    <button type="button" class="secondary" data-action="close" data-target="taskModal" data-i18n="common.cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="allowanceModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="allowanceModal" data-i18n-aria-label="common.close">&times;</button>
+            <h3 id="allowanceModalTitle" data-i18n="dashboard.admin.allowances.create">Create Allowance</h3>
+            <form id="allowanceForm">
+                <input type="hidden" id="allowanceId">
+                <label>
+                    <span data-i18n="dashboard.admin.allowances.user">User</span>
+                    <select id="allowanceUser" required></select>
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.allowances.amount">Amount</span>
+                    <input type="number" id="allowanceAmount" step="0.01" min="0" required>
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.allowances.frequency">Frequency</span>
+                    <select id="allowanceFrequency" required>
+                        <option value="daily" data-i18n="frequency.daily">Daily</option>
+                        <option value="weekly" data-i18n="frequency.weekly">Weekly</option>
+                        <option value="monthly" data-i18n="frequency.monthly">Monthly</option>
+                    </select>
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" id="allowanceEnabled" checked>
+                    <span data-i18n="dashboard.admin.allowances.enabled">Enabled</span>
+                </label>
+                <div class="modal-actions">
+                    <button type="submit" data-i18n="common.save">Save</button>
+                    <button type="button" class="secondary" data-action="close" data-target="allowanceModal" data-i18n="common.cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="transactionModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="transactionModal" data-i18n-aria-label="common.close">&times;</button>
+            <h3 data-i18n="dashboard.admin.transactions.create">Create Manual Transaction</h3>
+            <form id="transactionForm">
+                <label>
+                    <span data-i18n="dashboard.admin.transactions.user">User</span>
+                    <select id="transactionUser" required></select>
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.transactions.type">Type</span>
+                    <input type="text" id="transactionType" value="manual" required>
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.transactions.amount">Amount</span>
+                    <input type="number" id="transactionAmount" step="0.01" required>
+                </label>
+                <label>
+                    <span data-i18n="dashboard.admin.transactions.description">Description</span>
+                    <textarea id="transactionDescription"></textarea>
+                </label>
+                <div class="modal-actions">
+                    <button type="submit" data-i18n="common.save">Save</button>
+                    <button type="button" class="secondary" data-action="close" data-target="transactionModal" data-i18n="common.cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="taskReviewModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="taskReviewModal" data-i18n-aria-label="common.close">&times;</button>
+            <h3 data-i18n="dashboard.admin.tasks.review">Review Completions</h3>
+            <form id="taskReviewForm">
+                <input type="hidden" id="reviewCompletionId">
+                <input type="hidden" id="reviewApproved">
+                <label>
+                    <span data-i18n="dashboard.admin.tasks.reviewNotes">Review Notes</span>
+                    <textarea id="reviewNotes"></textarea>
+                </label>
+                <div class="modal-actions">
+                    <button type="submit" data-i18n="common.save">Save</button>
+                    <button type="button" class="secondary" data-action="close" data-target="taskReviewModal" data-i18n="common.cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="advanceRejectModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="advanceRejectModal" data-i18n-aria-label="common.close">&times;</button>
+            <h3 data-i18n="common.reject">Reject</h3>
+            <form id="advanceRejectForm">
+                <input type="hidden" id="advanceRejectId">
+                <label>
+                    <span data-i18n="dashboard.admin.advances.reason">Reason</span>
+                    <textarea id="advanceRejectReason"></textarea>
+                </label>
+                <div class="modal-actions">
+                    <button type="submit" data-i18n="common.save">Save</button>
+                    <button type="button" class="secondary" data-action="close" data-target="advanceRejectModal" data-i18n="common.cancel">Cancel</button>
+                </div>
+            </form>
+    </div>
+        </div>
     </main>
 
-    <!-- Modals for create/edit forms -->
-    <div id="userModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('userModal')">&times;</span>
-            <h3 id="userModalTitle">Create User</h3>
-            <form id="userForm">
-                <label for="userUsername">Username</label>
-                <input type="text" id="userUsername" name="username" required>
-                <label for="userPassword">Password</label>
-                <input type="password" id="userPassword" name="password" required>
-                <label for="userRole">Role</label>
-                <select id="userRole" name="role" required>
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                </select>
-                <button type="submit">Save</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="taskModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('taskModal')">&times;</span>
-            <h3 id="taskModalTitle">Create Task</h3>
-            <form id="taskForm">
-                <label for="taskName">Name</label>
-                <input type="text" id="taskName" name="name" required>
-                <label for="taskDescription">Description</label>
-                <textarea id="taskDescription" name="description" required></textarea>
-                <label for="taskReward">Reward Amount</label>
-                <input type="number" id="taskReward" name="reward_amount" step="0.01" required>
-                <label for="taskApproval">
-                    <input type="checkbox" id="taskApproval" name="requires_approval"> Requires Approval
-                </label>
-                <button type="submit">Save</button>
-            </form>
-        </div>
-    </div>
-
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/utils.js"></script>
     <script src="../js/dashboard-admin.js"></script>
 </body>
 </html>

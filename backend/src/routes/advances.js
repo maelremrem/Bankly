@@ -6,6 +6,15 @@ const logger = require('../config/logger');
 
 const router = express.Router();
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 /**
  * POST /api/advances
  * Create a new advance request (user)
@@ -85,6 +94,64 @@ router.get('/', [requireAuth, requireAdmin], [
       success: false,
       error: 'Failed to fetch advance requests'
     });
+  }
+});
+
+/**
+ * GET /api/advances/html
+ * HTML fragment for HTMX (admin only)
+ */
+router.get('/html', [requireAuth, requireAdmin], [
+  query('status').optional().isIn(['pending', 'approved', 'rejected']).withMessage('Invalid status'),
+  query('userId').optional().isInt().withMessage('User ID must be an integer')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).send('');
+    }
+
+    const filters = {};
+    if (req.query.status) filters.status = req.query.status;
+    if (req.query.userId) filters.userId = parseInt(req.query.userId);
+
+    const advanceRequests = await AdvanceRequestService.getAllAdvanceRequests(filters);
+
+    if (!advanceRequests || advanceRequests.length === 0) {
+      return res.send('<tr><td colspan="6" data-i18n="common.noData">No data</td></tr>');
+    }
+
+    const html = advanceRequests.map((advance) => {
+      const status = advance.status || 'pending';
+      const statusTagMap = {
+        pending: 'warning',
+        approved: 'success',
+        rejected: 'danger'
+      };
+      const statusClass = statusTagMap[status] || 'neutral';
+      const actions = status === 'pending'
+        ? `
+          <button data-action="approve-advance" data-id="${advance.id}" data-i18n="common.approve">Approve</button>
+          <button class="danger" data-action="reject-advance" data-id="${advance.id}" data-i18n="common.reject">Reject</button>
+        `
+        : '';
+
+      return `
+        <tr>
+          <td>${escapeHtml(advance.username || '')}</td>
+          <td>${escapeHtml(Number(advance.amount || 0).toFixed(2))}</td>
+          <td><span class="tag ${statusClass}" data-i18n="common.${status}">${escapeHtml(status)}</span></td>
+          <td>${escapeHtml(advance.created_at || '')}</td>
+          <td>${escapeHtml(advance.reason || '')}</td>
+          <td><div class="table-actions">${actions}</div></td>
+        </tr>
+      `;
+    }).join('');
+
+    res.send(html);
+  } catch (error) {
+    logger.error('Error fetching advance requests html', { error: error.message });
+    res.status(500).send('');
   }
 });
 

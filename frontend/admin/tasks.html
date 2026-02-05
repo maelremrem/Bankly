@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Tasks</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="topbar">
+        <nav class="container">
+            <ul>
+                <li><strong data-i18n="dashboard.admin.title">Admin Dashboard</strong></li>
+            </ul>
+            <ul class="nav-actions">
+                <li><small id="currentUser"></small></li>
+                <li>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="themeToggle" role="switch">
+                        <span data-i18n="theme.label">Theme</span>
+                        <span id="themeModeLabel" data-i18n="theme.light">Light</span>
+                    </label>
+                </li>
+                <li>
+                    <select id="languageSelect" data-i18n-aria-label="languages.label">
+                        <option value="en" data-i18n="languages.en">English</option>
+                        <option value="fr" data-i18n="languages.fr">French</option>
+                    </select>
+                </li>
+                <li><a href="#" id="logout" data-i18n="dashboard.admin.logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="menu-bar">
+        <nav class="container menu-links" hx-boost="true" hx-target="main" hx-select="main" hx-swap="innerHTML" hx-push-url="true">
+            <a href="/admin/dashboard.html" data-i18n="menu.overview">Overview</a>
+            <a href="/admin/users.html" data-i18n="menu.users">Users</a>
+            <a class="active" href="/admin/tasks.html" data-i18n="menu.tasks">Tasks</a>
+            <a href="/admin/allowances.html" data-i18n="menu.allowances">Allowances</a>
+            <a href="/admin/advances.html" data-i18n="menu.advances">Advances</a>
+            <a href="/admin/transactions.html" data-i18n="menu.transactions">Transactions</a>
+            <a href="/admin/reversals.html" data-i18n="menu.reversals">Reversals</a>
+        </nav>
+    </div>
+
+    <main class="container" id="pageContent">
+        <section>
+            <header class="section-header">
+                <h2 data-i18n="dashboard.admin.tasks.title">Tasks</h2>
+                <div class="toolbar">
+                    <button id="taskCreateBtn" data-i18n="dashboard.admin.tasks.create">Create New Task</button>
+                </div>
+            </header>
+            <div class="table-scroll">
+                <table id="tasksTable">
+                    <thead>
+                        <tr>
+                            <th data-i18n="dashboard.admin.tasks.name">Name</th>
+                            <th data-i18n="dashboard.admin.tasks.description">Description</th>
+                            <th data-i18n="dashboard.admin.tasks.reward">Reward</th>
+                            <th data-i18n="dashboard.admin.tasks.approval">Approval</th>
+                            <th data-i18n="dashboard.admin.tasks.createdAt">Created</th>
+                            <th data-i18n="common.actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksBody" hx-get="/api/tasks/html" hx-trigger="load, refreshTasks" hx-target="#tasksBody" hx-swap="innerHTML">
+                        <tr>
+                            <td colspan="6" data-i18n="common.loading">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <article class="panel hidden" id="taskCompletionsPanel">
+                <header class="section-header">
+                    <h3 data-i18n="dashboard.admin.tasks.completionsTitle">Task Completions</h3>
+                    <button id="closeCompletions" class="secondary" data-i18n="common.close">Close</button>
+                </header>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-i18n="dashboard.admin.users.username">Username</th>
+                                <th data-i18n="dashboard.admin.tasks.name">Task</th>
+                                <th data-i18n="common.status">Status</th>
+                                <th data-i18n="dashboard.admin.tasks.createdAt">Created</th>
+                                <th data-i18n="common.actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taskCompletionsBody">
+                            <tr>
+                                <td colspan="5" data-i18n="common.loading">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+        <div id="taskModal" class="modal" aria-hidden="true">
+            <div class="modal-content">
+                <button class="close" data-action="close" data-target="taskModal" data-i18n-aria-label="common.close">&times;</button>
+                <h3 id="taskModalTitle" data-i18n="dashboard.admin.tasks.create">Create New Task</h3>
+                <form id="taskForm">
+                    <input type="hidden" id="taskId">
+                    <label>
+                        <span data-i18n="dashboard.admin.tasks.name">Name</span>
+                        <input type="text" id="taskName" required>
+                    </label>
+                    <label>
+                        <span data-i18n="dashboard.admin.tasks.description">Description</span>
+                        <textarea id="taskDescription"></textarea>
+                    </label>
+                    <label>
+                        <span data-i18n="dashboard.admin.tasks.reward">Reward</span>
+                        <input type="number" id="taskReward" step="0.01" min="0" required>
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="taskApproval">
+                        <span data-i18n="dashboard.admin.tasks.requiresApproval">Requires Approval</span>
+                    </label>
+                    <div class="modal-actions">
+                        <button type="submit" data-i18n="common.save">Save</button>
+                        <button type="button" class="secondary" data-action="close" data-target="taskModal" data-i18n="common.cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="taskReviewModal" class="modal" aria-hidden="true">
+            <div class="modal-content">
+                <button class="close" data-action="close" data-target="taskReviewModal" data-i18n-aria-label="common.close">&times;</button>
+                <h3 data-i18n="dashboard.admin.tasks.review">Review Completions</h3>
+                <form id="taskReviewForm">
+                    <input type="hidden" id="reviewCompletionId">
+                    <input type="hidden" id="reviewApproved">
+                    <label>
+                        <span data-i18n="dashboard.admin.tasks.reviewNotes">Review Notes</span>
+                        <textarea id="reviewNotes"></textarea>
+                    </label>
+                    <div class="modal-actions">
+                        <button type="submit" data-i18n="common.save">Save</button>
+                        <button type="button" class="secondary" data-action="close" data-target="taskReviewModal" data-i18n="common.cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/dashboard-admin.js"></script>
+</body>
+</html>

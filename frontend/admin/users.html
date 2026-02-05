@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Users</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="topbar">
+        <nav class="container">
+            <ul>
+                <li><strong data-i18n="dashboard.admin.title">Admin Dashboard</strong></li>
+            </ul>
+            <ul class="nav-actions">
+                <li><small id="currentUser"></small></li>
+                <li>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="themeToggle" role="switch">
+                        <span data-i18n="theme.label">Theme</span>
+                        <span id="themeModeLabel" data-i18n="theme.light">Light</span>
+                    </label>
+                </li>
+                <li>
+                    <select id="languageSelect" data-i18n-aria-label="languages.label">
+                        <option value="en" data-i18n="languages.en">English</option>
+                        <option value="fr" data-i18n="languages.fr">French</option>
+                    </select>
+                </li>
+                <li><a href="#" id="logout" data-i18n="dashboard.admin.logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="menu-bar">
+        <nav class="container menu-links" hx-boost="true" hx-target="main" hx-select="main" hx-swap="innerHTML" hx-push-url="true">
+            <a href="/admin/dashboard.html" data-i18n="menu.overview">Overview</a>
+            <a class="active" href="/admin/users.html" data-i18n="menu.users">Users</a>
+            <a href="/admin/tasks.html" data-i18n="menu.tasks">Tasks</a>
+            <a href="/admin/allowances.html" data-i18n="menu.allowances">Allowances</a>
+            <a href="/admin/advances.html" data-i18n="menu.advances">Advances</a>
+            <a href="/admin/transactions.html" data-i18n="menu.transactions">Transactions</a>
+            <a href="/admin/reversals.html" data-i18n="menu.reversals">Reversals</a>
+        </nav>
+    </div>
+
+    <main class="container" id="pageContent">
+        <section>
+            <header class="section-header">
+                <h2 data-i18n="dashboard.admin.users.title">Users</h2>
+                <form id="userSearchForm" class="toolbar" hx-get="/api/admin/users/html" hx-target="#usersBody" hx-swap="innerHTML" hx-include="#userSearch">
+                    <input id="userSearch" name="search" type="search" data-i18n-placeholder="dashboard.admin.users.searchPlaceholder" placeholder="Search users...">
+                    <button id="userSearchBtn" type="submit" class="secondary" data-i18n="common.search">Search</button>
+                    <button id="userClearBtn" type="button" class="secondary" data-i18n="common.clear">Clear</button>
+                    <button id="userCreateBtn" type="button" data-i18n="dashboard.admin.users.create">Create New User</button>
+                </form>
+            </header>
+            <div class="table-scroll">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th data-i18n="dashboard.admin.users.username">Username</th>
+                            <th data-i18n="dashboard.admin.users.role">Role</th>
+                            <th data-i18n="dashboard.admin.users.language">Language</th>
+                            <th data-i18n="dashboard.admin.users.balance">Balance</th>
+                            <th data-i18n="dashboard.admin.users.createdAt">Created</th>
+                            <th data-i18n="common.actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersBody" hx-get="/api/admin/users/html" hx-trigger="load, refreshUsers" hx-target="#usersBody" hx-swap="innerHTML">
+                        <tr>
+                            <td colspan="6" data-i18n="common.loading">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+        <div id="userModal" class="modal" aria-hidden="true">
+            <div class="modal-content">
+                <button class="close" data-action="close" data-target="userModal" data-i18n-aria-label="common.close">&times;</button>
+                <h3 id="userModalTitle" data-i18n="dashboard.admin.users.create">Create New User</h3>
+                <form id="userForm">
+                    <input type="hidden" id="userId">
+                    <label>
+                        <span data-i18n="dashboard.admin.users.username">Username</span>
+                        <input type="text" id="userUsername" required>
+                    </label>
+                    <label>
+                        <span data-i18n="dashboard.admin.users.password">Password</span>
+                        <input type="password" id="userPassword" autocomplete="new-password">
+                    </label>
+                    <label>
+                        <span data-i18n="dashboard.admin.users.role">Role</span>
+                        <select id="userRole" required>
+                            <option value="user" data-i18n="roles.user">User</option>
+                            <option value="admin" data-i18n="roles.admin">Admin</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span data-i18n="dashboard.admin.users.language">Language</span>
+                        <select id="userLanguage">
+                            <option value="en" data-i18n="languages.en">English</option>
+                            <option value="fr" data-i18n="languages.fr">French</option>
+                        </select>
+                    </label>
+                    <div class="modal-actions">
+                        <button type="submit" data-i18n="common.save">Save</button>
+                        <button type="button" class="secondary" data-action="close" data-target="userModal" data-i18n="common.cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/dashboard-admin.js"></script>
+</body>
+</html>

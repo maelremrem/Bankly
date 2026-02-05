@@ -1,6 +1,6 @@
 # Features Tracking - Bankly Project
 
-**Last Updated:** February 4, 2026  
+**Last Updated:** February 5, 2026  
 **Project Status:** Development Phase
 
 ---
@@ -22,14 +22,14 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| Username/password login | � Completed | High | - | v1.0 (MVP) | Implemented with express + bcrypt |
+| Username/password login | 🟢 Completed | High | - | v1.0 (MVP) | Implemented with express + bcrypt |
 | JWT token generation | 🟢 Completed | High | - | v1.0 (MVP) | Tokens issued at login (8h) |
 | Session management | 🔴 Not Started | High | - | v1.0 (MVP) | Token refresh logic |
 | Password hashing | 🟢 Completed | High | - | v1.0 (MVP) | bcrypt used (10 rounds) |
 | Role-based access control | 🟢 Completed | High | - | v1.0 (MVP) | `requireAdmin` middleware in place |
 | RFID card authentication | 🔴 Not Started | Medium | - | v3.0 | Hardware integration |
 | PIN code authentication | 🔴 Not Started | Medium | - | v3.0 | For RFID |
-| Logout functionality | 🔴 Not Started | Medium | - | v1.0 (MVP) | Token invalidation |
+| Logout functionality | 🟢 Completed | Medium | - | v1.0 (MVP) | `POST /auth/logout` clears cookie |
 | Remember me option | 🟣 Deferred | Low | - | v4.0+ | Extended sessions |
 | Two-factor authentication | 🟣 Deferred | Low | - | v4.0+ | Future enhancement |
 
@@ -39,7 +39,7 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| Create new user | � Completed | High | - | v1.0 (MVP) | Admin-only endpoint implemented |
+| Create new user | 🟢 Completed | High | - | v1.0 (MVP) | Admin-only endpoint implemented |
 | Edit user details | 🟢 Completed | High | - | v1.0 (MVP) | `PUT /api/users/:id` implemented |
 | Delete user | 🟢 Completed | High | - | v1.0 (MVP) | `DELETE /api/users/:id` implemented |
 | List all users | 🟢 Completed | High | - | v1.0 (MVP) | `GET /api/users` with pagination |
@@ -56,7 +56,7 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| View current balance (user) | � In Progress | High | - | v1.0 (MVP) | Exposed via user rows; dedicated endpoint to add in frontend
+| View current balance (user) | 🟢 Completed | High | - | v1.0 (MVP) | `/api/users/:id/balance` implemented and used in user dashboard |
 | View all balances (admin) | 🟢 Completed | High | - | v1.0 (MVP) | Admin user listing includes `balance` column |
 | Manual balance adjustment | 🟢 Completed | High | - | v1.0 (MVP) | `POST /api/transactions` implemented (admin) |
 | Transaction recording | 🟢 Completed | High | - | v1.0 (MVP) | All changes recorded in `transactions` table |
@@ -71,7 +71,7 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| Create allowance config | � Completed | High | - | v2.0 | `POST /api/allowances` implemented |
+| Create allowance config | 🟢 Completed | High | - | v2.0 | `POST /api/allowances` implemented |
 | Set allowance amount | 🟢 Completed | High | - | v2.0 | amount field |
 | Set allowance frequency | 🟢 Completed | High | - | v2.0 | daily/weekly/monthly |
 | Automatic allowance payments | 🟢 Completed | High | - | v2.0 | Cron scheduler service |
@@ -88,13 +88,13 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| Create task (admin) | � Completed | High | - | v1.0 (MVP) | `POST /api/tasks` implemented |
+| Create task (admin) | 🟢 Completed | High | - | v1.0 (MVP) | `POST /api/tasks` implemented |
 | Set task reward amount | 🟢 Completed | High | - | v1.0 (MVP) | reward_amount field |
 | Edit task details | 🟢 Completed | High | - | v1.0 (MVP) | `PUT /api/tasks/:id` implemented |
 | Delete task | 🟢 Completed | High | - | v1.0 (MVP) | `DELETE /api/tasks/:id` implemented |
-| List available tasks (user) | 🟢 Completed | High | - | v1.0 (MVP) | `GET /api/tasks` (admin only) |
+| List available tasks (user) | 🟢 Completed | High | - | v1.0 (MVP) | `GET /api/tasks/available` |
 | Mark task as completed (user) | 🟢 Completed | High | - | v1.0 (MVP) | `POST /api/tasks/:id/complete` |
-| Assign task to specific users | 🟢 Completed | Medium | - | v2.0 | All users can access all tasks |
+| Assign task to specific users | 🔴 Not Started | Medium | - | v2.0 | Pending assignments table |
 | Task approval requirement | 🟢 Completed | Medium | - | v2.0 | requires_approval boolean |
 | Approve task completion (admin) | 🟢 Completed | Medium | - | v2.0 | `POST /api/tasks/completions/:id/approve` |
 | Reject task completion (admin) | 🟢 Completed | Medium | - | v2.0 | Same endpoint with approved=false |
@@ -109,13 +109,13 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| Request advance (user) | 🔴 Not Started | Medium | - | v2.0 | Early allowance |
-| View pending requests (admin) | 🔴 Not Started | Medium | - | v2.0 | Admin dashboard |
-| Approve advance (admin) | 🔴 Not Started | Medium | - | v2.0 | Grant early payment |
-| Reject advance (admin) | 🔴 Not Started | Medium | - | v2.0 | With reason |
-| Deduct from next allowance | 🔴 Not Started | Medium | - | v2.0 | Automatic deduction |
-| View advance history (user) | 🔴 Not Started | Medium | - | v2.0 | Past requests |
-| Advance request limits | 🔴 Not Started | Low | - | v2.0 | Max amount/frequency |
+| Request advance (user) | 🟢 Completed | Medium | - | v2.0 | `POST /api/advances` implemented |
+| View pending requests (admin) | 🟢 Completed | Medium | - | v2.0 | `GET /api/advances` with status filter |
+| Approve advance (admin) | 🟢 Completed | Medium | - | v2.0 | `POST /api/advances/:id/approve` |
+| Reject advance (admin) | 🟢 Completed | Medium | - | v2.0 | `POST /api/advances/:id/reject` |
+| Deduct from next allowance | 🟢 Completed | Medium | - | v2.0 | Advance service adjusts allowance |
+| View advance history (user) | 🟢 Completed | Medium | - | v2.0 | `GET /api/advances/user/:userId` |
+| Advance request limits | 🟢 Completed | Low | - | v2.0 | Server-side validation rules |
 | Advance repayment tracking | 🟣 Deferred | Low | - | v4.0+ | Multiple advances |
 | Interest on advances | 🟣 Deferred | Low | - | v4.0+ | Teaching tool |
 
@@ -125,10 +125,10 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| View personal history (user) | � Completed | High | - | v1.0 (MVP) | `GET /api/users/:id/transactions` implemented |
-| View all history (admin) | � Completed | High | - | v1.0 (MVP) | `GET /api/transactions` implemented with filters & pagination |
+| View personal history (user) | 🟢 Completed | High | - | v1.0 (MVP) | `GET /api/users/:id/transactions` implemented |
+| View all history (admin) | 🟢 Completed | High | - | v1.0 (MVP) | `GET /api/transactions` implemented with filters & pagination |
 | Filter by transaction type | 🟢 Completed | Medium | - | v1.0 (MVP) | Supported on per-user history |
-| Filter by date range | 🔴 Not Started | Medium | - | v1.0 (MVP) | Start/end date |
+| Filter by date range | 🟢 Completed | Medium | - | v1.0 (MVP) | Start/end date on admin listing |
 | Search transactions | 🔴 Not Started | Medium | - | v2.0 | By description |
 | Pagination | 🟢 Completed | Medium | - | v1.0 (MVP) | Implemented on history endpoints |
 | Export to CSV | 🟣 Deferred | Low | - | v4.0+ | Data export |
@@ -143,18 +143,18 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| Login page | 🔴 Not Started | High | - | v1.0 (MVP) | Entry point |
-| User dashboard | 🔴 Not Started | High | - | v1.0 (MVP) | Main user view |
-| Admin dashboard | 🔴 Not Started | High | - | v1.0 (MVP) | Main admin view |
-| Responsive design | 🔴 Not Started | High | - | v1.0 (MVP) | Mobile-friendly |
-| PicoCSS integration | 🔴 Not Started | High | - | v1.0 (MVP) | CSS framework |
-| Child-friendly UI | 🔴 Not Started | High | - | v1.0 (MVP) | Large buttons, text |
-| Navigation menu | 🔴 Not Started | Medium | - | v1.0 (MVP) | Site navigation |
-| Success notifications | 🔴 Not Started | Medium | - | v1.0 (MVP) | User feedback |
-| Error notifications | 🔴 Not Started | Medium | - | v1.0 (MVP) | Error messages |
-| Loading indicators | 🔴 Not Started | Medium | - | v1.0 (MVP) | During API calls |
-| Confirmation dialogs | 🔴 Not Started | Medium | - | v1.0 (MVP) | Destructive actions |
-| Dark mode | 🟣 Deferred | Low | - | v4.0+ | Theme option |
+| Login page | 🟡 In Progress | High | - | v1.0 (MVP) | Static page exists, i18n pending |
+| User dashboard | 🟡 In Progress | High | - | v1.0 (MVP) | Functional JS, HTMX not applied |
+| Admin dashboard | 🟢 Completed | High | - | v1.0 (MVP) | HTMX + CRUD workflows |
+| Responsive design | 🟡 In Progress | High | - | v1.0 (MVP) | Base layout responsive |
+| PicoCSS integration | 🟢 Completed | High | - | v1.0 (MVP) | PicoCSS loaded in pages |
+| Child-friendly UI | 🔴 Not Started | High | - | v1.0 (MVP) | Pending |
+| Navigation menu | 🟡 In Progress | Medium | - | v1.0 (MVP) | Admin header/navigation |
+| Success notifications | 🟢 Completed | Medium | - | v1.0 (MVP) | Toasts in admin |
+| Error notifications | 🟡 In Progress | Medium | - | v1.0 (MVP) | Partial in admin |
+| Loading indicators | 🟢 Completed | Medium | - | v1.0 (MVP) | HTMX loading states |
+| Confirmation dialogs | 🟢 Completed | Medium | - | v1.0 (MVP) | Confirm dialogs for destructive actions |
+| Dark mode | 🟢 Completed | Low | - | v4.0+ | Theme switcher on admin |
 | Custom themes | 🟣 Deferred | Low | - | v4.0+ | Personalization |
 
 ---
@@ -163,9 +163,9 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| Balance display | 🔴 Not Started | High | - | v1.0 (MVP) | Prominent on dashboard |
-| Available tasks list | 🔴 Not Started | High | - | v1.0 (MVP) | Select and complete |
-| Transaction history page | 🔴 Not Started | High | - | v1.0 (MVP) | Personal history |
+| Balance display | 🟡 In Progress | High | - | v1.0 (MVP) | Basic balance shown on user dashboard |
+| Available tasks list | 🟡 In Progress | High | - | v1.0 (MVP) | Basic list on user dashboard |
+| Transaction history page | 🟡 In Progress | High | - | v1.0 (MVP) | Basic history table exists |
 | Advance request form | 🔴 Not Started | Medium | - | v2.0 | Request early payment |
 | Profile settings | 🔴 Not Started | Medium | - | v2.0 | Update preferences |
 | Next allowance info | 🔴 Not Started | Medium | - | v2.0 | Countdown/date |
@@ -177,12 +177,12 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| User management page | 🔴 Not Started | High | - | v1.0 (MVP) | CRUD users |
-| Task management page | 🔴 Not Started | High | - | v1.0 (MVP) | CRUD tasks |
-| Allowance config page | 🔴 Not Started | High | - | v2.0 | Set up allowances |
-| Approval queue page | 🔴 Not Started | Medium | - | v2.0 | Tasks and advances |
-| All transactions page | 🔴 Not Started | Medium | - | v1.0 (MVP) | System-wide history |
-| Balance adjustment form | 🔴 Not Started | Medium | - | v1.0 (MVP) | Manual adjustments |
+| User management page | 🟢 Completed | High | - | v1.0 (MVP) | CRUD users via admin dashboard |
+| Task management page | 🟢 Completed | High | - | v1.0 (MVP) | CRUD tasks via admin dashboard |
+| Allowance config page | 🟢 Completed | High | - | v2.0 | Allowances managed in admin dashboard |
+| Approval queue page | 🟢 Completed | Medium | - | v2.0 | Task completions + advances in admin dashboard |
+| All transactions page | 🟢 Completed | Medium | - | v1.0 (MVP) | Admin transactions table + filters |
+| Balance adjustment form | 🟢 Completed | Medium | - | v1.0 (MVP) | Manual transaction modal |
 | System settings page | 🔴 Not Started | Low | - | v2.0 | Configuration |
 | Reports/analytics page | 🟣 Deferred | Low | - | v4.0+ | Data insights |
 
@@ -194,38 +194,38 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| POST /auth/login | � Completed | High | - | v1.0 (MVP) | Login with username/password |
-| POST /auth/logout | 🔴 Not Started | High | - | v1.0 (MVP) | User logout |
-| GET /auth/me | 🔴 Not Started | High | - | v1.0 (MVP) | Current user info |
+| POST /auth/login | 🟢 Completed | High | - | v1.0 (MVP) | Login with username/password |
+| POST /auth/logout | 🟢 Completed | High | - | v1.0 (MVP) | Clears cookie |
+| GET /auth/me | 🟢 Completed | High | - | v1.0 (MVP) | Returns user info |
 | POST /auth/rfid-login | 🔴 Not Started | Medium | - | v3.0 | RFID authentication |
 | GET /api/users | 🟢 Completed | High | - | v1.0 (MVP) | List users (admin) with pagination |
 | POST /api/users | 🟢 Completed | High | - | v1.0 (MVP) | Create user (admin) |
 | PUT /api/users/:id | 🟢 Completed | High | - | v1.0 (MVP) | Update user (admin) |
 | DELETE /api/users/:id | 🟢 Completed | High | - | v1.0 (MVP) | Delete user (admin) |
-| GET /api/users/:id/balance | 🔴 Not Started | High | - | v1.0 (MVP) | Get balance (dedicated endpoint TBD) |
+| GET /api/users/:id/balance | 🟢 Completed | High | - | v1.0 (MVP) | Balance endpoint implemented |
 | POST /api/transactions | 🟢 Completed | High | - | v1.0 (MVP) | Create manual transaction (admin) |
-| GET /api/transactions | 🟡 In Progress | High | - | v1.0 (MVP) | Global transaction listing planned |
+| GET /api/transactions | 🟢 Completed | High | - | v1.0 (MVP) | Global listing with filters |
 | GET /api/users/:id/transactions | 🟢 Completed | High | - | v1.0 (MVP) | User transaction history (pagination, filter) |
 | POST /api/transactions/:id/reverse | 🟢 Completed | Medium | - | v1.0 (MVP) | Reverse a transaction (permission controlled) |
 | POST /api/transactions/reversals/:originalId/undo | 🟢 Completed | Medium | - | v1.0 (MVP) | Undo a reversal (permission controlled) |
 | GET /api/transactions/reversals | 🟢 Completed | Medium | - | v1.0 (MVP) | Reversal audit listing (admin) |
 | GET /api/transactions/reversals/:id | 🟢 Completed | Medium | - | v1.0 (MVP) | Reversal detail (admin) |
-| GET /api/tasks | 🔴 Not Started | High | - | v1.0 (MVP) | List all tasks |
-| POST /api/tasks | 🔴 Not Started | High | - | v1.0 (MVP) | Create task (admin) |
-| PUT /api/tasks/:id | 🔴 Not Started | High | - | v1.0 (MVP) | Update task (admin) |
-| DELETE /api/tasks/:id | 🔴 Not Started | High | - | v1.0 (MVP) | Delete task (admin) |
-| GET /api/tasks/available | 🔴 Not Started | High | - | v1.0 (MVP) | User's available tasks |
-| POST /api/tasks/:id/complete | 🔴 Not Started | High | - | v1.0 (MVP) | Complete task |
-| POST /api/tasks/completions/:id/approve | 🔴 Not Started | Medium | - | v2.0 | Approve (admin) |
-| POST /api/tasks/completions/:id/reject | 🔴 Not Started | Medium | - | v2.0 | Reject (admin) |
-| POST /api/allowances | 🔴 Not Started | High | - | v2.0 | Create allowance |
-| GET /api/allowances | 🔴 Not Started | High | - | v2.0 | List allowances |
-| PUT /api/allowances/:id | 🔴 Not Started | High | - | v2.0 | Update allowance |
-| DELETE /api/allowances/:id | 🔴 Not Started | Medium | - | v2.0 | Delete allowance |
-| POST /api/advances | 🔴 Not Started | Medium | - | v2.0 | Request advance |
-| GET /api/advances/pending | 🔴 Not Started | Medium | - | v2.0 | Pending (admin) |
-| POST /api/advances/:id/approve | 🔴 Not Started | Medium | - | v2.0 | Approve (admin) |
-| POST /api/advances/:id/reject | 🔴 Not Started | Medium | - | v2.0 | Reject (admin) |
+| GET /api/tasks | 🟢 Completed | High | - | v1.0 (MVP) | List tasks (admin) |
+| POST /api/tasks | 🟢 Completed | High | - | v1.0 (MVP) | Create task (admin) |
+| PUT /api/tasks/:id | 🟢 Completed | High | - | v1.0 (MVP) | Update task (admin) |
+| DELETE /api/tasks/:id | 🟢 Completed | High | - | v1.0 (MVP) | Delete task (admin) |
+| GET /api/tasks/available | 🟢 Completed | High | - | v1.0 (MVP) | User's available tasks |
+| POST /api/tasks/:id/complete | 🟢 Completed | High | - | v1.0 (MVP) | Complete task |
+| POST /api/tasks/completions/:id/approve | 🟢 Completed | Medium | - | v2.0 | Approve/reject (admin) |
+| POST /api/tasks/completions/:id/reject | 🟢 Completed | Medium | - | v2.0 | Reject (admin) |
+| POST /api/allowances | 🟢 Completed | High | - | v2.0 | Create allowance |
+| GET /api/allowances | 🟢 Completed | High | - | v2.0 | List allowances |
+| PUT /api/allowances/:id | 🟢 Completed | High | - | v2.0 | Update allowance |
+| DELETE /api/allowances/:id | 🟢 Completed | Medium | - | v2.0 | Delete allowance |
+| POST /api/advances | 🟢 Completed | Medium | - | v2.0 | Request advance |
+| GET /api/advances/pending | 🟣 Deferred | Medium | - | v2.0 | Replaced by status filter |
+| POST /api/advances/:id/approve | 🟢 Completed | Medium | - | v2.0 | Approve (admin) |
+| POST /api/advances/:id/reject | 🟢 Completed | Medium | - | v2.0 | Reject (admin) |
 
 ---
 
@@ -233,14 +233,14 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| SQLite database setup | � Completed | High | - | v1.0 (MVP) | Schema implemented and applied at startup |
+| SQLite database setup | 🟢 Completed | High | - | v1.0 (MVP) | Schema implemented and applied at startup |
 | Users table | 🟢 Completed | High | - | v1.0 (MVP) | User schema present |
 | Transactions table | 🟢 Completed | High | - | v1.0 (MVP) | Transaction log present |
-| Tasks table | 🔴 Not Started | High | - | v1.0 (MVP) | Task definitions |
-| Task assignments table | 🔴 Not Started | Medium | - | v2.0 | User-task mapping |
-| Task completions table | 🔴 Not Started | High | - | v1.0 (MVP) | Completed tasks |
-| Allowances table | 🔴 Not Started | High | - | v2.0 | Allowance configs |
-| Advance requests table | 🔴 Not Started | Medium | - | v2.0 | Advance tracking |
+| Tasks table | 🟢 Completed | High | - | v1.0 (MVP) | Task definitions |
+| Task assignments table | 🔴 Not Started | Medium | - | v2.0 | Pending schema |
+| Task completions table | 🟢 Completed | High | - | v1.0 (MVP) | Completed tasks |
+| Allowances table | 🟢 Completed | High | - | v2.0 | Allowance configs |
+| Advance requests table | 🟢 Completed | Medium | - | v2.0 | Advance tracking |
 | Database migrations | 🟡 In Progress | Medium | - | v2.0 | Basic migrations added on startup for columns |
 | Database indexing | 🔴 Not Started | Medium | - | v2.0 | Performance |
 | WAL mode | 🟢 Completed | Medium | - | v1.0 (MVP) | Enabled pragmas for WAL and foreign keys |
@@ -253,15 +253,15 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| i18n framework setup | 🔴 Not Started | High | - | v2.0 | i18next or similar |
-| English translations | 🔴 Not Started | High | - | v2.0 | Default language |
-| French translations | 🔴 Not Started | High | - | v2.0 | Second language |
-| Language switcher UI | 🔴 Not Started | High | - | v2.0 | User preference |
+| i18n framework setup | 🟢 Completed | High | - | v2.0 | Custom frontend i18n |
+| English translations | 🟢 Completed | High | - | v2.0 | Frontend dictionaries added |
+| French translations | 🟢 Completed | High | - | v2.0 | Frontend dictionaries added |
+| Language switcher UI | 🟢 Completed | High | - | v2.0 | Admin switcher implemented |
 | Backend i18n | 🔴 Not Started | Medium | - | v2.0 | API messages |
-| Frontend i18n | 🔴 Not Started | High | - | v2.0 | UI text |
-| Date formatting | 🔴 Not Started | Medium | - | v2.0 | Locale-specific |
-| Currency formatting | 🔴 Not Started | Medium | - | v2.0 | Locale-specific |
-| Language persistence | 🔴 Not Started | Medium | - | v2.0 | Save preference |
+| Frontend i18n | 🟢 Completed | High | - | v2.0 | Admin dashboard translated |
+| Date formatting | 🟢 Completed | Medium | - | v2.0 | Intl.DateTimeFormat used |
+| Currency formatting | 🟢 Completed | Medium | - | v2.0 | Intl.NumberFormat used |
+| Language persistence | 🟢 Completed | Medium | - | v2.0 | localStorage |
 | Spanish translations | 🟣 Deferred | Low | - | v4.0+ | Additional language |
 | German translations | 🟣 Deferred | Low | - | v4.0+ | Additional language |
 
@@ -271,17 +271,17 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| Password hashing (bcrypt) | 🔴 Not Started | High | - | v1.0 (MVP) | Secure storage |
-| JWT authentication | 🔴 Not Started | High | - | v1.0 (MVP) | Token-based |
-| Input validation | 🔴 Not Started | High | - | v1.0 (MVP) | All endpoints |
-| SQL injection prevention | 🔴 Not Started | High | - | v1.0 (MVP) | Parameterized queries |
-| XSS protection | 🔴 Not Started | High | - | v1.0 (MVP) | Input sanitization |
+| Password hashing (bcrypt) | 🟢 Completed | High | - | v1.0 (MVP) | Secure storage |
+| JWT authentication | 🟢 Completed | High | - | v1.0 (MVP) | Token-based |
+| Input validation | 🟢 Completed | High | - | v1.0 (MVP) | express-validator on endpoints |
+| SQL injection prevention | 🟢 Completed | High | - | v1.0 (MVP) | Parameterized queries |
+| XSS protection | 🟡 In Progress | High | - | v1.0 (MVP) | HTML escaping for HTMX fragments |
 | CSRF protection | 🔴 Not Started | Medium | - | v1.0 (MVP) | Form tokens |
-| Rate limiting | 🔴 Not Started | Medium | - | v2.0 | API throttling |
+| Rate limiting | 🟢 Completed | Medium | - | v2.0 | express-rate-limit enabled |
 | HTTPS enforcement | 🔴 Not Started | Medium | - | v2.0 | Secure communication |
-| Session management | 🔴 Not Started | High | - | v1.0 (MVP) | Token expiration |
-| Role-based authorization | 🔴 Not Started | High | - | v1.0 (MVP) | Admin vs user |
-| Security headers | 🔴 Not Started | Medium | - | v2.0 | Helmet.js |
+| Session management | 🟡 In Progress | High | - | v1.0 (MVP) | Token expiration only |
+| Role-based authorization | 🟢 Completed | High | - | v1.0 (MVP) | Admin vs user |
+| Security headers | 🟡 In Progress | Medium | - | v2.0 | Helmet installed (CSP pending) |
 | Audit logging | 🟣 Deferred | Low | - | v4.0+ | Security events |
 
 ---
@@ -290,15 +290,15 @@
 
 | Feature | Status | Priority | Assigned To | Target Version | Notes |
 |---------|--------|----------|-------------|----------------|-------|
-| Dockerfile | � Completed | High | - | v1.0 (MVP) | Container image for backend |
+| Dockerfile | 🟢 Completed | High | - | v1.0 (MVP) | Container image for backend |
 | Docker Compose | 🟢 Completed | High | - | v1.0 (MVP) | Orchestration for development and RPi deployment |
-| Environment variables | 🔴 Not Started | High | - | v1.0 (MVP) | Configuration |
+| Environment variables | 🟡 In Progress | High | - | v1.0 (MVP) | dotenv in use, template pending |
 | .env.example | 🔴 Not Started | High | - | v1.0 (MVP) | Template |
 | Setup script | 🔴 Not Started | Medium | - | v1.0 (MVP) | Initial setup |
 | Backup script | 🔴 Not Started | Medium | - | v2.0 | Database backup |
-| Health check endpoint | 🔴 Not Started | Medium | - | v2.0 | Monitoring |
-| Logging system | 🔴 Not Started | Medium | - | v1.0 (MVP) | Application logs |
-| Error tracking | 🔴 Not Started | Low | - | v2.0 | Sentry or similar |
+| Health check endpoint | 🟢 Completed | Medium | - | v2.0 | `/health` endpoint |
+| Logging system | 🟢 Completed | Medium | - | v1.0 (MVP) | Winston logger configured |
+| Error tracking | 🟡 In Progress | Low | - | v2.0 | Sentry integrated (optional) |
 | Auto-restart on failure | 🔴 Not Started | Medium | - | v2.0 | Docker policy |
 | Update mechanism | 🟣 Deferred | Low | - | v4.0+ | Easy updates |
 | Configuration UI | 🟣 Deferred | Low | - | v4.0+ | Web-based config |
@@ -343,9 +343,9 @@
 | PRD | 🟢 Completed | High | - | v1.0 (MVP) | This document |
 | AI Development Guide | 🟢 Completed | High | - | v1.0 (MVP) | This document |
 | Features Tracking | 🟢 Completed | High | - | v1.0 (MVP) | This document |
-| README.md | � Completed | High | - | v1.0 (MVP) | Backend README created |
+| README.md | 🟢 Completed | High | - | v1.0 (MVP) | Backend README created |
 | API documentation | 🔴 Not Started | High | - | v1.0 (MVP) | Endpoint docs |
-| Installation guide | � Completed | High | - | v1.0 (MVP) | Setup instructions in docs/INSTALLATION.md |
+| Installation guide | 🟢 Completed | High | - | v1.0 (MVP) | Setup instructions in docs/INSTALLATION.md |
 | User manual | 🔴 Not Started | Medium | - | v2.0 | End-user guide |
 | Admin manual | 🔴 Not Started | Medium | - | v2.0 | Admin guide |
 | Development setup guide | 🔴 Not Started | Medium | - | v1.0 (MVP) | For developers |
@@ -490,27 +490,27 @@
 
 ## 16. Progress Summary
 
-**Overall Progress:** 14/300+ features completed (5%)
+**Overall Progress:** 63/300+ features completed (21%)
 
 ### By Category:
-- Authentication & Authorization: 4/10 completed (40%)
+- Authentication & Authorization: 5/10 completed (50%)
 - User Management: 5/10 completed (50%)
-- Balance Management: 3/8 completed (38%)
+- Balance Management: 5/8 completed (62%)
 - Allowance System: 8/10 completed (80%)
-- Task Management: 10/14 completed (71%)
-- Advance Request System: 0/9 completed (0%)
-- Transaction History: 3/9 completed (33%)
-- Frontend - General UI: 0/13 completed (0%)
+- Task Management: 9/14 completed (64%)
+- Advance Request System: 7/9 completed (78%)
+- Transaction History: 5/9 completed (56%)
+- Frontend - General UI: 6/13 completed (46%)
 - Frontend - User Pages: 0/7 completed (0%)
-- Frontend - Admin Pages: 0/8 completed (0%)
-- Backend API: 10/27 completed (37%)
-- Database: 4/13 completed (31%)
-- i18n: 0/11 completed (0%)
-- Security: 8/12 completed (67%)
-- Deployment: 6/12 completed (50%)
+- Frontend - Admin Pages: 6/8 completed (75%)
+- Backend API: 31/32 completed (97%)
+- Database: 9/13 completed (69%)
+- i18n: 8/11 completed (73%)
+- Security: 6/12 completed (50%)
+- Deployment: 4/12 completed (33%)
 - Raspberry Pi Specific: 0/9 completed (0%)
 - Testing: 2/8 completed (25%)
-- Documentation: 4/12 completed (33%)
+- Documentation: 5/12 completed (42%)
 
 ---
 
