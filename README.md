@@ -1,15 +1,15 @@
-# Monly — Pocket Money Bank for Kids 🇬🇧🇫🇷
+# Bankly — Pocket Money Bank for Kids 🇬🇧🇫🇷
 
-[![Build](https://img.shields.io/github/actions/workflow/status/your-org/Monly/ci.yml?branch=main&style=flat-square)](https://github.com/your-org/Monly/actions) [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE) [![Backend](https://img.shields.io/badge/backend-v1.0.0-blue?style=flat-square)](backend/package.json) [![Docker](https://img.shields.io/badge/docker-ready-lightgrey?style=flat-square)]
+[![Build](https://img.shields.io/github/actions/workflow/status/your-org/Bankly/ci.yml?branch=main&style=flat-square)](https://github.com/your-org/Bankly/actions) [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE) [![Backend](https://img.shields.io/badge/backend-v1.0.0-blue?style=flat-square)](backend/package.json) [![Docker](https://img.shields.io/badge/docker-ready-lightgrey?style=flat-square)]
 
-**Make allowance time fun!** Monly turns chores into small wins kids understand — colorful rewards, friendly UI, and clear parental controls. 🎈🧠💵
+**Make allowance time fun!** Bankly turns chores into small wins kids understand — colorful rewards, friendly UI, and clear parental controls. 🎈🧠💵
 
 A local-first family app: private, safe, and playful. Perfect for routines, teaching moments, and weekly celebrations. ✅✨
 
 ---
 
-## ✨ What is Monly?
-Monly is an educational pocket-money simulator built for families. It helps kids learn about saving, earning, and responsible spending through task-based rewards, allowances, and transparent transaction history — while giving parents full control and oversight. 🧠💵
+## ✨ What is Bankly?
+Bankly is an educational pocket-money simulator built for families. It helps kids learn about saving, earning, and responsible spending through task-based rewards, allowances, and transparent transaction history — while giving parents full control and oversight. 🧠💵
 
 > Designed to be simple for kids and reassuring for parents: local-first, safe, and easy to use. ✅
 
@@ -76,7 +76,7 @@ docker-compose up -d
 ---
 
 ## 🖥️ Raspberry Pi & Hardware
-Monly supports deployment on Raspberry Pi (3B+ or newer). Optional RFID reader integration is included for hands-on, physical interactions (great for younger kids). See `scripts/rfid/` for details. 🐧🔧
+Bankly supports deployment on Raspberry Pi (3B+ or newer). Optional RFID reader integration is included for hands-on, physical interactions (great for younger kids). See `scripts/rfid/` for details. 🐧🔧
 
 ---
 
@@ -88,7 +88,7 @@ Monly supports deployment on Raspberry Pi (3B+ or newer). Optional RFID reader i
 ---
 
 ## 🧽 For Parents — short pitch
-Monly turns chores into real, meaningful learning. It makes allowance management consistent and teaches kids financial responsibility in a safe, parent-managed environment. It’s a practical tool to help children grow confident with money — through play and routine. ❤️🌱
+Bankly turns chores into real, meaningful learning. It makes allowance management consistent and teaches kids financial responsibility in a safe, parent-managed environment. It’s a practical tool to help children grow confident with money — through play and routine. ❤️🌱
 
 ---
 
@@ -98,7 +98,7 @@ Contributions, bug reports and ideas are welcome. Please open issues or PRs and 
 ---
 
 ## 📞 Contact & Support
-If you want help setting Monly up on a Raspberry Pi or need a demo for parents, open an issue or contact the maintainers in the repository. We’re happy to help! 🙌
+If you want help setting Bankly up on a Raspberry Pi or need a demo for parents, open an issue or contact the maintainers in the repository. We’re happy to help! 🙌
 
 ---
 
@@ -108,4 +108,4 @@ MIT — see `LICENSE`.
 ---
 
 ## 🇫🇷 Pitch rapide (en français)
-Monly aide les enfants à apprendre à gérer leur argent de poche de manière simple et ludique. Les parents gardent le contrôle, la vie privée est respectée, et tout est pensé pour l’apprentissage. Idéal pour initier des rituels de responsabilité financière en famille. 💙👨‍👩‍👧‍👦
+Bankly aide les enfants à apprendre à gérer leur argent de poche de manière simple et ludique. Les parents gardent le contrôle, la vie privée est respectée, et tout est pensé pour l’apprentissage. Idéal pour initier des rituels de responsabilité financière en famille. 💙👨‍👩‍👧‍👦
