@@ -11,7 +11,11 @@
     <header class="topbar">
         <nav class="container">
             <ul>
-                <li><strong data-i18n="dashboard.admin.title">Admin Dashboard</strong></li>
+                <li class="app-brand">
+                    <span class="app-name">Bankly</span>
+                    <span class="app-sep">/</span>
+                    <strong data-i18n="dashboard.admin.title">Admin Dashboard</strong>
+                </li>
             </ul>
             <ul class="nav-actions">
                 <li><small id="currentUser"></small></li>
@@ -28,7 +32,12 @@
                         <option value="fr" data-i18n="languages.fr">French</option>
                     </select>
                 </li>
-                <li><a href="#" id="logout" data-i18n="dashboard.admin.logout">Logout</a></li>
+                <li>
+                    <button id="logout" class="icon-button secondary" type="button">
+                        <span class="btn-icon">⎋</span>
+                        <span data-i18n="dashboard.admin.logout">Logout</span>
+                    </button>
+                </li>
             </ul>
         </nav>
     </header>
@@ -51,9 +60,18 @@
                 <h2 data-i18n="dashboard.admin.users.title">Users</h2>
                 <form id="userSearchForm" class="toolbar" hx-get="/api/admin/users/html" hx-target="#usersBody" hx-swap="innerHTML" hx-include="#userSearch">
                     <input id="userSearch" name="search" type="search" data-i18n-placeholder="dashboard.admin.users.searchPlaceholder" placeholder="Search users...">
-                    <button id="userSearchBtn" type="submit" class="secondary" data-i18n="common.search">Search</button>
-                    <button id="userClearBtn" type="button" class="secondary" data-i18n="common.clear">Clear</button>
-                    <button id="userCreateBtn" type="button" data-i18n="dashboard.admin.users.create">Create New User</button>
+                    <button id="userSearchBtn" type="submit" class="secondary">
+                        <span class="btn-icon">🔍</span>
+                        <span data-i18n="common.search">Search</span>
+                    </button>
+                    <button id="userClearBtn" type="button" class="secondary">
+                        <span class="btn-icon">🧹</span>
+                        <span data-i18n="common.clear">Clear</span>
+                    </button>
+                    <button id="userCreateBtn" type="button">
+                        <span class="btn-icon">➕</span>
+                        <span data-i18n="dashboard.admin.users.create">Create New User</span>
+                    </button>
                 </form>
             </header>
             <div class="table-scroll">
@@ -107,8 +125,14 @@
                         </select>
                     </label>
                     <div class="modal-actions">
-                        <button type="submit" data-i18n="common.save">Save</button>
-                        <button type="button" class="secondary" data-action="close" data-target="userModal" data-i18n="common.cancel">Cancel</button>
+                        <button type="submit">
+                            <span class="btn-icon">💾</span>
+                            <span data-i18n="common.save">Save</span>
+                        </button>
+                        <button type="button" class="secondary" data-action="close" data-target="userModal">
+                            <span class="btn-icon">✕</span>
+                            <span data-i18n="common.cancel">Cancel</span>
+                        </button>
                     </div>
                 </form>
             </div>

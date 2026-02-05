@@ -58,9 +58,18 @@ router.get('/html', requireAuth, requireAdmin, async (req, res) => {
           <td>${escapeHtml(task.created_at)}</td>
           <td>
             <div class="table-actions">
-              <button data-action="review-task" data-id="${task.id}" data-i18n="dashboard.admin.tasks.review">Review Completions</button>
-              <button data-action="edit-task" data-id="${task.id}" data-i18n="common.edit">Edit</button>
-              <button class="danger" data-action="delete-task" data-id="${task.id}" data-i18n="common.delete">Delete</button>
+              <button data-action="review-task" data-id="${task.id}">
+                <span class="btn-icon">🧾</span>
+                <span data-i18n="dashboard.admin.tasks.review">Review Completions</span>
+              </button>
+              <button data-action="edit-task" data-id="${task.id}">
+                <span class="btn-icon">✎</span>
+                <span data-i18n="common.edit">Edit</span>
+              </button>
+              <button class="danger" data-action="delete-task" data-id="${task.id}">
+                <span class="btn-icon">🗑</span>
+                <span data-i18n="common.delete">Delete</span>
+              </button>
             </div>
           </td>
         </tr>
@@ -338,8 +347,14 @@ router.get('/:id/completions/html', requireAuth, requireAdmin, [
       const statusClass = statusTagMap[status] || 'neutral';
       const actions = status === 'pending'
         ? `
-          <button data-action="approve-completion" data-id="${completion.id}" data-i18n="common.approve">Approve</button>
-          <button class="danger" data-action="reject-completion" data-id="${completion.id}" data-i18n="common.reject">Reject</button>
+          <button data-action="approve-completion" data-id="${completion.id}">
+            <span class="btn-icon">✅</span>
+            <span data-i18n="common.approve">Approve</span>
+          </button>
+          <button class="danger" data-action="reject-completion" data-id="${completion.id}">
+            <span class="btn-icon">✖</span>
+            <span data-i18n="common.reject">Reject</span>
+          </button>
         `
         : '';
 

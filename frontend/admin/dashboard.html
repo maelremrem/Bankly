@@ -11,7 +11,11 @@
     <header class="topbar">
         <nav class="container">
             <ul>
-                <li><strong data-i18n="dashboard.admin.title">Admin Dashboard</strong></li>
+                <li class="app-brand">
+                    <span class="app-name">Bankly</span>
+                    <span class="app-sep">/</span>
+                    <strong data-i18n="dashboard.admin.title">Admin Dashboard</strong>
+                </li>
             </ul>
             <ul class="nav-actions">
                 <li><small id="currentUser"></small></li>
@@ -28,7 +32,12 @@
                         <option value="fr" data-i18n="languages.fr">French</option>
                     </select>
                 </li>
-                <li><a href="#" id="logout" data-i18n="dashboard.admin.logout">Logout</a></li>
+                <li>
+                    <button id="logout" class="icon-button secondary" type="button">
+                        <span class="btn-icon">⎋</span>
+                        <span data-i18n="dashboard.admin.logout">Logout</span>
+                    </button>
+                </li>
             </ul>
         </nav>
     </header>
@@ -49,7 +58,10 @@
         <section>
             <header class="section-header">
                 <h2 data-i18n="dashboard.admin.overview.title">System Overview</h2>
-                <button id="refreshOverview" class="secondary" data-i18n="common.refresh" hx-get="/api/admin/overview/html" hx-target="#overviewCards" hx-swap="innerHTML">Refresh</button>
+                <button id="refreshOverview" class="secondary" hx-get="/api/admin/overview/html" hx-target="#overviewCards" hx-swap="innerHTML">
+                    <span class="btn-icon">⟳</span>
+                    <span data-i18n="common.refresh">Refresh</span>
+                </button>
             </header>
             <div id="overviewCards" class="overview-grid" hx-get="/api/admin/overview/html" hx-trigger="load" hx-target="#overviewCards" hx-swap="innerHTML"></div>
         </section>
@@ -84,8 +96,14 @@
                     </select>
                 </label>
                 <div class="modal-actions">
-                    <button type="submit" data-i18n="common.save">Save</button>
-                    <button type="button" class="secondary" data-action="close" data-target="userModal" data-i18n="common.cancel">Cancel</button>
+                    <button type="submit">
+                        <span class="btn-icon">💾</span>
+                        <span data-i18n="common.save">Save</span>
+                    </button>
+                    <button type="button" class="secondary" data-action="close" data-target="userModal">
+                        <span class="btn-icon">✕</span>
+                        <span data-i18n="common.cancel">Cancel</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -114,8 +132,14 @@
                     <span data-i18n="dashboard.admin.tasks.requiresApproval">Requires Approval</span>
                 </label>
                 <div class="modal-actions">
-                    <button type="submit" data-i18n="common.save">Save</button>
-                    <button type="button" class="secondary" data-action="close" data-target="taskModal" data-i18n="common.cancel">Cancel</button>
+                    <button type="submit">
+                        <span class="btn-icon">💾</span>
+                        <span data-i18n="common.save">Save</span>
+                    </button>
+                    <button type="button" class="secondary" data-action="close" data-target="taskModal">
+                        <span class="btn-icon">✕</span>
+                        <span data-i18n="common.cancel">Cancel</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -148,8 +172,14 @@
                     <span data-i18n="dashboard.admin.allowances.enabled">Enabled</span>
                 </label>
                 <div class="modal-actions">
-                    <button type="submit" data-i18n="common.save">Save</button>
-                    <button type="button" class="secondary" data-action="close" data-target="allowanceModal" data-i18n="common.cancel">Cancel</button>
+                    <button type="submit">
+                        <span class="btn-icon">💾</span>
+                        <span data-i18n="common.save">Save</span>
+                    </button>
+                    <button type="button" class="secondary" data-action="close" data-target="allowanceModal">
+                        <span class="btn-icon">✕</span>
+                        <span data-i18n="common.cancel">Cancel</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -177,8 +207,14 @@
                     <textarea id="transactionDescription"></textarea>
                 </label>
                 <div class="modal-actions">
-                    <button type="submit" data-i18n="common.save">Save</button>
-                    <button type="button" class="secondary" data-action="close" data-target="transactionModal" data-i18n="common.cancel">Cancel</button>
+                    <button type="submit">
+                        <span class="btn-icon">💾</span>
+                        <span data-i18n="common.save">Save</span>
+                    </button>
+                    <button type="button" class="secondary" data-action="close" data-target="transactionModal">
+                        <span class="btn-icon">✕</span>
+                        <span data-i18n="common.cancel">Cancel</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -196,8 +232,14 @@
                     <textarea id="reviewNotes"></textarea>
                 </label>
                 <div class="modal-actions">
-                    <button type="submit" data-i18n="common.save">Save</button>
-                    <button type="button" class="secondary" data-action="close" data-target="taskReviewModal" data-i18n="common.cancel">Cancel</button>
+                    <button type="submit">
+                        <span class="btn-icon">💾</span>
+                        <span data-i18n="common.save">Save</span>
+                    </button>
+                    <button type="button" class="secondary" data-action="close" data-target="taskReviewModal">
+                        <span class="btn-icon">✕</span>
+                        <span data-i18n="common.cancel">Cancel</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -214,8 +256,14 @@
                     <textarea id="advanceRejectReason"></textarea>
                 </label>
                 <div class="modal-actions">
-                    <button type="submit" data-i18n="common.save">Save</button>
-                    <button type="button" class="secondary" data-action="close" data-target="advanceRejectModal" data-i18n="common.cancel">Cancel</button>
+                    <button type="submit">
+                        <span class="btn-icon">💾</span>
+                        <span data-i18n="common.save">Save</span>
+                    </button>
+                    <button type="button" class="secondary" data-action="close" data-target="advanceRejectModal">
+                        <span class="btn-icon">✕</span>
+                        <span data-i18n="common.cancel">Cancel</span>
+                    </button>
                 </div>
             </form>
     </div>

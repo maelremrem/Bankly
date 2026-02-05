@@ -289,8 +289,14 @@ async function loadTaskCompletions(taskId) {
             const statusTag = getStatusTag(completion.status);
             const actions = completion.status === 'pending'
                 ? `
-                    <button data-action="approve-completion" data-id="${completion.id}">${escapeHtml(t('common.approve'))}</button>
-                    <button class="danger" data-action="reject-completion" data-id="${completion.id}">${escapeHtml(t('common.reject'))}</button>
+                    <button data-action="approve-completion" data-id="${completion.id}">
+                        <span class="btn-icon">✅</span>
+                        <span>${escapeHtml(t('common.approve'))}</span>
+                    </button>
+                    <button class="danger" data-action="reject-completion" data-id="${completion.id}">
+                        <span class="btn-icon">✖</span>
+                        <span>${escapeHtml(t('common.reject'))}</span>
+                    </button>
                 `
                 : '';
             return `

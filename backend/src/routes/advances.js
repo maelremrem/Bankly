@@ -131,8 +131,14 @@ router.get('/html', [requireAuth, requireAdmin], [
       const statusClass = statusTagMap[status] || 'neutral';
       const actions = status === 'pending'
         ? `
-          <button data-action="approve-advance" data-id="${advance.id}" data-i18n="common.approve">Approve</button>
-          <button class="danger" data-action="reject-advance" data-id="${advance.id}" data-i18n="common.reject">Reject</button>
+          <button data-action="approve-advance" data-id="${advance.id}">
+            <span class="btn-icon">✅</span>
+            <span data-i18n="common.approve">Approve</span>
+          </button>
+          <button class="danger" data-action="reject-advance" data-id="${advance.id}">
+            <span class="btn-icon">✖</span>
+            <span data-i18n="common.reject">Reject</span>
+          </button>
         `
         : '';
 

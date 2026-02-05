@@ -131,8 +131,14 @@ router.get('/users/html', requireAuth, requireAdmin, (req, res) => {
             <td>${escapeHtml(user.created_at)}</td>
             <td>
               <div class="table-actions">
-                <button data-action="edit-user" data-id="${user.id}" data-i18n="common.edit">Edit</button>
-                <button class="danger" data-action="delete-user" data-id="${user.id}" data-i18n="common.delete">Delete</button>
+                <button data-action="edit-user" data-id="${user.id}">
+                  <span class="btn-icon">✎</span>
+                  <span data-i18n="common.edit">Edit</span>
+                </button>
+                <button class="danger" data-action="delete-user" data-id="${user.id}">
+                  <span class="btn-icon">🗑</span>
+                  <span data-i18n="common.delete">Delete</span>
+                </button>
               </div>
             </td>
           </tr>

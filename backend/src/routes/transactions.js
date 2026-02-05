@@ -192,7 +192,10 @@ router.get('/html', requireAuth, requireAdmin, async (req, res) => {
     const html = transactions.map((tx) => {
       const canReverse = !['reversal', 'reversal_undo'].includes(tx.type);
       const reverseButton = canReverse
-        ? `<button data-action="reverse-transaction" data-id="${tx.id}" data-i18n="dashboard.admin.transactions.reverse">Reverse</button>`
+        ? `<button data-action="reverse-transaction" data-id="${tx.id}">
+             <span class="btn-icon">↩</span>
+             <span data-i18n="dashboard.admin.transactions.reverse">Reverse</span>
+           </button>`
         : '';
 
       return `
@@ -442,7 +445,10 @@ router.get('/reversals/html', requireAuth, requireAdmin, (req, res) => {
       const revertedLabel = rev.reverted ? 'Yes' : 'No';
       const undoButton = rev.reverted
         ? ''
-        : `<button data-action="undo-reversal" data-id="${rev.original_transaction_id}" data-i18n="dashboard.admin.reversals.undo">Undo</button>`;
+        : `<button data-action="undo-reversal" data-id="${rev.original_transaction_id}">
+             <span class="btn-icon">⟲</span>
+             <span data-i18n="dashboard.admin.reversals.undo">Undo</span>
+           </button>`;
 
       return `
         <tr>

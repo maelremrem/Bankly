@@ -11,7 +11,11 @@
     <header class="topbar">
         <nav class="container">
             <ul>
-                <li><strong data-i18n="dashboard.admin.title">Admin Dashboard</strong></li>
+                <li class="app-brand">
+                    <span class="app-name">Bankly</span>
+                    <span class="app-sep">/</span>
+                    <strong data-i18n="dashboard.admin.title">Admin Dashboard</strong>
+                </li>
             </ul>
             <ul class="nav-actions">
                 <li><small id="currentUser"></small></li>
@@ -28,7 +32,12 @@
                         <option value="fr" data-i18n="languages.fr">French</option>
                     </select>
                 </li>
-                <li><a href="#" id="logout" data-i18n="dashboard.admin.logout">Logout</a></li>
+                <li>
+                    <button id="logout" class="icon-button secondary" type="button">
+                        <span class="btn-icon">⎋</span>
+                        <span data-i18n="dashboard.admin.logout">Logout</span>
+                    </button>
+                </li>
             </ul>
         </nav>
     </header>
@@ -50,7 +59,10 @@
             <header class="section-header">
                 <h2 data-i18n="dashboard.admin.transactions.title">Transactions</h2>
                 <div class="toolbar">
-                    <button id="transactionCreateBtn" data-i18n="dashboard.admin.transactions.create">Create Manual Transaction</button>
+                    <button id="transactionCreateBtn">
+                        <span class="btn-icon">➕</span>
+                        <span data-i18n="dashboard.admin.transactions.create">Create Manual Transaction</span>
+                    </button>
                 </div>
             </header>
             <form id="transactionFilterForm" class="filters-grid" hx-get="/api/transactions/html" hx-target="#transactionsBody" hx-swap="innerHTML">
@@ -79,8 +91,14 @@
                     <input id="transactionEnd" name="endDate" type="date">
                 </label>
                 <div class="filter-actions">
-                    <button id="transactionFilterBtn" type="submit" class="secondary" data-i18n="common.apply">Apply</button>
-                    <button id="transactionClearBtn" type="button" class="secondary" data-i18n="common.clear">Clear</button>
+                    <button id="transactionFilterBtn" type="submit" class="secondary">
+                        <span class="btn-icon">✅</span>
+                        <span data-i18n="common.apply">Apply</span>
+                    </button>
+                    <button id="transactionClearBtn" type="button" class="secondary">
+                        <span class="btn-icon">🧹</span>
+                        <span data-i18n="common.clear">Clear</span>
+                    </button>
                 </div>
             </form>
             <div class="table-scroll">
@@ -127,8 +145,14 @@
                         <textarea id="transactionDescription"></textarea>
                     </label>
                     <div class="modal-actions">
-                        <button type="submit" data-i18n="common.save">Save</button>
-                        <button type="button" class="secondary" data-action="close" data-target="transactionModal" data-i18n="common.cancel">Cancel</button>
+                        <button type="submit">
+                            <span class="btn-icon">💾</span>
+                            <span data-i18n="common.save">Save</span>
+                        </button>
+                        <button type="button" class="secondary" data-action="close" data-target="transactionModal">
+                            <span class="btn-icon">✕</span>
+                            <span data-i18n="common.cancel">Cancel</span>
+                        </button>
                     </div>
                 </form>
             </div>

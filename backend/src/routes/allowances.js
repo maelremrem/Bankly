@@ -74,8 +74,14 @@ router.get('/html', requireAuth, requireAdmin, async (req, res) => {
           <td><span class="tag ${statusClass}" data-i18n="${statusKey}">${allowance.enabled ? 'Enabled' : 'Disabled'}</span></td>
           <td>
             <div class="table-actions">
-              <button data-action="edit-allowance" data-id="${allowance.id}" data-i18n="common.edit">Edit</button>
-              <button class="danger" data-action="delete-allowance" data-id="${allowance.id}" data-i18n="common.delete">Delete</button>
+              <button data-action="edit-allowance" data-id="${allowance.id}">
+                <span class="btn-icon">✎</span>
+                <span data-i18n="common.edit">Edit</span>
+              </button>
+              <button class="danger" data-action="delete-allowance" data-id="${allowance.id}">
+                <span class="btn-icon">🗑</span>
+                <span data-i18n="common.delete">Delete</span>
+              </button>
             </div>
           </td>
         </tr>

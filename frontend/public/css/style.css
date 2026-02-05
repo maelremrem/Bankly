@@ -64,7 +64,7 @@ button[type="submit"]:hover {
 /* Modal styles */
 .modal {
     position: fixed;
-    z-index: 1;
+    z-index: 1000;
     left: 0;
     top: 0;
     width: 100%;
@@ -103,6 +103,52 @@ button[type="submit"]:hover {
     position: sticky;
     top: 0;
     z-index: 10;
+}
+
+.topbar .container {
+    margin: 0 auto;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.menu-bar .container {
+    margin: 0 auto;
+    padding: 0.5rem 1.5rem 0.75rem;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.app-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+}
+
+.app-name {
+    letter-spacing: 0.02em;
+}
+
+.app-sep {
+    color: var(--muted-text);
+}
+
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.95em;
+    margin-right: 0.35rem;
 }
 
 .menu-bar {
