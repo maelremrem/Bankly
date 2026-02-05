@@ -1,6 +1,6 @@
-# Monly Backend
+# Bankly Backend
 
-Minimal backend scaffold for Monly project.
+Minimal backend scaffold for Bankly project.
 
 ## Development
 

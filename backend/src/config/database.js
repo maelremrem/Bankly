@@ -3,7 +3,7 @@ const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 require('dotenv').config();
 
-const dbFile = process.env.DATABASE_FILE || path.join(__dirname, '..', '..', 'data', 'monly.db');
+const dbFile = process.env.DATABASE_FILE || path.join(__dirname, '..', '..', 'data', 'bankly.db');
 const dbDir = path.dirname(dbFile);
 if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 

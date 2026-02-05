@@ -73,6 +73,6 @@ describe('Admin API', () => {
     // now request the static file
     const res2 = await agent.get('/admin/dashboard.html');
     expect(res2.statusCode).toBe(200);
-    expect(res2.text).toContain('<title>Admin Dashboard - Monly');
+    expect(res2.text).toContain('<title>Admin Dashboard - Bankly');
   });
 });

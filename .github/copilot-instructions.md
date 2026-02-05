@@ -1,8 +1,8 @@
-# Copilot Instructions for Monly
+# Copilot Instructions for Bankly
 
 ## Project Overview
 
-Monly is a pocket money bank simulator for Raspberry Pi that educates children about financial management. It's a Node.js/Express backend with HTML/CSS/JS frontend (PicoCSS), SQLite database, and Docker deployment.
+Bankly is a pocket money bank simulator for Raspberry Pi that educates children about financial management. It's a Node.js/Express backend with HTML/CSS/JS frontend (PicoCSS), SQLite database, and Docker deployment.
 
 **Key Roles:**
 - **Administrator (parent)**: Manages users, tasks, allowances, approvals, and transaction history
@@ -12,7 +12,7 @@ Monly is a pocket money bank simulator for Raspberry Pi that educates children a
 
 ### Core Components
 ```
-Frontend (PicoCSS) → Backend API (Express) → SQLite Database
+Frontend (PicoCSS+HTMX) → Backend API (Express) → SQLite Database
                     ↓
         RFID Reader (GPIO on Raspberry Pi)
 ```

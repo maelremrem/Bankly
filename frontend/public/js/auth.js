@@ -1,4 +1,4 @@
-// auth.js - Authentication script for Monly frontend
+// auth.js - Authentication script for Bankly frontend
 
 const API_BASE = 'http://localhost:3000'; // Adjust for production
 

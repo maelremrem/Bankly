@@ -1,0 +1,147 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "noData": "Aucune donnée disponible",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "view": "Voir",
+    "search": "Rechercher",
+    "refresh": "Actualiser",
+    "filter": "Filtrer",
+    "apply": "Appliquer",
+    "clear": "Effacer",
+    "actions": "Actions",
+    "yes": "Oui",
+    "no": "Non",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "pending": "En attente",
+    "approved": "Approuvé",
+    "rejected": "Rejeté"
+  },
+  "languages": {
+    "en": "Anglais",
+    "fr": "Français"
+  },
+  "login": {
+    "title": "Bankly - Banque d'Argent de Poche",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "error": "Échec de connexion"
+  },
+  "dashboard": {
+    "user": {
+      "title": "Tableau de bord utilisateur",
+      "balance": "Votre solde",
+      "tasks": "Tâches disponibles",
+      "transactions": "Transactions récentes",
+      "complete": "Compléter la tâche",
+      "logout": "Déconnexion"
+    },
+    "admin": {
+      "title": "Tableau de bord administrateur",
+      "overview": {
+        "title": "Aperçu du système",
+        "totalUsers": "Total des utilisateurs",
+        "totalBalance": "Solde total",
+        "totalTransactions": "Total des transactions",
+        "pendingAdvances": "Avances en attente",
+        "pendingCompletions": "Tâches en attente"
+      },
+      "users": {
+        "title": "Utilisateurs",
+        "create": "Créer un nouvel utilisateur",
+        "searchPlaceholder": "Rechercher des utilisateurs...",
+        "username": "Nom d'utilisateur",
+        "role": "Rôle",
+        "language": "Langue",
+        "balance": "Solde",
+        "createdAt": "Créé le",
+        "password": "Mot de passe"
+      },
+      "tasks": {
+        "title": "Tâches",
+        "create": "Créer une nouvelle tâche",
+        "name": "Nom",
+        "description": "Description",
+        "reward": "Récompense",
+        "approval": "Approbation",
+        "createdAt": "Créée le",
+        "review": "Examiner les validations",
+        "requiresApproval": "Approbation requise",
+        "autoApproval": "Auto-approbation",
+        "completionsTitle": "Validations de tâches",
+        "reviewNotes": "Notes de validation"
+      },
+      "allowances": {
+        "title": "Allocations",
+        "create": "Créer une allocation",
+        "user": "Utilisateur",
+        "amount": "Montant",
+        "frequency": "Fréquence",
+        "nextPayment": "Prochain versement",
+        "enabled": "Activé"
+      },
+      "advances": {
+        "title": "Demandes d'avance",
+        "statusFilter": "Statut",
+        "user": "Utilisateur",
+        "amount": "Montant",
+        "status": "Statut",
+        "requestedAt": "Demandé le",
+        "reason": "Raison"
+      },
+      "transactions": {
+        "title": "Transactions",
+        "create": "Créer une transaction manuelle",
+        "user": "Utilisateur",
+        "type": "Type",
+        "amount": "Montant",
+        "description": "Description",
+        "createdAt": "Date",
+        "filterUser": "Utilisateur",
+        "filterType": "Type",
+        "filterStart": "Date de début",
+        "filterEnd": "Date de fin",
+        "reverse": "Annuler"
+      },
+      "reversals": {
+        "title": "Annulations",
+        "originalId": "Tx originale",
+        "reversalId": "Tx d'annulation",
+        "reversedBy": "Annulée par",
+        "reversedAt": "Annulée le",
+        "reverted": "Rétablie",
+        "undo": "Restaurer"
+      },
+      "logout": "Déconnexion"
+    }
+  },
+  "messages": {
+    "confirmDeleteUser": "Voulez-vous vraiment supprimer cet utilisateur ?",
+    "confirmDeleteTask": "Voulez-vous vraiment supprimer cette tâche ?",
+    "confirmDeleteAllowance": "Voulez-vous vraiment supprimer cette allocation ?",
+    "confirmReverseTransaction": "Voulez-vous vraiment annuler cette transaction ?",
+    "confirmUndoReversal": "Voulez-vous vraiment restaurer cette annulation ?",
+    "networkError": "Erreur réseau. Veuillez réessayer.",
+    "loadFailed": "Échec du chargement des données.",
+    "saved": "Enregistré avec succès.",
+    "updated": "Mis à jour avec succès.",
+    "deleted": "Supprimé avec succès."
+  },
+  "frequency": {
+    "daily": "Quotidien",
+    "weekly": "Hebdomadaire",
+    "monthly": "Mensuel"
+  },
+  "roles": {
+    "admin": "Administrateur",
+    "user": "Utilisateur"
+  }
+}

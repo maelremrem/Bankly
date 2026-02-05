@@ -66,7 +66,7 @@ if (process.env.NODE_ENV !== 'test') {
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Monly backend listening on port ${PORT}`);
+    console.log(`Bankly backend listening on port ${PORT}`);
   });
 }
 

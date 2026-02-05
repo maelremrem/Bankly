@@ -1,4 +1,4 @@
-# Features Tracking - Monly Project
+# Features Tracking - Bankly Project
 
 **Last Updated:** February 4, 2026  
 **Project Status:** Development Phase

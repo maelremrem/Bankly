@@ -1,0 +1,147 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "noData": "No data available",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View",
+    "search": "Search",
+    "refresh": "Refresh",
+    "filter": "Filter",
+    "apply": "Apply",
+    "clear": "Clear",
+    "actions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "approve": "Approve",
+    "reject": "Reject",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "French"
+  },
+  "login": {
+    "title": "Bankly - Pocket Money Bank",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Login",
+    "error": "Login failed"
+  },
+  "dashboard": {
+    "user": {
+      "title": "User Dashboard",
+      "balance": "Your Balance",
+      "tasks": "Available Tasks",
+      "transactions": "Recent Transactions",
+      "complete": "Complete Task",
+      "logout": "Logout"
+    },
+    "admin": {
+      "title": "Admin Dashboard",
+      "overview": {
+        "title": "System Overview",
+        "totalUsers": "Total Users",
+        "totalBalance": "Total Balance",
+        "totalTransactions": "Total Transactions",
+        "pendingAdvances": "Pending Advances",
+        "pendingCompletions": "Pending Task Reviews"
+      },
+      "users": {
+        "title": "Users",
+        "create": "Create New User",
+        "searchPlaceholder": "Search users...",
+        "username": "Username",
+        "role": "Role",
+        "language": "Language",
+        "balance": "Balance",
+        "createdAt": "Created",
+        "password": "Password"
+      },
+      "tasks": {
+        "title": "Tasks",
+        "create": "Create New Task",
+        "name": "Name",
+        "description": "Description",
+        "reward": "Reward",
+        "approval": "Approval",
+        "createdAt": "Created",
+        "review": "Review Completions",
+        "requiresApproval": "Requires Approval",
+        "autoApproval": "Auto Approval",
+        "completionsTitle": "Task Completions",
+        "reviewNotes": "Review Notes"
+      },
+      "allowances": {
+        "title": "Allowances",
+        "create": "Create Allowance",
+        "user": "User",
+        "amount": "Amount",
+        "frequency": "Frequency",
+        "nextPayment": "Next Payment",
+        "enabled": "Enabled"
+      },
+      "advances": {
+        "title": "Advance Requests",
+        "statusFilter": "Status",
+        "user": "User",
+        "amount": "Amount",
+        "status": "Status",
+        "requestedAt": "Requested",
+        "reason": "Reason"
+      },
+      "transactions": {
+        "title": "Transactions",
+        "create": "Create Manual Transaction",
+        "user": "User",
+        "type": "Type",
+        "amount": "Amount",
+        "description": "Description",
+        "createdAt": "Date",
+        "filterUser": "User",
+        "filterType": "Type",
+        "filterStart": "Start Date",
+        "filterEnd": "End Date",
+        "reverse": "Reverse"
+      },
+      "reversals": {
+        "title": "Reversals",
+        "originalId": "Original Tx",
+        "reversalId": "Reversal Tx",
+        "reversedBy": "Reversed By",
+        "reversedAt": "Reversed At",
+        "reverted": "Reverted",
+        "undo": "Undo"
+      },
+      "logout": "Logout"
+    }
+  },
+  "messages": {
+    "confirmDeleteUser": "Are you sure you want to delete this user?",
+    "confirmDeleteTask": "Are you sure you want to delete this task?",
+    "confirmDeleteAllowance": "Are you sure you want to delete this allowance?",
+    "confirmReverseTransaction": "Are you sure you want to reverse this transaction?",
+    "confirmUndoReversal": "Are you sure you want to undo this reversal?",
+    "networkError": "Network error. Please try again.",
+    "loadFailed": "Failed to load data.",
+    "saved": "Saved successfully.",
+    "updated": "Updated successfully.",
+    "deleted": "Deleted successfully."
+  },
+  "frequency": {
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly"
+  },
+  "roles": {
+    "admin": "Admin",
+    "user": "User"
+  }
+}

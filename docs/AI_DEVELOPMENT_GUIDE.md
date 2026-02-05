@@ -1,14 +1,14 @@
-# AI Development Guide for Monly Project
+# AI Development Guide for Bankly Project
 
 **Version:** 1.0  
 **Date:** February 4, 2026  
-**Purpose:** Guide for using AI assistants to develop the Monly pocket money management system
+**Purpose:** Guide for using AI assistants to develop the Bankly pocket money management system
 
 ---
 
 ## 1. Introduction
 
-This guide provides structured instructions for developing the Monly project using AI coding assistants (such as GitHub Copilot, Claude, ChatGPT, or similar tools). Following these guidelines ensures consistency, quality, and efficient development.
+This guide provides structured instructions for developing the Bankly project using AI coding assistants (such as GitHub Copilot, Claude, ChatGPT, or similar tools). Following these guidelines ensures consistency, quality, and efficient development.
 
 ---
 
@@ -40,7 +40,7 @@ Maintain consistent patterns throughout the codebase:
 ## 3. Project Structure Overview
 
 ```
-Monly/
+Bankly/
 ├── backend/
 │   ├── src/
 │   │   ├── config/          # Configuration files
@@ -88,7 +88,7 @@ Monly/
 #### Step 1.1: Initialize Backend
 **Prompt for AI:**
 ```
-Create a Node.js backend setup for the Monly project with the following requirements:
+Create a Node.js backend setup for the Bankly project with the following requirements:
 - Express.js framework
 - SQLite database using better-sqlite3 or sqlite3 package
 - Environment variable support with dotenv
@@ -108,7 +108,7 @@ Generate the basic app.js file with:
 #### Step 1.2: Database Schema
 **Prompt for AI:**
 ```
-Based on the Monly PRD, create a complete SQLite schema with the following tables:
+Based on the Bankly PRD, create a complete SQLite schema with the following tables:
 - users (with fields for authentication, role, balance, language, RFID)
 - transactions (with type, amount, status, references to users)
 - tasks (task definitions with rewards and approval requirements)
@@ -295,7 +295,7 @@ When approved, create transaction and deduct from next allowance.
 #### Step 4.1: Base HTML Structure
 **Prompt for AI:**
 ```
-Create base HTML structure for Monly using PicoCSS:
+Create base HTML structure for Bankly using PicoCSS:
 
 1. frontend/public/index.html - Landing/login page with:
    - PicoCSS included via CDN
@@ -438,7 +438,7 @@ Create frontend internationalization system:
 #### Step 6.1: Dockerfile
 **Prompt for AI:**
 ```
-Create production-ready Dockerfile for the Monly Node.js backend:
+Create production-ready Dockerfile for the Bankly Node.js backend:
 - Use Node.js LTS Alpine image
 - Set up proper working directory
 - Copy package files and install dependencies
@@ -453,7 +453,7 @@ Create production-ready Dockerfile for the Monly Node.js backend:
 #### Step 6.2: Docker Compose
 **Prompt for AI:**
 ```
-Create docker-compose.yml for Monly that:
+Create docker-compose.yml for Bankly that:
 - Defines backend service
 - Sets up volume for SQLite database persistence
 - Sets up volume for backups
@@ -945,7 +945,7 @@ Show me how to configure CORS properly.
 
 ## 18. Conclusion
 
-This guide provides a comprehensive approach to developing the Monly project with AI assistance. Remember:
+This guide provides a comprehensive approach to developing the Bankly project with AI assistance. Remember:
 
 1. **Start small** - Build incrementally
 2. **Test frequently** - Verify each component

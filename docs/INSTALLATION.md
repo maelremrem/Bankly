@@ -1,8 +1,8 @@
-# Monly Installation Guide
+# Bankly Installation Guide
 
 ## Overview
 
-Monly is a pocket money bank simulator for Raspberry Pi that educates children about financial management. This guide covers installation for both development and production environments.
+Bankly is a pocket money bank simulator for Raspberry Pi that educates children about financial management. This guide covers installation for both development and production environments.
 
 ## Prerequisites
 
@@ -17,7 +17,7 @@ Monly is a pocket money bank simulator for Raspberry Pi that educates children a
 1. Clone the repository:
    ```bash
    git clone <repository-url>
-   cd monly
+   cd bankly
    ```
 
 2. Build and start the services:
@@ -35,7 +35,7 @@ Monly is a pocket money bank simulator for Raspberry Pi that educates children a
 1. Clone the repository and navigate to backend:
    ```bash
    git clone <repository-url>
-   cd monly/backend
+   cd bankly/backend
    ```
 
 2. Install dependencies:
@@ -50,7 +50,7 @@ Monly is a pocket money bank simulator for Raspberry Pi that educates children a
 
 4. Edit `.env` and set:
    - `JWT_SECRET`: A secure random string
-   - `DATABASE_FILE`: Path to SQLite database file (e.g., `./data/monly.db`)
+   - `DATABASE_FILE`: Path to SQLite database file (e.g., `./data/bankly.db`)
 
 5. Run database migrations (if any):
    ```bash
@@ -81,7 +81,7 @@ Monly is a pocket money bank simulator for Raspberry Pi that educates children a
 2. Clone the repository:
    ```bash
    git clone <repository-url>
-   cd monly
+   cd bankly
    ```
 
 3. Build and run:
@@ -129,7 +129,7 @@ sudo chown -R 1000:1000 ./backend/data
 | `PORT` | Server port | 3000 |
 | `NODE_ENV` | Environment | development |
 | `JWT_SECRET` | JWT signing secret | (required) |
-| `DATABASE_FILE` | SQLite database path | ./data/monly.db |
+| `DATABASE_FILE` | SQLite database path | ./data/bankly.db |
 
 ## Troubleshooting
 

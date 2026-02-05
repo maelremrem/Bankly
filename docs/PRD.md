@@ -1,5 +1,5 @@
 # Product Requirements Document (PRD)
-## Monly - Pocket Money Bank Simulator
+## Bankly - Pocket Money Bank Simulator
 
 **Version:** 1.0  
 **Date:** February 4, 2026  
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-Monly is a web-based pocket money management system designed to run on Raspberry Pi. Its primary goal is to educate children about money management through a simulated banking experience. The application provides a safe environment for children to learn about saving, earning through tasks, and managing their finances with parental oversight.
+Bankly is a web-based pocket money management system designed to run on Raspberry Pi. Its primary goal is to educate children about money management through a simulated banking experience. The application provides a safe environment for children to learn about saving, earning through tasks, and managing their finances with parental oversight.
 
 ---
 
@@ -136,6 +136,7 @@ Standard users (children) have limited access with the following features:
 - HTML5
 - CSS3 with PicoCSS framework
 - Vanilla JavaScript or lightweight framework
+- HTMX for dynamic content updates
 - Responsive design for various screen sizes
 
 **Backend**
@@ -164,7 +165,7 @@ Standard users (children) have limited access with the following features:
 ```
 ┌─────────────────────────────────────────┐
 │         Web Browser (Client)            │
-│         (HTML/CSS/JS - PicoCSS)         │
+│     (HTML/CSS/JS/HTMX - PicoCSS)        │
 └────────────────┬────────────────────────┘
                  │ HTTP/HTTPS
 ┌────────────────┴────────────────────────┐
