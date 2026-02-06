@@ -59,14 +59,14 @@ async function apiCall(endpoint, options = {}) {
 
     if (response.status === 401) {
         redirectToLogin();
-        return { success: false, error: window.i18n ? window.i18n.t('messages.unauthorized') : 'Unauthorized' };
+        return { success: false, error: t('messages.unauthorized', 'Unauthorized') };
     }
 
     try {
         return await response.json();
     } catch (error) {
         console.error('Invalid JSON response', error);
-        return { success: false, error: window.i18n ? window.i18n.t('messages.invalidResponse') : 'Invalid response' };
+        return { success: false, error: t('messages.invalidResponse', 'Invalid response') };
     }
 }
 

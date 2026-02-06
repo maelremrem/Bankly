@@ -7,6 +7,12 @@ function t(key, fallback = '') {
     return fallback || key;
 }
 
+function formatErrorMessage(prefix, errorObj, fallbackKey) {
+    const prefixText = t(prefix);
+    if (errorObj && errorObj.error) return `${prefixText} ${errorObj.error}`;
+    return `${prefixText} ${t(fallbackKey)}`;
+}
+
 function getCurrency() {
     try {
         if (window.BANKLY_CONFIG && window.BANKLY_CONFIG.currency) return String(window.BANKLY_CONFIG.currency);
@@ -170,7 +176,7 @@ async function loadDashboard() {
     } catch (error) {
         console.error('Error loading dashboard:', error);
         const balanceEl = document.getElementById('balanceContent');
-        if (balanceEl) balanceEl.textContent = window.i18n ? window.i18n.t('errors.balanceLoadError') : 'Error loading balance';
+        if (balanceEl) balanceEl.textContent = t('errors.balanceLoadError', 'Error loading balance');
     } finally {
         hideUserSkeleton();
     }
@@ -296,60 +302,60 @@ document.addEventListener('click', async (e) => {
     if (e.target.id === 'advanceSubmit') {
         const amt = parseFloat(document.getElementById('advanceAmount').value);
         const reason = document.getElementById('advanceReason').value;
-        if (!amt || amt <= 0) { showMessageModal(window.i18n ? window.i18n.t('errors.invalidAmount') : 'Invalid amount'); return; }
+        if (!amt || amt <= 0) { showMessageModal(t('errors.invalidAmount', 'Invalid amount')); return; }
         try {
             const res = await apiCall('/api/advances', { method: 'POST', body: JSON.stringify({ amount: amt, reason }) });
             if (res && res.success) {
-                showMessageModal(window.i18n ? window.i18n.t('dashboard.user.money.advanceSubmitted') : 'Advance requested');
+                showMessageModal(t('dashboard.user.money.advanceSubmitted', 'Advance requested'));
                 document.getElementById('advanceAmount').value = '';
                 document.getElementById('advanceReason').value = '';
                 loadUserMoneyRequests();
             } else {
-                showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.requestError') : 'Failed')));
+                showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.requestError'));
             }
-        } catch (err) { console.error(err); showMessageModal(window.i18n ? window.i18n.t('errors.networkError') : 'Network error'); }
+        } catch (err) { console.error(err); showMessageModal(t('errors.networkError', 'Network error')); }
     }
     if (e.target.id === 'depositSubmit') {
         const amt = parseFloat(document.getElementById('depositAmount').value);
         const ref = document.getElementById('depositReference').value;
-        if (!amt || amt <= 0) { showMessageModal(window.i18n ? window.i18n.t('errors.invalidAmount') : 'Invalid amount'); return; }
+        if (!amt || amt <= 0) { showMessageModal(t('errors.invalidAmount', 'Invalid amount')); return; }
         try {
             const res = await apiCall('/api/deposits', { method: 'POST', body: JSON.stringify({ amount: amt, reference: ref }) });
             if (res && res.success) {
-                showMessageModal(window.i18n ? window.i18n.t('dashboard.user.money.depositSubmitted') : 'Deposit requested');
+                showMessageModal(t('dashboard.user.money.depositSubmitted', 'Deposit requested'));
                 document.getElementById('depositAmount').value = '';
                 document.getElementById('depositReference').value = '';
                 loadUserMoneyRequests();
             } else {
-                showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.requestError') : 'Failed')));
+                showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.requestError'));
             }
-        } catch (err) { console.error(err); showMessageModal(window.i18n ? window.i18n.t('errors.networkError') : 'Network error'); }
+        } catch (err) { console.error(err); showMessageModal(t('errors.networkError', 'Network error')); }
     }
 
     // Cancel actions
     const action = e.target && e.target.getAttribute ? e.target.getAttribute('data-action') : null;
     if (action === 'cancel-advance') {
         const id = e.target.getAttribute('data-id');
-        const ok = await showConfirmModal(window.i18n ? window.i18n.t('messages.confirmCancelRequest','Are you sure?') : 'Are you sure?');
+        const ok = await showConfirmModal(t('messages.confirmCancelRequest', 'Are you sure?'));
         if (!ok) return;
         const res = await apiCall(`/api/advances/${id}/cancel`, { method: 'POST' });
         if (res && res.success) {
-            showMessageModal(window.i18n ? window.i18n.t('messages.cancelled') : 'Cancelled');
+            showMessageModal(t('messages.cancelled', 'Cancelled'));
             loadUserMoneyRequests();
         } else {
-            showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.requestError') : 'Failed')));
+            showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.requestError'));
         }
     }
     if (action === 'cancel-deposit') {
         const id = e.target.getAttribute('data-id');
-        const ok = await showConfirmModal(window.i18n ? window.i18n.t('messages.confirmCancelRequest','Are you sure?') : 'Are you sure?');
+        const ok = await showConfirmModal(t('messages.confirmCancelRequest', 'Are you sure?'));
         if (!ok) return;
         const res = await apiCall(`/api/deposits/${id}/cancel`, { method: 'POST' });
         if (res && res.success) {
-            showMessageModal(window.i18n ? window.i18n.t('messages.cancelled') : 'Cancelled');
+            showMessageModal(t('messages.cancelled', 'Cancelled'));
             loadUserMoneyRequests();
         } else {
-            showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.requestError') : 'Failed')));
+            showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.requestError'));
         }
     }
 });
@@ -571,7 +577,7 @@ document.addEventListener('click', async (e) => {
     if (e.target.id === 'changePinOkBtn') {
         e.preventDefault();
         const entry = _pinState.entry;
-        if (!entry || !/^\d{4,8}$/.test(entry)) { showMessageModal(window.i18n ? window.i18n.t('errors.pinInvalid') : 'PIN must be 4-8 digits'); _pinState.entry = ''; setPinDisplay(); return; }
+        if (!entry || !/^\d{4,8}$/.test(entry)) { showMessageModal(t('errors.pinInvalid', 'PIN must be 4-8 digits')); _pinState.entry = ''; setPinDisplay(); return; }
         try {
             if (_pinState.mode === 'old') {
                 // verify old PIN; if user has no PIN set, server returns 400->No PIN set
@@ -593,7 +599,7 @@ document.addEventListener('click', async (e) => {
                     setPinDisplay();
                     return;
                 }
-                showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.pinInvalid') : 'Invalid PIN')));
+                showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.pinInvalid'));
                 _pinState.entry = '';
                 setPinDisplay();
                 return;
@@ -602,18 +608,18 @@ document.addEventListener('click', async (e) => {
                 // submit change-pin
                 const res = await apiCall('/auth/change-pin', { method: 'POST', body: JSON.stringify({ oldPin: _pinState.oldPin, newPin: entry }) });
                 if (res && res.success) {
-                    showMessageModal(window.i18n ? window.i18n.t('dashboard.user.pinChanged') : 'PIN changed successfully');
+                    showMessageModal(t('dashboard.user.pinChanged', 'PIN changed successfully'));
                     resetPinState();
                     return;
                 }
-                showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.failedChangePin') : 'Failed to change PIN')));
+                showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.failedChangePin'));
                 _pinState.entry = '';
                 setPinDisplay();
                 return;
             }
         } catch (err) {
             console.error('PIN keypad error', err);
-            showMessageModal(window.i18n ? window.i18n.t('errors.networkError') : 'Network error');
+            showMessageModal(t('errors.networkError', 'Network error'));
             _pinState.entry = '';
             setPinDisplay();
             return;
