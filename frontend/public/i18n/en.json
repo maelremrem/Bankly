@@ -98,7 +98,8 @@
         "advanceSubmitted": "Advance requested",
         "depositSubmitted": "Deposit requested",
         "helpTitle": "How it works",
-        "helpText": "Advances are requests for real money and must be approved by an admin. Deposits notify an admin of a bank transfer — include a reference to speed up processing."
+        "helpText": "Advances are requests for real money and must be approved by an admin. Deposits notify an admin of a bank transfer — include a reference to speed up processing.",
+        "depositReferencePlaceholder": "e.g. Bank transfer ID"
       }
     },
     "table": {
@@ -138,7 +139,8 @@
         "balance": "Balance",
         "createdAt": "Created",
         "password": "Password",
-        "pin": "PIN"
+        "pin": "PIN",
+        "pinPlaceholder": "e.g. 1234"
       },
       "tasks": {
         "title": "Tasks",
@@ -155,7 +157,8 @@
         "autoApproval": "Auto Approval",
         "completionsTitle": "Task Completions",
         "reviewNotes": "Review Notes",
-        "promptTitle": "Input"
+        "promptTitle": "Input",
+        "cooldownPlaceholder": "Seconds"
       },
       "allowances": {
         "title": "Allowances",
@@ -292,5 +295,9 @@
     "transactions": "Transactions",
     "money": "Money",
     "changePin": "Change PIN"
+  },
+  "app": {
+    "title": "Bankly",
+    "subtitle": "Pocket Money Bank Simulator"
   }
 }

@@ -16,20 +16,20 @@
     <main class="container">
         <article>
             <header>
-                <h1>Bankly</h1>
-                <p>Pocket Money Bank Simulator</p>
+                <h1 data-i18n="app.title">Bankly</h1>
+                <p data-i18n="app.subtitle">Pocket Money Bank Simulator</p>
             </header>
             <form id="loginForm">
                 <label for="username">
-                    Username
+                    <span data-i18n="login.username">Username</span>
                     <input type="text" id="username" name="username" required>
                 </label>
                 <label for="password">
-                    Password
+                    <span data-i18n="login.password">Password</span>
                     <input type="password" id="password" name="password" autocomplete="current-password" required>
                 </label>
                 <button type="submit" id="loginSubmitBtn">
-                    <span class="btn-text">Login</span>
+                    <span class="btn-text" data-i18n="login.submit">Login</span>
                     <span class="btn-spinner hidden" aria-hidden="true"></span>
                 </button>
             </form>

@@ -98,7 +98,8 @@
         "advanceSubmitted": "Demande d'avance envoyée",
         "depositSubmitted": "Demande de dépôt envoyée",
         "helpTitle": "Comment ça marche",
-        "helpText": "Les avances sont des demandes d'argent réel qui doivent être approuvées par un parent. Les dépôts permettent d'indiquer un virement bancaire — ajoutez une référence pour accélérer le traitement."
+        "helpText": "Les avances sont des demandes d'argent réel qui doivent être approuvées par un parent. Les dépôts permettent d'indiquer un virement bancaire — ajoutez une référence pour accélérer le traitement.",
+        "depositReferencePlaceholder": "p.ex. ID de virement bancaire"
       }
     },
     "table": {
@@ -138,7 +139,8 @@
         "balance": "Solde",
         "createdAt": "Créé le",
         "password": "Mot de passe",
-        "pin": "PIN"
+        "pin": "PIN",
+        "pinPlaceholder": "p.ex. 1234"
       },
       "tasks": {
         "title": "Tâches",
@@ -155,7 +157,8 @@
         "autoApproval": "Auto-approbation",
         "completionsTitle": "Validations de tâches",
         "reviewNotes": "Notes de validation",
-        "promptTitle": "Saisie"
+        "promptTitle": "Saisie",
+        "cooldownPlaceholder": "Secondes"
       },
       "allowances": {
         "title": "Allocations",
@@ -292,5 +295,9 @@
     "transactions": "Transactions",
     "money": "Argent",
     "changePin": "Modifier le PIN"
+  },
+  "app": {
+    "title": "Bankly",
+    "subtitle": "Simulateur de Banque d'Argent de Poche"
   }
 }
