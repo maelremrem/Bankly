@@ -310,4 +310,67 @@ describe('Tasks API', () => {
       expect(user.balance).toBe(7.00); // 5 (manual approval) + 2 (auto-approval)
     });
   });
+
+  describe('POST /api/tasks/generate-default', () => {
+    beforeAll(async () => {
+      // Clean up any existing default tasks
+      await db.runAsync('DELETE FROM tasks WHERE name LIKE ?', ['Clean your room']);
+      await db.runAsync('DELETE FROM tasks WHERE name LIKE ?', ['Ranger sa chambre']);
+    });
+
+    it('should generate default tasks in English', async () => {
+      const response = await request(app)
+        .post('/api/tasks/generate-default')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ language: 'en' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body.data.length).toBeGreaterThan(0);
+
+      // Check that tasks were created
+      const tasks = await db.allAsync('SELECT * FROM tasks WHERE name LIKE ?', ['Clean your room']);
+      expect(tasks.length).toBe(1);
+    });
+
+    it('should generate default tasks in French', async () => {
+      const response = await request(app)
+        .post('/api/tasks/generate-default')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ language: 'fr' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(Array.isArray(response.body.data)).toBe(true);
+
+      // Check that tasks were created
+      const tasks = await db.allAsync('SELECT * FROM tasks WHERE name LIKE ?', ['Ranger sa chambre']);
+      expect(tasks.length).toBe(1);
+    });
+
+    it('should not create duplicates', async () => {
+      const initialCount = await db.getAsync('SELECT COUNT(*) as count FROM tasks');
+
+      const response = await request(app)
+        .post('/api/tasks/generate-default')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ language: 'en' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.length).toBe(0); // No new tasks created
+
+      const finalCount = await db.getAsync('SELECT COUNT(*) as count FROM tasks');
+      expect(finalCount.count).toBe(initialCount.count);
+    });
+
+    it('should require admin authentication', async () => {
+      const response = await request(app)
+        .post('/api/tasks/generate-default')
+        .send({ language: 'en' });
+
+      expect(response.status).toBe(401);
+    });
+  });
 });

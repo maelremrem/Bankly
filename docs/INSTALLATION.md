@@ -62,6 +62,19 @@ Bankly is a pocket money bank simulator for Raspberry Pi that educates children 
    npm run dev
    ```
 
+   **Note:** The `dev` script is configured to use a separate local database file to avoid contaminating your main data. By default `npm run dev` sets `DATABASE_FILE=./data/bankly-test.db` (see `backend/package.json`). To use a different DB, set the `DATABASE_FILE` environment variable before running:
+
+   - PowerShell (Windows):
+     ```powershell
+     $env:DATABASE_FILE = './data/bankly.db'
+     npm run dev
+     ```
+
+   - POSIX (macOS / Linux):
+     ```bash
+     DATABASE_FILE=./data/bankly.db npm run dev
+     ```
+
 7. Run tests:
    ```bash
    npm test

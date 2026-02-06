@@ -2,6 +2,14 @@
 
 const API_BASE = '';
 
+// Disable HTMX auto-scroll globally to prevent nav clicks from jumping the page
+if (window.htmx && window.htmx.config) {
+    // Prevent HTMX from auto-scrolling boosted links into view
+    window.htmx.config.scrollIntoViewOnBoost = false;
+    // Prevent focus actions from causing scroll jump
+    window.htmx.config.defaultFocusScroll = false;
+}
+
 const state = {
     currentUser: null,
     overview: null,
@@ -414,6 +422,22 @@ function bindEvents() {
         redirectToLogin();
     });
 
+    // Prevent nav clicks from causing unwanted scroll jumps: save scroll position before HTMX navigation
+    const menuLinks = document.querySelector('.menu-links');
+    bindOnce(menuLinks, 'click', (event) => {
+        const link = event.target.closest('a');
+        if (!link) return;
+        try {
+            const url = new URL(link.href, window.location.origin);
+            // Only preserve scroll for internal links
+            if (url.origin === window.location.origin) {
+                state._savedScroll = window.scrollY;
+            }
+        } catch (err) {
+            // ignore malformed URLs
+        }
+    });
+
     const userClearBtn = document.getElementById('userClearBtn');
     bindOnce(userClearBtn, 'click', () => {
         const userSearch = document.getElementById('userSearch');
@@ -426,6 +450,9 @@ function bindEvents() {
 
     const taskCreateBtn = document.getElementById('taskCreateBtn');
     bindOnce(taskCreateBtn, 'click', () => openTaskModal());
+
+    const taskGenerateBtn = document.getElementById('taskGenerateBtn');
+    bindOnce(taskGenerateBtn, 'click', generateDefaultTasks);
 
     const allowanceCreateBtn = document.getElementById('allowanceCreateBtn');
     bindOnce(allowanceCreateBtn, 'click', () => openAllowanceModal());
@@ -494,6 +521,11 @@ function bindEvents() {
             }
             if (window.i18n) {
                 window.i18n.applyTranslations(event.target);
+            }
+            // Restore scroll if we saved it when clicking a nav link to avoid jump
+            if (typeof state._savedScroll !== 'undefined') {
+                window.scrollTo(0, state._savedScroll);
+                delete state._savedScroll;
             }
             if (event.target && event.target.id === 'pageContent') {
                 updateThemeLabel(document.documentElement.getAttribute('data-theme'));
@@ -641,6 +673,27 @@ async function handleTaskSubmit(event) {
     closeModal('taskModal');
     showToast(t('messages.saved'));
     await loadTasks();
+    refreshSection('#tasksBody', 'refreshTasks');
+}
+
+async function generateDefaultTasks() {
+    if (!confirm('Are you sure you want to generate default tasks? This will add new tasks if they don\'t already exist.')) {
+        return;
+    }
+
+    const language = document.getElementById('languageSelect').value || 'en';
+
+    const response = await apiCall('/api/tasks/generate-default', {
+        method: 'POST',
+        body: JSON.stringify({ language })
+    });
+
+    if (!response.success) {
+        showToast(response.error || 'Network error');
+        return;
+    }
+
+    showToast(response.message || 'Default tasks generated successfully');
     refreshSection('#tasksBody', 'refreshTasks');
 }
 

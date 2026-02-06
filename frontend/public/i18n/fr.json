@@ -85,6 +85,7 @@
       "tasks": {
         "title": "Tâches",
         "create": "Créer une nouvelle tâche",
+        "generateDefault": "Générer des tâches par défaut",
         "name": "Nom",
         "description": "Description",
         "reward": "Récompense",

@@ -447,4 +447,72 @@ router.post('/completions/:completionId/approve', requireAuth, requireAdmin, [
   }
 });
 
+function getDefaultTasks(language = 'en') {
+  const defaultTasks = {
+    en: [
+      { name: 'Clean your room', description: 'Tidy up your bedroom and make your bed', reward_amount: 5.00, requires_approval: 1 },
+      { name: 'Do the dishes', description: 'Wash and dry all the dishes', reward_amount: 3.00, requires_approval: 1 },
+      { name: 'Take out the trash', description: 'Empty the kitchen trash and take it outside', reward_amount: 2.00, requires_approval: 0 },
+      { name: 'Walk the dog', description: 'Take the dog for a 20-minute walk', reward_amount: 4.00, requires_approval: 1 },
+      { name: 'Help with groceries', description: 'Help carry groceries from the car to the kitchen', reward_amount: 2.50, requires_approval: 0 },
+      { name: 'Water the plants', description: 'Water all the indoor and outdoor plants', reward_amount: 3.00, requires_approval: 0 },
+      { name: 'Fold laundry', description: 'Fold and put away your clean clothes', reward_amount: 4.00, requires_approval: 1 },
+      { name: 'Vacuum the living room', description: 'Vacuum the carpet in the living room', reward_amount: 5.00, requires_approval: 1 }
+    ],
+    fr: [
+      { name: 'Ranger sa chambre', description: 'Ranger sa chambre et faire son lit', reward_amount: 5.00, requires_approval: 1 },
+      { name: 'Faire la vaisselle', description: 'Laver et essuyer toute la vaisselle après le dîner', reward_amount: 3.00, requires_approval: 1 },
+      { name: 'Sortir les poubelles', description: 'Vider la poubelle de la cuisine et la sortir', reward_amount: 2.00, requires_approval: 0 },
+      { name: 'Promener le chien', description: 'Promener le chien pendant 20 minutes', reward_amount: 4.00, requires_approval: 1 },
+      { name: 'Aider avec les courses', description: 'Aider à porter les courses de la voiture à la cuisine', reward_amount: 2.50, requires_approval: 0 },
+      { name: 'Arroser les plantes', description: 'Arroser toutes les plantes d\'intérieur et d\'extérieur', reward_amount: 3.00, requires_approval: 0 },
+      { name: 'Plier le linge', description: 'Plier et ranger ses vêtements propres', reward_amount: 4.00, requires_approval: 1 },
+      { name: 'Passer l\'aspirateur dans le salon', description: 'Aspirer la moquette du salon', reward_amount: 5.00, requires_approval: 1 }
+    ]
+  };
+
+  return defaultTasks[language] || defaultTasks.en;
+}
+
+// Generate default tasks (admin only)
+router.post('/generate-default', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { language = 'en' } = req.body;
+    const adminId = req.user.userId;
+
+    const defaultTasks = getDefaultTasks(language);
+
+    // Check if any default tasks already exist to avoid duplicates
+    const existingTasks = await db.allAsync('SELECT name FROM tasks');
+    const existingNames = new Set(existingTasks.map(t => t.name.toLowerCase()));
+
+    const tasksToCreate = defaultTasks.filter(task => !existingNames.has(task.name.toLowerCase()));
+
+    if (tasksToCreate.length === 0) {
+      return res.json({ success: true, message: 'All default tasks already exist', data: [] });
+    }
+
+    const createdTasks = [];
+
+    for (const task of tasksToCreate) {
+      const result = await db.runAsync(`
+        INSERT INTO tasks (name, description, reward_amount, requires_approval, created_by)
+        VALUES (?, ?, ?, ?, ?)
+      `, [task.name, task.description, task.reward_amount, task.requires_approval, adminId]);
+
+      createdTasks.push({
+        id: result.lastID,
+        ...task,
+        created_at: new Date().toISOString()
+      });
+    }
+
+    logger.info('Default tasks generated', { count: createdTasks.length, language, adminId });
+    res.json({ success: true, data: createdTasks, message: `${createdTasks.length} default tasks created` });
+  } catch (error) {
+    logger.error('Error generating default tasks', { error });
+    res.status(500).json({ success: false, error: 'Failed to generate default tasks' });
+  }
+});
+
 module.exports = router;

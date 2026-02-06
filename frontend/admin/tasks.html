@@ -43,7 +43,7 @@
     </header>
 
     <div class="menu-bar">
-        <nav class="container menu-links" hx-boost="true" hx-target="main" hx-select="main" hx-swap="innerHTML" hx-push-url="true">
+        <nav class="container menu-links" hx-boost="true" hx-target="main" hx-select="main" hx-swap="innerHTML" hx-push-url="true" hx-scroll="none">
             <a href="/admin/dashboard.html" data-i18n="menu.overview">Overview</a>
             <a href="/admin/users.html" data-i18n="menu.users">Users</a>
             <a class="active" href="/admin/tasks.html" data-i18n="menu.tasks">Tasks</a>
@@ -62,6 +62,10 @@
                     <button id="taskCreateBtn">
                         <span class="btn-icon">➕</span>
                         <span data-i18n="dashboard.admin.tasks.create">Create New Task</span>
+                    </button>
+                    <button id="taskGenerateBtn" class="secondary">
+                        <span class="btn-icon">🔄</span>
+                        <span data-i18n="dashboard.admin.tasks.generateDefault">Generate Default Tasks</span>
                     </button>
                 </div>
             </header>
@@ -176,7 +180,7 @@
         </div>
     </main>
 
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="../vendor/htmx.2.0.8.min.js"></script>
     <script src="../js/i18n.js"></script>
     <script src="../js/utils.js"></script>
     <script src="../js/dashboard-admin.js"></script>
