@@ -66,6 +66,24 @@
   },
   "dashboard": {
     "user": {
+      "title": "Tableau de bord utilisateur",
+      "greeting": {
+        "morning": "Bonjour",
+        "evening": "Bonsoir"
+      },
+      "balance": "Votre solde",
+      "tasks": "Tâches disponibles",
+      "reward": "Récompense",
+      "transactions": "Transactions récentes",
+      "complete": "Compléter la tâche",
+      "pending": "En attente d'approbation",
+      "completed": "Complété",
+      "availableIn": "Disponible dans",
+      "logout": "Déconnexion",
+      "changePin": "Modifier le PIN",
+      "oldPin": "Ancien PIN",
+      "newPin": "Nouveau PIN",
+      "pinChanged": "PIN modifié avec succès",
       "money": {
         "title": "Argent",
         "requestAmount": "Montant",
@@ -82,26 +100,6 @@
         "helpTitle": "Comment ça marche",
         "helpText": "Les avances sont des demandes d'argent réel qui doivent être approuvées par un parent. Les dépôts permettent d'indiquer un virement bancaire — ajoutez une référence pour accélérer le traitement."
       }
-    }
-  }
-  "dashboard": {
-    "user": {
-      "title": "Tableau de bord utilisateur",
-      "greeting": {
-        "morning": "Bonjour",
-        "evening": "Bonsoir"
-      },
-      "balance": "Votre solde",
-      "tasks": "Tâches disponibles",
-      "reward": "Récompense",
-      "transactions": "Transactions récentes",
-      "complete": "Compléter la tâche",
-      "pending": "En attente d'approbation",
-      "completed": "Complété",      "availableIn": "Disponible dans",      "logout": "Déconnexion",
-      "changePin": "Modifier le PIN",
-      "oldPin": "Ancien PIN",
-      "newPin": "Nouveau PIN",
-      "pinChanged": "PIN modifié avec succès"
     },
     "table": {
       "date": "Date",
@@ -176,7 +174,8 @@
         "status": "Statut",
         "requestedAt": "Demandé le",
         "reason": "Raison"
-      },      "deposits": {
+      },
+      "deposits": {
         "title": "Demandes de dépôt",
         "statusFilter": "Statut",
         "user": "Utilisateur",
@@ -185,7 +184,8 @@
         "requestedAt": "Demandé",
         "reference": "Référence",
         "reason": "Raison"
-      },      "transactions": {
+      },
+      "transactions": {
         "title": "Transactions",
         "create": "Créer une transaction manuelle",
         "user": "Utilisateur",
@@ -204,7 +204,8 @@
           "advance": "Avance",
           "manual": "Manuel",
           "reversal": "Annulation",
-          "reversalUndo": "Rétablir l'annulation"
+          "reversalUndo": "Rétablir l'annulation",
+          "deposit": "Dépôt"
         }
       },
       "reversals": {
@@ -232,8 +233,6 @@
       "logout": "Déconnexion"
     }
   },
-
-  
   "messages": {
     "confirmDeleteUser": "Voulez-vous vraiment supprimer cet utilisateur ?",
     "confirmCancelRequest": "Voulez-vous vraiment annuler cette demande ?",
@@ -254,7 +253,12 @@
     "taskRejected": "Tâche rejetée avec succès.",
     "taskCompleted": "Tâche complétée avec succès !",
     "taskCompleteError": "Erreur lors de la complétion de la tâche : ",
-    "loading": "Chargement..."
+    "loading": "Chargement...",
+    "cancelled": "Annulé",
+    "generatingTasks": "Génération en cours...",
+    "tasksGeneratedSuccess": "Tâches par défaut générées avec succès",
+    "unauthorized": "Non autorisé",
+    "invalidResponse": "Réponse invalide"
   },
   "errors": {
     "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères.",
@@ -264,7 +268,15 @@
     "noValidFields": "Aucun champ valide à mettre à jour.",
     "pinInvalid": "Le PIN doit contenir 4 à 8 chiffres.",
     "invalidUserId": "Identifiant utilisateur invalide.",
-    "userNotFound": "Utilisateur introuvable."
+    "userNotFound": "Utilisateur introuvable.",
+    "invalidAmount": "Montant invalide",
+    "networkError": "Erreur réseau",
+    "loginFailed": "Échec de connexion",
+    "balanceLoadError": "Erreur lors du chargement du solde",
+    "failedChangePin": "Échec de modification du PIN",
+    "failedLoadUsers": "Échec du chargement des utilisateurs",
+    "pinChangeError": "Erreur lors de la modification du PIN",
+    "requestError": "Erreur de requête"
   },
   "frequency": {
     "daily": "Quotidien",
@@ -274,17 +286,7 @@
   "roles": {
     "admin": "Administrateur",
     "user": "Utilisateur"
-  }
-  ,
-  "table": {
-    "date": "Date",
-    "type": "Type",
-    "amount": "Montant",
-    "description": "Description"
-  }
-  ,
-  "loadingTasks": "Chargement des tâches..."
-  ,
+  },
   "tabs": {
     "tasks": "Tâches",
     "transactions": "Transactions",

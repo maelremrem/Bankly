@@ -66,6 +66,24 @@
   },
   "dashboard": {
     "user": {
+      "title": "User Dashboard",
+      "greeting": {
+        "morning": "Good morning",
+        "evening": "Good evening"
+      },
+      "balance": "Your Balance",
+      "tasks": "Available Tasks",
+      "reward": "Reward",
+      "transactions": "Recent Transactions",
+      "complete": "Complete Task",
+      "pending": "Pending approval",
+      "completed": "Completed",
+      "availableIn": "Available in",
+      "logout": "Logout",
+      "changePin": "Change PIN",
+      "oldPin": "Old PIN",
+      "newPin": "New PIN",
+      "pinChanged": "PIN changed successfully",
       "money": {
         "title": "Money",
         "requestAmount": "Amount",
@@ -82,26 +100,6 @@
         "helpTitle": "How it works",
         "helpText": "Advances are requests for real money and must be approved by an admin. Deposits notify an admin of a bank transfer — include a reference to speed up processing."
       }
-    }
-  }
-  "dashboard": {
-    "user": {
-      "title": "User Dashboard",
-      "greeting": {
-        "morning": "Good morning",
-        "evening": "Good evening"
-      },
-      "balance": "Your Balance",
-      "tasks": "Available Tasks",
-      "reward": "Reward",
-      "transactions": "Recent Transactions",
-      "complete": "Complete Task",
-      "pending": "Pending approval",
-      "completed": "Completed",      "availableIn": "Available in",      "logout": "Logout",
-      "changePin": "Change PIN",
-      "oldPin": "Old PIN",
-      "newPin": "New PIN",
-      "pinChanged": "PIN changed successfully"
     },
     "table": {
       "date": "Date",
@@ -140,7 +138,7 @@
         "balance": "Balance",
         "createdAt": "Created",
         "password": "Password",
-      "pin": "PIN"
+        "pin": "PIN"
       },
       "tasks": {
         "title": "Tasks",
@@ -206,7 +204,8 @@
           "advance": "Advance",
           "manual": "Manual",
           "reversal": "Reversal",
-          "reversalUndo": "Undo Reversal"
+          "reversalUndo": "Undo Reversal",
+          "deposit": "Deposit"
         }
       },
       "reversals": {
@@ -233,8 +232,7 @@
       },
       "logout": "Logout"
     }
-  }
-  
+  },
   "messages": {
     "confirmDeleteUser": "Are you sure you want to delete this user?",
     "confirmCancelRequest": "Are you sure you want to cancel this request?",
@@ -255,7 +253,12 @@
     "taskRejected": "Task rejected successfully.",
     "taskCompleted": "Task completed successfully!",
     "taskCompleteError": "Error completing task: ",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "cancelled": "Cancelled",
+    "generatingTasks": "Generating...",
+    "tasksGeneratedSuccess": "Default tasks generated successfully",
+    "unauthorized": "Unauthorized",
+    "invalidResponse": "Invalid response"
   },
   "errors": {
     "passwordTooShort": "Password must be at least 6 characters.",
@@ -265,7 +268,15 @@
     "noValidFields": "No valid fields to update.",
     "pinInvalid": "PIN must be 4-8 digits.",
     "invalidUserId": "Invalid user id.",
-    "userNotFound": "User not found."
+    "userNotFound": "User not found.",
+    "invalidAmount": "Invalid amount",
+    "networkError": "Network error",
+    "loginFailed": "Login failed",
+    "balanceLoadError": "Error loading balance",
+    "failedChangePin": "Failed to change PIN",
+    "failedLoadUsers": "Failed to load users",
+    "pinChangeError": "Error changing PIN",
+    "requestError": "Request error"
   },
   "frequency": {
     "daily": "Daily",
@@ -275,17 +286,7 @@
   "roles": {
     "admin": "Admin",
     "user": "User"
-  }
-  ,
-  "table": {
-    "date": "Date",
-    "type": "Type",
-    "amount": "Amount",
-    "description": "Description"
-  }
-  ,
-  "loadingTasks": "Loading tasks..."
-  ,
+  },
   "tabs": {
     "tasks": "Tasks",
     "transactions": "Transactions",
