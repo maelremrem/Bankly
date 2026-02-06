@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   description TEXT,
   reward_amount REAL NOT NULL DEFAULT 0,
   requires_approval INTEGER NOT NULL DEFAULT 1,
+  cooldown_seconds INTEGER DEFAULT NULL,
   created_by INTEGER NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -81,6 +82,19 @@ CREATE TABLE IF NOT EXISTS advance_requests (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
   amount REAL NOT NULL,
+  reason TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  requested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  resolved_at DATETIME,
+  resolved_by INTEGER,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS deposit_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  amount REAL NOT NULL,
+  reference TEXT,
   status TEXT NOT NULL DEFAULT 'pending',
   requested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   resolved_at DATETIME,

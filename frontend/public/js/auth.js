@@ -164,7 +164,7 @@ function selectUser(user, evt) {
     const target = (evt && (evt.currentTarget || evt.target)) || null;
     if (target && target.classList) target.classList.add('selected');
     const sel = document.getElementById('selectedUser');
-    if (sel) sel.textContent = `${window.i18n ? window.i18n.t('login.selectedPrefix') : 'Selected:'} ${user.username}`;
+    if (sel) sel.textContent = `${window.i18n ? window.i18n.t('login.selectedPrefix','Selected:') : 'Selected:'} ${user.username}`;
     const us = document.getElementById('userSelection');
     if (us) us.style.display = 'none';
     const ps = document.getElementById('pinSection');
@@ -199,7 +199,7 @@ function setupKeypad() {
 function updatePinDisplay() {
     const display = document.getElementById('pinDisplay');
     if (!display) return;
-    display.textContent = pin.length ? '*'.repeat(pin.length) : (window.i18n ? window.i18n.t('login.enterPin') : 'Enter PIN');
+    display.textContent = pin.length ? '*'.repeat(pin.length) : (window.i18n ? window.i18n.t('login.enterPin','Enter PIN') : 'Enter PIN');
 }
 
 async function loginWithPin() {

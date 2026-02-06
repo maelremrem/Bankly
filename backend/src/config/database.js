@@ -107,6 +107,18 @@ if (fs.existsSync(schemaPath)) {
         if (err8) console.error('Failed to create refresh_tokens table', err8);
       });
 
+      // Ensure tasks table has cooldown_seconds column (migration for existing DBs)
+      db.all("PRAGMA table_info('tasks')", (err10, taskCols) => {
+        if (err10) return console.error('Failed to read tasks table info', err10);
+        const hasCooldown = taskCols && taskCols.some((c) => c.name === 'cooldown_seconds');
+        if (!hasCooldown) {
+          db.exec('ALTER TABLE tasks ADD COLUMN cooldown_seconds INTEGER DEFAULT NULL', (err11) => {
+            if (err11) console.error('Migration failed for tasks.cooldown_seconds', err11);
+            else console.log('Migration: added tasks.cooldown_seconds');
+          });
+        }
+      });
+
       // Ensure pin_audit table exists for PIN change/set auditing
       db.exec(`CREATE TABLE IF NOT EXISTS pin_audit (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -118,6 +130,18 @@ if (fs.existsSync(schemaPath)) {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       );`, (err9) => {
         if (err9) console.error('Failed to create pin_audit table', err9);
+      });
+
+      // Ensure advance_requests has reason column (migration for existing DBs)
+      db.all("PRAGMA table_info('advance_requests')", (err12, advCols) => {
+        if (err12) return console.error('Failed to read advance_requests table info', err12);
+        const hasReason = advCols && advCols.some((c) => c.name === 'reason');
+        if (!hasReason) {
+          db.exec('ALTER TABLE advance_requests ADD COLUMN reason TEXT', (err13) => {
+            if (err13) console.error('Migration failed for advance_requests.reason', err13);
+            else console.log('Migration: added advance_requests.reason');
+          });
+        }
       });
     });
   });

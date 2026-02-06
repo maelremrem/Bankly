@@ -24,7 +24,8 @@
     "disabled": "Désactivé",
     "pending": "En attente",
     "approved": "Approuvé",
-    "rejected": "Rejeté"
+    "rejected": "Rejeté",
+    "cancelled": "Annulé"
   },
   "theme": {
     "label": "Thème",
@@ -59,8 +60,30 @@
     "enterPin": "Saisir le PIN",
     "back": "← Retour à la sélection",
     "pinLogin": "Se connecter",
-    "pinCreated": "PIN créé avec succès"
+    "pinCreated": "PIN créé avec succès",
+    "adminLogin": "Connexion admin",
+    "backToUser": "Retour au login utilisateur"
   },
+  "dashboard": {
+    "user": {
+      "money": {
+        "title": "Argent",
+        "requestAmount": "Montant",
+        "reason": "Raison",
+        "requestAdvance": "Demander de l'argent",
+        "depositAmount": "Montant",
+        "reference": "Référence",
+        "requestDeposit": "Demander un dépôt",
+        "yourAdvances": "Vos demandes d'avance",
+        "yourDeposits": "Vos demandes de dépôt",
+        "noRequests": "Aucune demande pour le moment",
+        "advanceSubmitted": "Demande d'avance envoyée",
+        "depositSubmitted": "Demande de dépôt envoyée",
+        "helpTitle": "Comment ça marche",
+        "helpText": "Les avances sont des demandes d'argent réel qui doivent être approuvées par un parent. Les dépôts permettent d'indiquer un virement bancaire — ajoutez une référence pour accélérer le traitement."
+      }
+    }
+  }
   "dashboard": {
     "user": {
       "title": "Tableau de bord utilisateur",
@@ -70,9 +93,11 @@
       },
       "balance": "Votre solde",
       "tasks": "Tâches disponibles",
+      "reward": "Récompense",
       "transactions": "Transactions récentes",
       "complete": "Compléter la tâche",
-      "logout": "Déconnexion",
+      "pending": "En attente d'approbation",
+      "completed": "Complété",      "availableIn": "Disponible dans",      "logout": "Déconnexion",
       "changePin": "Modifier le PIN",
       "oldPin": "Ancien PIN",
       "newPin": "Nouveau PIN",
@@ -125,6 +150,7 @@
         "description": "Description",
         "reward": "Récompense",
         "approval": "Approbation",
+        "cooldown": "Durée (s)",
         "createdAt": "Créée le",
         "review": "Examiner les validations",
         "requiresApproval": "Approbation requise",
@@ -150,8 +176,16 @@
         "status": "Statut",
         "requestedAt": "Demandé le",
         "reason": "Raison"
-      },
-      "transactions": {
+      },      "deposits": {
+        "title": "Demandes de dépôt",
+        "statusFilter": "Statut",
+        "user": "Utilisateur",
+        "amount": "Montant",
+        "status": "Statut",
+        "requestedAt": "Demandé",
+        "reference": "Référence",
+        "reason": "Raison"
+      },      "transactions": {
         "title": "Transactions",
         "create": "Créer une transaction manuelle",
         "user": "Utilisateur",
@@ -202,17 +236,24 @@
   
   "messages": {
     "confirmDeleteUser": "Voulez-vous vraiment supprimer cet utilisateur ?",
+    "confirmCancelRequest": "Voulez-vous vraiment annuler cette demande ?",
     "confirmDeleteTask": "Voulez-vous vraiment supprimer cette tâche ?",
     "confirmDeleteAllowance": "Voulez-vous vraiment supprimer cette allocation ?",
     "confirmReverseTransaction": "Voulez-vous vraiment annuler cette transaction ?",
     "confirmUndoReversal": "Voulez-vous vraiment restaurer cette annulation ?",
     "confirmGenerateDefaultTasks": "Voulez-vous générer les tâches par défaut ? Cela ajoutera de nouvelles tâches si elles n'existent pas déjà.",
+    "confirmApproveTask": "Voulez-vous vraiment approuver cette réalisation de tâche ?",
+    "confirmRejectTask": "Voulez-vous vraiment rejeter cette réalisation de tâche ?",
     "passwordRequired": "Le mot de passe est requis pour créer un utilisateur.",
     "networkError": "Erreur réseau. Veuillez réessayer.",
     "loadFailed": "Échec du chargement des données.",
     "saved": "Enregistré avec succès.",
     "updated": "Mis à jour avec succès.",
     "deleted": "Supprimé avec succès.",
+    "taskApproved": "Tâche approuvée avec succès.",
+    "taskRejected": "Tâche rejetée avec succès.",
+    "taskCompleted": "Tâche complétée avec succès !",
+    "taskCompleteError": "Erreur lors de la complétion de la tâche : ",
     "loading": "Chargement..."
   },
   "errors": {
@@ -247,6 +288,7 @@
   "tabs": {
     "tasks": "Tâches",
     "transactions": "Transactions",
+    "money": "Argent",
     "changePin": "Modifier le PIN"
   }
 }

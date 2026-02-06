@@ -39,6 +39,14 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
 // Greeting helper state and updater
 let _currentUserForGreeting = null;
 function updateBalanceGreeting() {
@@ -143,6 +151,11 @@ async function loadDashboard() {
             displayTasks(tasksResponse.data);
         }
 
+        // Load user's advance and deposit requests
+        try {
+            loadUserMoneyRequests();
+        } catch (err) { /* ignore */ }
+
         // Load recent transactions
         const transactionsResponse = await apiCall(`/api/users/${userId}/transactions?limit=10`);
         if (transactionsResponse && transactionsResponse.success) {
@@ -172,14 +185,43 @@ function displayTasks(tasks) {
         return;
     }
 
-    tasksList.innerHTML = tasks.map(task => `
+    tasksList.innerHTML = tasks.map(task => {
+        const status = task.my_status || null;
+        const statusClassMap = { pending: 'warning', approved: 'success', rejected: 'danger' };
+        const statusClass = status ? (statusClassMap[status] || 'neutral') : null;
+        const statusTag = status ? `<div style="margin-bottom:0.5rem;"><span class="tag ${statusClass}">${t ? t('common.'+status) : status}</span>${task.my_submitted_at ? ` <small style="margin-left:0.5rem;color:var(--muted);">${escapeHtml(new Date(task.my_submitted_at).toLocaleString())}</small>` : ''}</div>` : '';
+
+        // Cooldown handling
+        let cooldownNote = '';
+        let disableDueToCooldown = false;
+        const cooldown = (task.cooldown_seconds !== null && task.cooldown_seconds !== undefined) ? Number(task.cooldown_seconds) : 0;
+        if (cooldown > 0 && task.my_submitted_at) {
+            if (!task.my_status || task.my_status !== 'rejected') {
+                const last = new Date(task.my_submitted_at).getTime();
+                const diff = Math.floor((Date.now() - last) / 1000);
+                if (diff < cooldown) {
+                    const rem = cooldown - diff;
+                    const mins = Math.floor(rem / 60);
+                    const secs = rem % 60;
+                    cooldownNote = ` (${t ? t('dashboard.user.availableIn','Available in') : 'Available in'} ${mins}m ${secs}s)`;
+                    disableDueToCooldown = true;
+                }
+            }
+        }
+
+        const disabledAttr = status === 'pending' || status === 'approved' || disableDueToCooldown ? 'disabled' : '';
+        const btnText = status === 'pending' ? (t ? t('dashboard.user.pending','Pending approval') : 'Pending approval') : (status === 'approved' ? (t ? t('dashboard.user.completed','Completed') : 'Completed') : (t ? t('dashboard.user.complete','Complete Task') : 'Complete Task'));
+
+        return `
         <article>
             <h3>${escapeHtml(task.name)}</h3>
+            ${statusTag}
             <p>${escapeHtml(task.description || '')}</p>
-            <p>${t ? t('dashboard.user.tasks.reward','Reward') : 'Reward'}: ${formatCurrency(Number(task.reward_amount || 0).toFixed(2))}</p>
-            <button onclick="completeTask(${task.id})">${t ? t('dashboard.user.complete','Complete Task') : 'Complete Task'}</button>
+            <p>${t ? t('dashboard.user.reward','Reward') : 'Reward'}: ${formatCurrency(Number(task.reward_amount || 0).toFixed(2))}${cooldownNote}</p>
+            <button onclick="completeTask(${task.id})" ${disabledAttr}>${btnText}</button>
         </article>
-    `).join('');
+    `}).join('');
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') window.i18n.applyTranslations(tasksList);
 }
 
 function displayTransactions(transactions) {
@@ -200,6 +242,117 @@ function displayTransactions(transactions) {
     `).join('');
     if (window.i18n && typeof window.i18n.applyTranslations === 'function') window.i18n.applyTranslations(tbody);
 }
+
+// Simple confirm modal helper for user dashboard
+function showConfirmModal(message) {
+    return Promise.resolve(window.confirm(message));
+}
+
+// Money requests (advances + deposits) for user
+async function loadUserMoneyRequests() {
+    try {
+        const meRes = await apiCall('/auth/me');
+        if (!meRes || !meRes.success) return;
+        const userId = meRes.data.id;
+        const [advRes, depRes] = await Promise.all([
+            apiCall(`/api/advances/user/${userId}`),
+            apiCall(`/api/deposits/user/${userId}`)
+        ]);
+
+        const container = document.getElementById('moneyRequestsList');
+        if (!container) return;
+        let html = '';
+        if (advRes && advRes.success && Array.isArray(advRes.data) && advRes.data.length) {
+            html += '<h4 data-i18n="dashboard.user.money.yourAdvances">Your advance requests</h4>';
+            html += '<ul>' + advRes.data.map(a => `
+                <li>
+                    ${escapeHtml(new Date(a.requested_at).toLocaleString())}: ${formatCurrency(Number(a.amount))} - <span class="tag ${a.status==='pending'?'warning':(a.status==='approved'?'success':'danger')}">${escapeHtml(a.status)}</span>
+                    ${a.status === 'pending' ? ` <button data-action="cancel-advance" data-id="${a.id}" class="secondary">${t ? t('common.cancel','Cancel') : 'Cancel'}</button>` : ''}
+                    ${a.reason ? ` <small>(${escapeHtml(a.reason)})</small>` : ''}
+                </li>
+            `).join('') + '</ul>';
+        }
+        if (depRes && depRes.success && Array.isArray(depRes.data) && depRes.data.length) {
+            html += '<h4 data-i18n="dashboard.user.money.yourDeposits">Your deposit requests</h4>';
+            html += '<ul>' + depRes.data.map(d => `
+                <li>
+                    ${escapeHtml(new Date(d.requested_at).toLocaleString())}: ${formatCurrency(Number(d.amount))} - <span class="tag ${d.status==='pending'?'warning':(d.status==='approved'?'success':'danger')}">${escapeHtml(d.status)}</span>
+                    ${d.status === 'pending' ? ` <button data-action="cancel-deposit" data-id="${d.id}" class="secondary">${t ? t('common.cancel','Cancel') : 'Cancel'}</button>` : ''}
+                    ${d.reference?` <small>(${escapeHtml(d.reference)})</small>`:''}
+                </li>
+            `).join('') + '</ul>';
+        }
+        if (!html) html = '<p data-i18n="dashboard.user.money.noRequests">No requests yet</p>';
+        container.innerHTML = html;
+        if (window.i18n && typeof window.i18n.applyTranslations === 'function') window.i18n.applyTranslations(container);
+    } catch (err) {
+        console.error('Failed to load money requests', err);
+    }
+}
+
+// Submit advance (user)
+document.addEventListener('click', async (e) => {
+    if (!e.target) return;
+    if (e.target.id === 'advanceSubmit') {
+        const amt = parseFloat(document.getElementById('advanceAmount').value);
+        const reason = document.getElementById('advanceReason').value;
+        if (!amt || amt <= 0) { showMessageModal('Invalid amount'); return; }
+        try {
+            const res = await apiCall('/api/advances', { method: 'POST', body: JSON.stringify({ amount: amt, reason }) });
+            if (res && res.success) {
+                showMessageModal(window.i18n ? window.i18n.t('dashboard.user.money.advanceSubmitted') : 'Advance requested');
+                document.getElementById('advanceAmount').value = '';
+                document.getElementById('advanceReason').value = '';
+                loadUserMoneyRequests();
+            } else {
+                showMessageModal('Error: ' + (res && res.error ? res.error : 'Failed'));
+            }
+        } catch (err) { console.error(err); showMessageModal('Network error'); }
+    }
+    if (e.target.id === 'depositSubmit') {
+        const amt = parseFloat(document.getElementById('depositAmount').value);
+        const ref = document.getElementById('depositReference').value;
+        if (!amt || amt <= 0) { showMessageModal('Invalid amount'); return; }
+        try {
+            const res = await apiCall('/api/deposits', { method: 'POST', body: JSON.stringify({ amount: amt, reference: ref }) });
+            if (res && res.success) {
+                showMessageModal(window.i18n ? window.i18n.t('dashboard.user.money.depositSubmitted') : 'Deposit requested');
+                document.getElementById('depositAmount').value = '';
+                document.getElementById('depositReference').value = '';
+                loadUserMoneyRequests();
+            } else {
+                showMessageModal('Error: ' + (res && res.error ? res.error : 'Failed'));
+            }
+        } catch (err) { console.error(err); showMessageModal('Network error'); }
+    }
+
+    // Cancel actions
+    const action = e.target && e.target.getAttribute ? e.target.getAttribute('data-action') : null;
+    if (action === 'cancel-advance') {
+        const id = e.target.getAttribute('data-id');
+        const ok = await showConfirmModal(window.i18n ? window.i18n.t('messages.confirmCancelRequest','Are you sure?') : 'Are you sure?');
+        if (!ok) return;
+        const res = await apiCall(`/api/advances/${id}/cancel`, { method: 'POST' });
+        if (res && res.success) {
+            showMessageModal('Cancelled');
+            loadUserMoneyRequests();
+        } else {
+            showMessageModal('Error: ' + (res && res.error ? res.error : 'Failed'));
+        }
+    }
+    if (action === 'cancel-deposit') {
+        const id = e.target.getAttribute('data-id');
+        const ok = await showConfirmModal(window.i18n ? window.i18n.t('messages.confirmCancelRequest','Are you sure?') : 'Are you sure?');
+        if (!ok) return;
+        const res = await apiCall(`/api/deposits/${id}/cancel`, { method: 'POST' });
+        if (res && res.success) {
+            showMessageModal('Cancelled');
+            loadUserMoneyRequests();
+        } else {
+            showMessageModal('Error: ' + (res && res.error ? res.error : 'Failed'));
+        }
+    }
+});
 
 // Modal helpers for user dashboard
 function openModal(modalId) {
@@ -336,23 +489,27 @@ async function completeTask(taskId) {
         });
 
         if (response.success) {
-            showMessageModal('Task completed successfully!');
+            showToast(t('messages.taskCompleted', 'Task completed successfully!'));
             loadDashboard(); // Refresh data
         } else {
-            showMessageModal('Error completing task: ' + response.error);
+            showToast(t('messages.taskCompleteError', 'Error completing task: ') + response.error);
         }
     } catch (error) {
         console.error('Error completing task:', error);
-        showMessageModal('Network error');
+        showToast(t('messages.networkError', 'Network error'));
     }
 }
 
-// Logout
-document.getElementById('logout').addEventListener('click', () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    window.location.href = '../index.html';
-});
+// Logout - always redirect to user login
+const _logoutBtn = document.getElementById('logout');
+if (_logoutBtn) {
+    _logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        // Always go to user login page
+        window.location.href = '/login.html';
+    });
+}
 
 // Change PIN form handler
 // Change PIN via keypad flow (old PIN -> verify -> new PIN)
@@ -481,6 +638,15 @@ function onTabActivated(name) {
             }
         })();
     }
+
+    if (name === 'money') {
+        // load money requests when user opens money tab
+        (async () => {
+            try {
+                await loadUserMoneyRequests();
+            } catch (e) { /* ignore */ }
+        })();
+    }
 }
 
 // Patch: call onTabActivated from initTabs when switching
@@ -516,4 +682,4 @@ function initTabs() {
 initTabs();
 
 // Then load data
-loadDashboard();
+// Initial load is triggered by ensureAuthed(); avoid double-loading here.

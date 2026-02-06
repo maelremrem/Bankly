@@ -39,9 +39,9 @@ class AdvanceRequestService {
     }
 
     const result = await db.runAsync(
-      `INSERT INTO advance_requests (user_id, amount, status)
-       VALUES (?, ?, 'pending')`,
-      [userId, amount]
+      `INSERT INTO advance_requests (user_id, amount, reason, status)
+       VALUES (?, ?, ?, 'pending')`,
+      [userId, amount, options.reason || null]
     );
 
     logger.info('Advance request created', {

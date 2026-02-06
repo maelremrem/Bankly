@@ -351,6 +351,25 @@ describe('Advance Request API', () => {
       // Clean up
       await db.runAsync('DELETE FROM advance_requests WHERE id = ?', [newAdvanceId]);
     });
+
+    it('user can cancel own pending advance', async () => {
+      const resCreate = await request(app)
+        .post('/api/advances')
+        .set('Authorization', `Bearer ${userToken}`)
+        .set('x-skip-validation', 'true')
+        .send({ amount: 2 });
+
+      expect(resCreate.status).toBe(201);
+      const advId = resCreate.body.data.id;
+
+      const resCancel = await request(app)
+        .post(`/api/advances/${advId}/cancel`)
+        .set('Authorization', `Bearer ${userToken}`);
+
+      expect(resCancel.status).toBe(200);
+      expect(resCancel.body.success).toBe(true);
+      expect(resCancel.body.data.status).toBe('cancelled');
+    });
   });
 
   describe('GET /api/advances/:id', () => {

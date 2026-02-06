@@ -58,9 +58,12 @@
             </div>
         </section>
 
+
+
         <nav class="tabs" role="tablist" aria-label="User sections">
             <button class="tab-btn" data-tab="tasks" role="tab" aria-selected="true" data-i18n="tabs.tasks">Tasks</button>
             <button class="tab-btn" data-tab="transactions" role="tab" aria-selected="false" data-i18n="tabs.transactions">Transactions</button>
+            <button class="tab-btn" data-tab="money" role="tab" aria-selected="false" data-i18n="tabs.money">Money</button>
             <button class="tab-btn" data-tab="changePin" role="tab" aria-selected="false" data-i18n="tabs.changePin">Change PIN</button>
         </nav>
 
@@ -102,6 +105,41 @@
             </table>
         </div>
 
+        <div id="tab-money" class="tab-content">
+            <h2 data-i18n="dashboard.user.money.title">Money</h2>
+            <details class="help" style="margin-bottom:0.5rem;">
+                <summary data-i18n="dashboard.user.money.helpTitle">How it works</summary>
+                <p data-i18n="dashboard.user.money.helpText">Advances are requests for real money and must be approved by an admin. Deposits notify an admin of a bank transfer — include a reference to speed up processing.</p>
+            </details>
+            <div id="moneyContent">
+                <form id="advanceForm" style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                    <label>
+                        <span data-i18n="dashboard.user.money.requestAmount">Amount</span>
+                        <input type="number" step="0.01" min="0.01" id="advanceAmount" />
+                    </label>
+                    <label style="flex:1;min-width:200px;">
+                        <span data-i18n="dashboard.user.money.reason">Reason</span>
+                        <input type="text" id="advanceReason" />
+                    </label>
+                    <button type="button" id="advanceSubmit"> <span data-i18n="dashboard.user.money.requestAdvance">Request Money</span></button>
+                </form>
+
+                <form id="depositForm" style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-top:0.75rem;">
+                    <label>
+                        <span data-i18n="dashboard.user.money.depositAmount">Amount</span>
+                        <input type="number" step="0.01" min="0.01" id="depositAmount" />
+                    </label>
+                    <label style="flex:1;min-width:200px;">
+                        <span data-i18n="dashboard.user.money.reference">Reference</span>
+                        <input type="text" id="depositReference" placeholder="e.g. Bank transfer ID" />
+                    </label>
+                    <button type="button" id="depositSubmit"> <span data-i18n="dashboard.user.money.requestDeposit">Request Deposit</span></button>
+                </form>
+
+                <div id="moneyRequestsList" style="margin-top:1rem;"></div>
+            </div>
+        </div>
+
         <div id="tab-changePin" class="tab-content">
             <h2 data-i18n="dashboard.user.changePin">Change PIN</h2>
             <style>
@@ -139,6 +177,8 @@
             </div>
         </div>
     </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <div id="messageModal" class="modal" aria-hidden="true" style="display:none;">
         <div class="modal-content">

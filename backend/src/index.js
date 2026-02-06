@@ -31,7 +31,8 @@ const { requireAuth, requireAdmin, requireAuthWeb, requireAdminWeb } = require('
 
 // Serve an admin-specific login endpoint so requests to /admin redirect there when unauthenticated
 app.get('/admin/login', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'login.html'));
+  // Serve dedicated admin login page (not the public user login)
+  res.sendFile(path.join(adminFrontendPath, 'login.html'));
 });
 
 // Protect admin static assets with web-friendly middleware that redirects non-admins
@@ -74,6 +75,8 @@ const allowancesRoutes = require('./routes/allowances');
 app.use('/api/allowances', allowancesRoutes);
 const advancesRoutes = require('./routes/advances');
 app.use('/api/advances', advancesRoutes);
+const depositsRoutes = require('./routes/deposits');
+app.use('/api/deposits', depositsRoutes);
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
 

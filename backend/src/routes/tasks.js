@@ -19,7 +19,7 @@ function escapeHtml(value) {
 router.get('/', requireAuth, requireAdmin, async (req, res) => {
   try {
     const tasks = await db.allAsync(`
-      SELECT id, name, description, reward_amount, requires_approval, created_by, created_at, updated_at
+      SELECT id, name, description, reward_amount, requires_approval, cooldown_seconds, created_by, created_at, updated_at
       FROM tasks
       ORDER BY created_at DESC
     `);
@@ -35,13 +35,13 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
 router.get('/html', requireAuth, requireAdmin, async (req, res) => {
   try {
     const tasks = await db.allAsync(`
-      SELECT id, name, description, reward_amount, requires_approval, created_at
+      SELECT id, name, description, reward_amount, requires_approval, cooldown_seconds, created_at
       FROM tasks
       ORDER BY created_at DESC
     `);
 
     if (!tasks || tasks.length === 0) {
-      return res.send('<tr><td colspan="6" data-i18n="common.noData">No data</td></tr>');
+      return res.send('<tr><td colspan="7" data-i18n="common.noData">No data</td></tr>');
     }
 
     const html = tasks.map((task) => {
@@ -49,12 +49,15 @@ router.get('/html', requireAuth, requireAdmin, async (req, res) => {
         ? '<span class="tag warning" data-i18n="dashboard.admin.tasks.requiresApproval">Requires Approval</span>'
         : '<span class="tag success" data-i18n="dashboard.admin.tasks.autoApproval">Auto Approval</span>';
 
+      const cooldownDisplay = (task.cooldown_seconds || task.cooldown_seconds === 0) ? String(task.cooldown_seconds) : '—';
+
       return `
         <tr>
           <td>${escapeHtml(task.name)}</td>
           <td>${escapeHtml(task.description || '')}</td>
           <td>${escapeHtml(Number(task.reward_amount || 0).toFixed(2))}</td>
           <td>${approval}</td>
+          <td>${escapeHtml(cooldownDisplay)}</td>
           <td>${escapeHtml(task.created_at)}</td>
           <td>
             <div class="table-actions">
@@ -83,15 +86,24 @@ router.get('/html', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// Get available tasks for the current user
+// Get available tasks for the current user (include user's latest completion status)
 router.get('/available', requireAuth, async (req, res) => {
   try {
-    // For now, all tasks are available to all users. Later, add task_assignments logic
+    const userId = req.user.userId;
+    // For now, all tasks are available to all users. We include the user's latest completion (if any)
     const tasks = await db.allAsync(`
-      SELECT id, name, description, reward_amount, requires_approval
-      FROM tasks
-      ORDER BY created_at DESC
-    `);
+      SELECT
+        t.id,
+        t.name,
+        t.description,
+        t.reward_amount,
+        t.requires_approval,
+        (SELECT status FROM task_completions tc WHERE tc.task_id = t.id AND tc.user_id = ? ORDER BY tc.submitted_at DESC LIMIT 1) as my_status,
+        (SELECT id FROM task_completions tc WHERE tc.task_id = t.id AND tc.user_id = ? ORDER BY tc.submitted_at DESC LIMIT 1) as my_completion_id,
+        (SELECT submitted_at FROM task_completions tc WHERE tc.task_id = t.id AND tc.user_id = ? ORDER BY tc.submitted_at DESC LIMIT 1) as my_submitted_at
+      FROM tasks t
+      ORDER BY t.created_at DESC
+    `, [userId, userId, userId]);
 
     res.json({ success: true, data: tasks });
   } catch (error) {
@@ -112,15 +124,15 @@ router.post('/', requireAuth, requireAdmin, [
     return res.status(400).json({ success: false, error: 'Validation failed', details: errors.array() });
   }
 
-  const { name, description, reward_amount, requires_approval = true } = req.body;
-  const created_by = req.user.userId;
-  console.log('Creating task, req.user:', req.user, 'created_by:', created_by);
+const { name, description, reward_amount, requires_approval = true, cooldown_seconds = null } = req.body;
+    const created_by = req.user.userId;
+    console.log('Creating task, req.user:', req.user, 'created_by:', created_by);
 
-  try {
-    const result = await db.runAsync(`
-      INSERT INTO tasks (name, description, reward_amount, requires_approval, created_by)
-      VALUES (?, ?, ?, ?, ?)
-    `, [name, description, reward_amount, requires_approval ? 1 : 0, created_by]);
+    try {
+      const result = await db.runAsync(`
+        INSERT INTO tasks (name, description, reward_amount, requires_approval, cooldown_seconds, created_by)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [name, description, reward_amount, requires_approval ? 1 : 0, cooldown_seconds, created_by]);
 
     const task = await db.getAsync('SELECT * FROM tasks WHERE id = ?', [result.lastID]);
     console.log('Inserted task result:', result, 'task:', task);
@@ -147,19 +159,20 @@ router.put('/:id', requireAuth, requireAdmin, [
   }
 
   const { id } = req.params;
-  const { name, description, reward_amount, requires_approval } = req.body;
+const { name, description, reward_amount, requires_approval, cooldown_seconds } = req.body;
 
-  try {
-    const existingTask = await db.getAsync('SELECT * FROM tasks WHERE id = ?', [id]);
-    if (!existingTask) {
-      return res.status(404).json({ success: false, error: 'Task not found' });
-    }
+    try {
+      const existingTask = await db.getAsync('SELECT * FROM tasks WHERE id = ?', [id]);
+      if (!existingTask) {
+        return res.status(404).json({ success: false, error: 'Task not found' });
+      }
 
-    const updates = {};
-    if (name !== undefined) updates.name = name;
-    if (description !== undefined) updates.description = description;
-    if (reward_amount !== undefined) updates.reward_amount = reward_amount;
-    if (requires_approval !== undefined) updates.requires_approval = requires_approval ? 1 : 0;
+      const updates = {};
+      if (name !== undefined) updates.name = name;
+      if (description !== undefined) updates.description = description;
+      if (reward_amount !== undefined) updates.reward_amount = reward_amount;
+      if (requires_approval !== undefined) updates.requires_approval = requires_approval ? 1 : 0;
+      if (cooldown_seconds !== undefined) updates.cooldown_seconds = cooldown_seconds === null ? null : Number(cooldown_seconds);
 
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ success: false, error: 'No valid updates provided' });
@@ -227,6 +240,48 @@ router.post('/:id/complete', requireAuth, [
       return res.status(404).json({ success: false, error: 'Task not found' });
     }
 
+    // Enforce cooldown to prevent spamming completions
+    const globalCooldown = Number(process.env.TASK_COOLDOWN_SECONDS || 0);
+    const taskCooldown = (task.cooldown_seconds !== null && task.cooldown_seconds !== undefined) ? Number(task.cooldown_seconds) : globalCooldown;
+
+    if (taskCooldown > 0) {
+      // Check last completion for this user/task (ignore 'rejected' because a rejection should allow immediate retry)
+      const last = await db.getAsync(`
+        SELECT submitted_at, status FROM task_completions
+        WHERE task_id = ? AND user_id = ?
+        ORDER BY submitted_at DESC LIMIT 1
+      `, [id, userId]);
+
+      if (last && last.status !== 'rejected') {
+        const lastTime = new Date(last.submitted_at).getTime();
+        const now = Date.now();
+        const diffSec = Math.floor((now - lastTime) / 1000);
+        if (diffSec < taskCooldown) {
+          const remaining = taskCooldown - diffSec;
+          return res.status(429).json({ success: false, error: 'Task cooldown in effect', details: { seconds_remaining: remaining } });
+        }
+      }
+
+      // For auto-approved tasks, also check recent transactions (more robust for immediate approvals)
+      if (!task.requires_approval) {
+        const lastTx = await db.getAsync(`
+          SELECT created_at FROM transactions
+          WHERE user_id = ? AND type = 'task' AND description LIKE ?
+          ORDER BY created_at DESC LIMIT 1
+        `, [userId, `%Task completed: ${task.name}%`]);
+
+        if (lastTx && lastTx.created_at) {
+          const lastTxTime = new Date(lastTx.created_at).getTime();
+          const now = Date.now();
+          const diffSecTx = Math.floor((now - lastTxTime) / 1000);
+          if (diffSecTx < taskCooldown) {
+            const remaining = taskCooldown - diffSecTx;
+            return res.status(429).json({ success: false, error: 'Task cooldown in effect', details: { seconds_remaining: remaining } });
+          }
+        }
+      }
+    }
+
     // Check if user already has a pending completion for this task
     const existingCompletion = await db.getAsync(`
       SELECT * FROM task_completions
@@ -239,15 +294,52 @@ router.post('/:id/complete', requireAuth, [
 
     const status = task.requires_approval ? 'pending' : 'approved';
 
-    const result = await db.runAsync(`
-      INSERT INTO task_completions (task_id, user_id, status)
-      VALUES (?, ?, ?)
-    `, [id, userId, status]);
+    // For auto-approve tasks with cooldown, use conditional insert to avoid duplicates if a recent transaction exists
+    let result;
+    if (!task.requires_approval && taskCooldown > 0) {
+      const inserted = await db.runAsync(`
+        INSERT INTO task_completions (task_id, user_id, status)
+        SELECT ?, ?, ?
+        WHERE NOT EXISTS (
+          SELECT 1 FROM transactions
+          WHERE user_id = ? AND type = 'task' AND description LIKE ? AND created_at > datetime('now', ?)
+        )
+      `, [id, userId, status, userId, `%Task completed: ${task.name}%`, `-${taskCooldown} seconds`]);
+
+      // sqlite returns changes==0 if insert skipped
+      if (!inserted || inserted.changes === 0) {
+        return res.status(429).json({ success: false, error: 'Task cooldown in effect', details: { seconds_remaining: taskCooldown } });
+      }
+      result = inserted;
+    } else {
+      result = await db.runAsync(`
+        INSERT INTO task_completions (task_id, user_id, status)
+        VALUES (?, ?, ?)
+      `, [id, userId, status]);
+    }
 
     if (!task.requires_approval) {
-      // Auto-approve: create transaction
+      // Auto-approve: create transaction — perform tx-check inside DB transaction to prevent race/duplicate creations
       await db.runAsync('BEGIN');
       try {
+        // Re-check most recent task transaction for this user/task inside the transaction
+        const lastTx = await db.getAsync(`
+          SELECT created_at FROM transactions
+          WHERE user_id = ? AND type = 'task' AND description LIKE ?
+          ORDER BY created_at DESC LIMIT 1
+        `, [userId, `%Task completed: ${task.name}%`]);
+
+        if (lastTx && lastTx.created_at && taskCooldown > 0) {
+          const lastTxTime = new Date(lastTx.created_at).getTime();
+          const now = Date.now();
+          const diffSecTx = Math.floor((now - lastTxTime) / 1000);
+          if (diffSecTx < taskCooldown) {
+            await db.runAsync('ROLLBACK');
+            const remaining = taskCooldown - diffSecTx;
+            return res.status(429).json({ success: false, error: 'Task cooldown in effect', details: { seconds_remaining: remaining } });
+          }
+        }
+
         const transactionResult = await db.runAsync(`
           INSERT INTO transactions (user_id, type, amount, description, created_by)
           VALUES (?, 'task', ?, ?, ?)

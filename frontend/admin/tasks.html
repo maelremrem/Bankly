@@ -74,6 +74,7 @@
                             <th data-i18n="dashboard.admin.tasks.description">Description</th>
                             <th data-i18n="dashboard.admin.tasks.reward">Reward</th>
                             <th data-i18n="dashboard.admin.tasks.approval">Approval</th>
+                            <th data-i18n="dashboard.admin.tasks.cooldown">Cooldown (s)</th>
                             <th data-i18n="dashboard.admin.tasks.createdAt">Created</th>
                             <th data-i18n="common.actions">Actions</th>
                         </tr>
@@ -133,6 +134,10 @@
                         <span data-i18n="dashboard.admin.tasks.reward">Reward</span>
                         <input type="number" id="taskReward" step="0.01" min="0" required>
                     </label>
+                    <label>
+                        <span data-i18n="dashboard.admin.tasks.cooldown">Cooldown (s)</span>
+                        <input type="number" id="taskCooldown" step="1" min="0" placeholder="">
+                    </label>
                     <label class="checkbox">
                         <input type="checkbox" id="taskApproval">
                         <span data-i18n="dashboard.admin.tasks.requiresApproval">Requires Approval</span>
@@ -143,31 +148,6 @@
                             <span data-i18n="common.save">Save</span>
                         </button>
                         <button type="button" class="secondary" data-action="close" data-target="taskModal">
-                            <span class="btn-icon">✕</span>
-                            <span data-i18n="common.cancel">Cancel</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div id="taskReviewModal" class="modal" aria-hidden="true">
-            <div class="modal-content">
-                <button class="close" data-action="close" data-target="taskReviewModal" data-i18n-aria-label="common.close">&times;</button>
-                <h3 data-i18n="dashboard.admin.tasks.review">Review Completions</h3>
-                <form id="taskReviewForm">
-                    <input type="hidden" id="reviewCompletionId">
-                    <input type="hidden" id="reviewApproved">
-                    <label>
-                        <span data-i18n="dashboard.admin.tasks.reviewNotes">Review Notes</span>
-                        <textarea id="reviewNotes"></textarea>
-                    </label>
-                    <div class="modal-actions">
-                        <button type="submit">
-                            <span class="btn-icon">💾</span>
-                            <span data-i18n="common.save">Save</span>
-                        </button>
-                        <button type="button" class="secondary" data-action="close" data-target="taskReviewModal">
                             <span class="btn-icon">✕</span>
                             <span data-i18n="common.cancel">Cancel</span>
                         </button>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Deposits</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="topbar">
+        <nav class="container">
+            <ul>
+                <li class="app-brand">
+                    <span class="app-name">Bankly</span>
+                    <span class="app-sep">/</span>
+                    <strong data-i18n="dashboard.admin.title">Admin Dashboard</strong>
+                </li>
+            </ul>
+            <ul class="nav-actions">
+                <li><small id="currentUser"></small></li>
+                <li>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="themeToggle" role="switch">
+                        <span data-i18n="theme.label">Theme</span>
+                        <span id="themeModeLabel" data-i18n="theme.light">Light</span>
+                    </label>
+                </li>
+
+                <li>
+                    <button id="logout" class="icon-button secondary" type="button">
+                        <span class="btn-icon">⎋</span>
+                        <span data-i18n="dashboard.admin.logout">Logout</span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="menu-bar">
+        <nav class="container menu-links" hx-boost="true" hx-target="main" hx-select="main" hx-swap="innerHTML" hx-push-url="true" hx-scroll="none">
+            <a href="/admin/dashboard.html" data-i18n="menu.overview">Overview</a>
+            <a href="/admin/users.html" data-i18n="menu.users">Users</a>
+            <a href="/admin/tasks.html" data-i18n="menu.tasks">Tasks</a>
+            <a href="/admin/allowances.html" data-i18n="menu.allowances">Allowances</a>
+            <a href="/admin/advances.html" data-i18n="menu.advances">Advances</a>
+            <a class="active" href="/admin/deposits.html" data-i18n="dashboard.admin.deposits.title">Deposits</a>
+            <a href="/admin/transactions.html" data-i18n="menu.transactions">Transactions</a>
+            <a href="/admin/refresh-tokens.html" data-i18n="menu.refreshTokens">Refresh Tokens</a>
+            <a href="/admin/reversals.html" data-i18n="menu.reversals">Reversals</a>
+        </nav>
+    </div>
+
+    <main class="container">
+        <section>
+            <header class="section-header">
+                <h2 data-i18n="dashboard.admin.deposits.title">Deposit Requests</h2>
+                <form id="depositFilterForm" class="toolbar" hx-get="/api/deposits/html" hx-target="#depositsBody" hx-swap="innerHTML" hx-include="#depositStatusFilter">
+                    <select id="depositStatusFilter" name="status" data-i18n-aria-label="dashboard.admin.deposits.statusFilter">
+                        <option value="" data-i18n="common.filter">Filter</option>
+                        <option value="pending" data-i18n="common.pending">Pending</option>
+                        <option value="approved" data-i18n="common.approved">Approved</option>
+                        <option value="rejected" data-i18n="common.rejected">Rejected</option>
+                    </select>
+                    <button id="depositFilterBtn" type="submit" class="secondary">
+                        <span class="btn-icon">✅</span>
+                        <span data-i18n="common.apply">Apply</span>
+                    </button>
+                    <button id="depositClearBtn" type="button" class="secondary">
+                        <span class="btn-icon">🧹</span>
+                        <span data-i18n="common.clear">Clear</span>
+                    </button>
+                </form>
+            </header>
+            <div class="table-scroll">
+                <table id="depositsTable">
+                    <thead>
+                        <tr>
+                            <th data-i18n="dashboard.admin.deposits.user">User</th>
+                            <th data-i18n="dashboard.admin.deposits.amount">Amount</th>
+                            <th data-i18n="dashboard.admin.deposits.status">Status</th>
+                            <th data-i18n="dashboard.admin.deposits.requestedAt">Requested</th>
+                            <th data-i18n="dashboard.admin.deposits.reference">Reference</th>
+                            <th data-i18n="common.actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="depositsBody" hx-get="/api/deposits/html" hx-trigger="load, refreshDeposits" hx-target="#depositsBody" hx-swap="innerHTML">
+                        <tr>
+                            <td colspan="6" data-i18n="common.loading">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div id="depositRejectModal" class="modal" aria-hidden="true">
+            <div class="modal-content">
+                <button class="close" data-action="close" data-target="depositRejectModal" data-i18n-aria-label="common.close">&times;</button>
+                <h3 data-i18n="common.reject">Reject</h3>
+                <form id="depositRejectForm">
+                    <input type="hidden" id="depositRejectId">
+                    <label>
+                        <span data-i18n="dashboard.admin.deposits.reason">Reason</span>
+                        <textarea id="depositRejectReason"></textarea>
+                    </label>
+                    <div class="modal-actions">
+                        <button type="submit">
+                            <span class="btn-icon">💾</span>
+                            <span data-i18n="common.save">Save</span>
+                        </button>
+                        <button type="button" class="secondary" data-action="close" data-target="depositRejectModal">
+                            <span class="btn-icon">✕</span>
+                            <span data-i18n="common.cancel">Cancel</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </main>
+
+    <script src="../vendor/htmx.2.0.8.min.js"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/dashboard-admin.js"></script>
+</body>
+</html>

@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const db = require('../config/database');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const logger = require('../config/logger');
 
 const router = express.Router();
 
@@ -253,10 +254,20 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
         if (updates.length === 0) return res.status(400).json({ success: false, error: 'No valid fields to update' });
         params.push(id);
         const sql = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
-        db.run(sql, params, function (err4) {
+        db.run(sql, params, async function (err4) {
           if (err4) {
             console.error(err4);
             return res.status(500).json({ success: false, error: 'Server error' });
+          }
+          // If admin provided a pin here, record pin audit
+          if (req.body.pin) {
+            try {
+              const actionType = user.pin_hash ? 'admin_reset' : 'admin_set';
+              await db.runAsync('INSERT INTO pin_audit (user_id, action, performed_by, details) VALUES (?, ?, ?, ?)', [id, actionType, req.user.userId, `admin ${actionType}`]);
+              logger.info(`pin_audit ${actionType} for user=${id} by admin=${req.user.userId}`);
+            } catch (auditErr) {
+              console.error('Failed to insert pin_audit record', auditErr);
+            }
           }
           return res.json({ success: true, data: { id: Number(id), username: username || user.username, role: role || user.role, language: language || user.language } });
         });

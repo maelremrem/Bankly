@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, param, query, validationResult } = require('express-validator');
 const AdvanceRequestService = require('../services/advanceRequestService');
+const db = require('../config/database');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const logger = require('../config/logger');
 
@@ -34,7 +35,7 @@ router.post('/', [
       });
     }
 
-    const { amount } = req.body;
+    const { amount, reason } = req.body;
     const userId = req.user.userId;
 
     // Check if we should skip validation (for testing)
@@ -43,7 +44,8 @@ router.post('/', [
 
     const advanceRequest = await AdvanceRequestService.createAdvanceRequest(userId, amount, { 
       skipValidation,
-      skipPendingValidation 
+      skipPendingValidation,
+      reason: reason || null
     });
 
     res.status(201).json({
@@ -247,6 +249,23 @@ router.post('/:id/approve', [
       success: false,
       error: error.message
     });
+  }
+});
+
+// User cancel advance
+router.post('/:id/cancel', [requireAuth, param('id').isInt().withMessage('Advance ID must be an integer')], async (req, res) => {
+  try {
+    const advanceId = parseInt(req.params.id);
+    const advance = await AdvanceRequestService.getAdvanceRequestById(advanceId);
+    if (!advance) return res.status(404).json({ success: false, error: 'Advance request not found' });
+    if (advance.user_id !== req.user.userId) return res.status(403).json({ success: false, error: 'Access denied' });
+    if (advance.status !== 'pending') return res.status(400).json({ success: false, error: 'Only pending requests can be cancelled' });
+
+    await db.runAsync('UPDATE advance_requests SET status = ?, resolved_at = CURRENT_TIMESTAMP, resolved_by = ? WHERE id = ?', ['cancelled', req.user.userId, advanceId]);
+    res.json({ success: true, data: { advanceId, status: 'cancelled' } });
+  } catch (error) {
+    logger.error('Error cancelling advance request', { error: error.message });
+    res.status(400).json({ success: false, error: error.message });
   }
 });
 

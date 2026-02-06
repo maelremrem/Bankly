@@ -396,6 +396,7 @@ function refreshAllSections() {
     refreshSection('#tasksBody', 'refreshTasks');
     refreshSection('#allowancesBody', 'refreshAllowances');
     refreshSection('#advancesBody', 'refreshAdvances');
+    refreshSection('#depositsBody', 'refreshDeposits');
     refreshSection('#transactionsBody', 'refreshTransactions');
     refreshSection('#reversalsBody', 'refreshReversals');
 }
@@ -528,6 +529,15 @@ async function loadTransactions() {
     state.transactions = response.data.transactions || [];
 }
 
+async function loadDeposits() {
+    const response = await apiCall('/api/deposits');
+    if (!response.success) {
+        showToast(t('messages.loadFailed'));
+        return;
+    }
+    state.deposits = response.data || [];
+}
+
 async function loadReversals() {
     const response = await apiCall('/api/transactions/reversals?limit=50');
     if (!response.success) {
@@ -565,7 +575,8 @@ function getStatusTag(status) {
     const map = {
         pending: { label: t('common.pending'), className: 'warning' },
         approved: { label: t('common.approved'), className: 'success' },
-        rejected: { label: t('common.rejected'), className: 'danger' }
+        rejected: { label: t('common.rejected'), className: 'danger' },
+        cancelled: { label: t('common.cancelled') || 'Cancelled', className: 'neutral' }
     };
     const entry = map[status] || { label: status, className: 'neutral' };
     return `<span class="tag ${entry.className}">${escapeHtml(entry.label)}</span>`;
@@ -627,6 +638,13 @@ function bindEvents() {
         refreshSection('#advancesBody', 'refreshAdvances');
     });
 
+    const depositClearBtn = document.getElementById('depositClearBtn');
+    bindOnce(depositClearBtn, 'click', () => {
+        const depositStatusFilter = document.getElementById('depositStatusFilter');
+        if (depositStatusFilter) depositStatusFilter.value = '';
+        refreshSection('#depositsBody', 'refreshDeposits');
+    });
+
     const transactionClearBtn = document.getElementById('transactionClearBtn');
     bindOnce(transactionClearBtn, 'click', () => {
         const transactionUserFilter = document.getElementById('transactionUserFilter');
@@ -654,10 +672,30 @@ function bindEvents() {
     bindOnce(allowanceForm, 'submit', handleAllowanceSubmit);
     const transactionForm = document.getElementById('transactionForm');
     bindOnce(transactionForm, 'submit', handleTransactionSubmit);
-    const taskReviewForm = document.getElementById('taskReviewForm');
-    bindOnce(taskReviewForm, 'submit', handleTaskReviewSubmit);
     const advanceRejectForm = document.getElementById('advanceRejectForm');
     bindOnce(advanceRejectForm, 'submit', handleAdvanceRejectSubmit);
+    const depositRejectForm = document.getElementById('depositRejectForm');
+    if (depositRejectForm) bindOnce(depositRejectForm, 'submit', handleDepositRejectSubmit);
+
+async function handleDepositRejectSubmit(evt) {
+    evt.preventDefault();
+    const id = document.getElementById('depositRejectId').value;
+    const reason = document.getElementById('depositRejectReason').value;
+    try {
+        const res = await apiCall(`/api/deposits/${id}/reject`, { method: 'POST', body: JSON.stringify({ reason }) });
+        if (res && res.success) {
+            showToast(t('messages.saved'));
+            await loadDeposits();
+            refreshSection('#depositsBody', 'refreshDeposits');
+            closeModal('depositRejectModal');
+        } else {
+            showToast(res && res.error ? res.error : t('messages.networkError'));
+        }
+    } catch (err) {
+        console.error('Deposit reject failed', err);
+        showToast(t('messages.networkError'));
+    }
+}
 
     const usersTable = document.getElementById('usersTable');
     bindOnce(usersTable, 'click', handleUsersTableClick);
@@ -667,6 +705,8 @@ function bindEvents() {
     bindOnce(allowancesTable, 'click', handleAllowancesTableClick);
     const advancesTable = document.getElementById('advancesTable');
     bindOnce(advancesTable, 'click', handleAdvancesTableClick);
+    const depositsTable = document.getElementById('depositsTable');
+    bindOnce(depositsTable, 'click', handleDepositsTableClick);
     const transactionsTable = document.getElementById('transactionsTable');
     bindOnce(transactionsTable, 'click', handleTransactionsTableClick);
     const reversalsTable = document.getElementById('reversalsTable');
@@ -832,6 +872,9 @@ function openTaskModal(task = null) {
     document.getElementById('taskName').value = task ? task.name : '';
     document.getElementById('taskDescription').value = task ? task.description || '' : '';
     document.getElementById('taskReward').value = task ? task.reward_amount : '';
+    // Populate cooldown if present
+    const cooldownEl = document.getElementById('taskCooldown');
+    if (cooldownEl) cooldownEl.value = task && (task.cooldown_seconds !== undefined && task.cooldown_seconds !== null) ? String(task.cooldown_seconds) : '';
     document.getElementById('taskApproval').checked = task ? Boolean(task.requires_approval) : true;
     document.getElementById('taskModalTitle').textContent = task
         ? `${t('common.edit')} ${t('dashboard.admin.tasks.title')}`
@@ -869,6 +912,15 @@ function openAdvanceRejectModal(advanceId) {
     document.getElementById('advanceRejectForm').reset();
     document.getElementById('advanceRejectId').value = advanceId;
     openModal('advanceRejectModal');
+}
+
+function openDepositRejectModal(depositId) {
+    const f = document.getElementById('depositRejectForm');
+    if (!f) return;
+    f.reset();
+    const hid = document.getElementById('depositRejectId');
+    if (hid) hid.value = depositId;
+    openModal('depositRejectModal');
 }
 
 async function handleUserSubmit(event) {
@@ -920,6 +972,7 @@ async function handleTaskSubmit(event) {
     const name = document.getElementById('taskName').value.trim();
     const description = document.getElementById('taskDescription').value.trim();
     const reward = parseFloat(document.getElementById('taskReward').value || 0);
+    const cooldownVal = document.getElementById('taskCooldown') ? document.getElementById('taskCooldown').value : '';
     const requiresApproval = document.getElementById('taskApproval').checked;
 
     if (!name) return;
@@ -930,6 +983,13 @@ async function handleTaskSubmit(event) {
         reward_amount: reward,
         requires_approval: requiresApproval
     };
+
+    if (cooldownVal !== null && cooldownVal !== undefined && String(cooldownVal).trim() !== '') {
+        payload.cooldown_seconds = Number(cooldownVal);
+    } else {
+        // allow null to clear existing value when editing
+        if (document.getElementById('taskId').value) payload.cooldown_seconds = null;
+    }
 
     try {
         showBtnSpinner(btnId);
@@ -1043,36 +1103,6 @@ async function handleTransactionSubmit(event) {
     }
     refreshSection('#transactionsBody', 'refreshTransactions');
     refreshSection('#reversalsBody', 'refreshReversals');
-}
-
-async function handleTaskReviewSubmit(event) {
-    event.preventDefault();
-    const completionId = document.getElementById('reviewCompletionId').value;
-    const approved = document.getElementById('reviewApproved').value === 'true';
-    const reviewNotes = document.getElementById('reviewNotes').value.trim();
-
-    const payload = { approved, review_notes: reviewNotes };
-    const response = await apiCall(`/api/tasks/completions/${completionId}/approve`, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-    });
-
-    if (!response.success) {
-        showToast(response.error || t('messages.networkError'));
-        return;
-    }
-
-    closeModal('taskReviewModal');
-    showToast(t('messages.saved'));
-    await loadTasks();
-    refreshSection('#tasksBody', 'refreshTasks');
-    const completionBody = document.getElementById('taskCompletionsBody');
-    const taskId = completionBody ? completionBody.dataset.taskId : null;
-    if (window.htmx && taskId) {
-        window.htmx.ajax('GET', `/api/tasks/${taskId}/completions/html`, { target: '#taskCompletionsBody', swap: 'innerHTML' });
-    }
-}
-
 async function handleAdvanceRejectSubmit(event) {
     event.preventDefault();
     const advanceId = document.getElementById('advanceRejectId').value;
@@ -1162,11 +1192,45 @@ async function handleCompletionsTableClick(event) {
     const id = button.getAttribute('data-id');
 
     if (action === 'approve-completion') {
-        openTaskReviewModal(id, true);
+        const ok = await showConfirmModal(t('messages.confirmApproveTask'));
+        if (!ok) return;
+        const response = await apiCall(`/api/tasks/completions/${id}/approve`, {
+            method: 'POST',
+            body: JSON.stringify({ approved: true, review_notes: '' })
+        });
+        if (response.success) {
+            showToast(t('messages.taskApproved'));
+            await loadTasks();
+            refreshSection('#tasksBody', 'refreshTasks');
+            const completionBody = document.getElementById('taskCompletionsBody');
+            const taskId = completionBody ? completionBody.dataset.taskId : null;
+            if (window.htmx && taskId) {
+                window.htmx.ajax('GET', `/api/tasks/${taskId}/completions/html`, { target: '#taskCompletionsBody', swap: 'innerHTML' });
+            }
+        } else {
+            showToast(response.error || t('messages.networkError'));
+        }
     }
 
     if (action === 'reject-completion') {
-        openTaskReviewModal(id, false);
+        const ok = await showConfirmModal(t('messages.confirmRejectTask'));
+        if (!ok) return;
+        const response = await apiCall(`/api/tasks/completions/${id}/approve`, {
+            method: 'POST',
+            body: JSON.stringify({ approved: false, review_notes: '' })
+        });
+        if (response.success) {
+            showToast(t('messages.taskRejected'));
+            await loadTasks();
+            refreshSection('#tasksBody', 'refreshTasks');
+            const completionBody = document.getElementById('taskCompletionsBody');
+            const taskId = completionBody ? completionBody.dataset.taskId : null;
+            if (window.htmx && taskId) {
+                window.htmx.ajax('GET', `/api/tasks/${taskId}/completions/html`, { target: '#taskCompletionsBody', swap: 'innerHTML' });
+            }
+        } else {
+            showToast(response.error || t('messages.networkError'));
+        }
     }
 }
 
@@ -1214,6 +1278,23 @@ async function handleAdvancesTableClick(event) {
 
     if (action === 'reject-advance') {
         openAdvanceRejectModal(id);
+    }
+
+    if (action === 'approve-deposit') {
+        const response = await apiCall(`/api/deposits/${id}/approve`, { method: 'POST' });
+        if (response.success) {
+            showToast(t('messages.saved'));
+            await loadDeposits();
+            refreshSection('#depositsBody', 'refreshDeposits');
+            await loadTransactions();
+            await loadUsers();
+        } else {
+            showToast(response.error || t('messages.networkError'));
+        }
+    }
+
+    if (action === 'reject-deposit') {
+        openDepositRejectModal(id);
     }
 }
 

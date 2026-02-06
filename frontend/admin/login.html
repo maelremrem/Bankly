@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Bankly</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        html, body { height:100%; margin:0; }
+        body { font-size:18px; display:flex; align-items:center; justify-content:center; }
+        main.container { max-width: 520px; min-height: 100vh; display:flex; align-items:center; justify-content:center; width:100%; }
+        footer { margin-top: 1rem; }
+    </style>
+</head>
+<body data-theme="light">
+    <main class="container">
+        <article>
+            <header>
+                <h1 data-i18n="login.adminLogin">Admin login</h1>
+                <p data-i18n="login.title">Admin access</p>
+            </header>
+            <form id="loginForm">
+                <label for="username">
+                    <span data-i18n="login.username">Username</span>
+                    <input type="text" id="username" name="username" required>
+                </label>
+                <label for="password">
+                    <span data-i18n="login.password">Password</span>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                </label>
+                <button type="submit" id="loginSubmitBtn">
+                    <span class="btn-text" data-i18n="login.submit">Login</span>
+                    <span class="btn-spinner hidden" aria-hidden="true"></span>
+                </button>
+            </form>
+            <footer>
+                <p id="errorMessage" style="color: red; display: none;"></p>
+                <div style="text-align:center;margin-top:1rem;">
+                    <a href="/login.html" id="backToUserBtn" class="secondary" data-i18n="login.backToUser">Back to user login</a>
+                </div>
+            </footer>
+        </article>
+    </main>
+    <script src="/js/i18n.js"></script>
+    <script>
+        (async function() {
+            try { await window.i18n.init(); } catch (e) { console.warn('i18n init failed', e); }
+        })();
+    </script>
+    <script src="/js/auth.js"></script>
+</body>
+</html>
