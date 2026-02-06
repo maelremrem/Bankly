@@ -170,7 +170,7 @@ async function loadDashboard() {
     } catch (error) {
         console.error('Error loading dashboard:', error);
         const balanceEl = document.getElementById('balanceContent');
-        if (balanceEl) balanceEl.textContent = 'Error loading balance';
+        if (balanceEl) balanceEl.textContent = window.i18n ? window.i18n.t('errors.balanceLoadError') : 'Error loading balance';
     } finally {
         hideUserSkeleton();
     }
@@ -296,7 +296,7 @@ document.addEventListener('click', async (e) => {
     if (e.target.id === 'advanceSubmit') {
         const amt = parseFloat(document.getElementById('advanceAmount').value);
         const reason = document.getElementById('advanceReason').value;
-        if (!amt || amt <= 0) { showMessageModal('Invalid amount'); return; }
+        if (!amt || amt <= 0) { showMessageModal(window.i18n ? window.i18n.t('errors.invalidAmount') : 'Invalid amount'); return; }
         try {
             const res = await apiCall('/api/advances', { method: 'POST', body: JSON.stringify({ amount: amt, reason }) });
             if (res && res.success) {
@@ -305,14 +305,14 @@ document.addEventListener('click', async (e) => {
                 document.getElementById('advanceReason').value = '';
                 loadUserMoneyRequests();
             } else {
-                showMessageModal('Error: ' + (res && res.error ? res.error : 'Failed'));
+                showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.requestError') : 'Failed')));
             }
-        } catch (err) { console.error(err); showMessageModal('Network error'); }
+        } catch (err) { console.error(err); showMessageModal(window.i18n ? window.i18n.t('errors.networkError') : 'Network error'); }
     }
     if (e.target.id === 'depositSubmit') {
         const amt = parseFloat(document.getElementById('depositAmount').value);
         const ref = document.getElementById('depositReference').value;
-        if (!amt || amt <= 0) { showMessageModal('Invalid amount'); return; }
+        if (!amt || amt <= 0) { showMessageModal(window.i18n ? window.i18n.t('errors.invalidAmount') : 'Invalid amount'); return; }
         try {
             const res = await apiCall('/api/deposits', { method: 'POST', body: JSON.stringify({ amount: amt, reference: ref }) });
             if (res && res.success) {
@@ -321,9 +321,9 @@ document.addEventListener('click', async (e) => {
                 document.getElementById('depositReference').value = '';
                 loadUserMoneyRequests();
             } else {
-                showMessageModal('Error: ' + (res && res.error ? res.error : 'Failed'));
+                showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.requestError') : 'Failed')));
             }
-        } catch (err) { console.error(err); showMessageModal('Network error'); }
+        } catch (err) { console.error(err); showMessageModal(window.i18n ? window.i18n.t('errors.networkError') : 'Network error'); }
     }
 
     // Cancel actions
@@ -334,10 +334,10 @@ document.addEventListener('click', async (e) => {
         if (!ok) return;
         const res = await apiCall(`/api/advances/${id}/cancel`, { method: 'POST' });
         if (res && res.success) {
-            showMessageModal('Cancelled');
+            showMessageModal(window.i18n ? window.i18n.t('messages.cancelled') : 'Cancelled');
             loadUserMoneyRequests();
         } else {
-            showMessageModal('Error: ' + (res && res.error ? res.error : 'Failed'));
+            showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.requestError') : 'Failed')));
         }
     }
     if (action === 'cancel-deposit') {
@@ -346,10 +346,10 @@ document.addEventListener('click', async (e) => {
         if (!ok) return;
         const res = await apiCall(`/api/deposits/${id}/cancel`, { method: 'POST' });
         if (res && res.success) {
-            showMessageModal('Cancelled');
+            showMessageModal(window.i18n ? window.i18n.t('messages.cancelled') : 'Cancelled');
             loadUserMoneyRequests();
         } else {
-            showMessageModal('Error: ' + (res && res.error ? res.error : 'Failed'));
+            showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.requestError') : 'Failed')));
         }
     }
 });
@@ -593,7 +593,7 @@ document.addEventListener('click', async (e) => {
                     setPinDisplay();
                     return;
                 }
-                showMessageModal('Error: ' + (res && res.error ? res.error : 'Invalid PIN'));
+                showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.pinInvalid') : 'Invalid PIN')));
                 _pinState.entry = '';
                 setPinDisplay();
                 return;
@@ -606,14 +606,14 @@ document.addEventListener('click', async (e) => {
                     resetPinState();
                     return;
                 }
-                showMessageModal('Error: ' + (res && res.error ? res.error : 'Failed to change PIN'));
+                showMessageModal((window.i18n ? window.i18n.t('messages.taskCompleteError') : 'Error: ') + (res && res.error ? res.error : (window.i18n ? window.i18n.t('errors.failedChangePin') : 'Failed to change PIN')));
                 _pinState.entry = '';
                 setPinDisplay();
                 return;
             }
         } catch (err) {
             console.error('PIN keypad error', err);
-            showMessageModal('Network error');
+            showMessageModal(window.i18n ? window.i18n.t('errors.networkError') : 'Network error');
             _pinState.entry = '';
             setPinDisplay();
             return;
