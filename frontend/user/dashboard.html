@@ -8,13 +8,22 @@
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-    <header>
-        <nav>
+    <header class="topbar">
+        <nav class="container">
             <ul>
-                <li><strong>Bankly - User Dashboard</strong></li>
+                <li class="app-brand">
+                    <span class="app-name">Bankly</span>
+                    <span class="app-sep">/</span>
+                    <strong data-i18n="dashboard.user.title">User Dashboard</strong>
+                </li>
             </ul>
-            <ul>
-                <li><a href="#" id="logout">Logout</a></li>
+            <ul class="nav-actions">
+                <li>
+                    <button id="logout" class="icon-button secondary" type="button">
+                        <span class="btn-icon">⎋</span>
+                        <span data-i18n="dashboard.user.logout">Logout</span>
+                    </button>
+                </li>
             </ul>
         </nav>
     </header>
@@ -23,14 +32,22 @@
         <section>
             <h2>Your Balance</h2>
             <div id="balance" class="balance-display">
-                Loading...
+                <div id="balanceContent">Loading...</div>
+                <div id="balanceSkeleton" class="skeleton hidden" aria-hidden="true">
+                    <div class="skeleton-line" style="width:60%;height:1.6rem;"></div>
+                </div>
             </div>
         </section>
 
         <section>
             <h2>Available Tasks</h2>
             <div id="tasksList">
-                Loading tasks...
+                <div id="tasksContent">Loading tasks...</div>
+                <div id="tasksSkeleton" class="skeleton hidden" aria-hidden="true">
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                </div>
             </div>
         </section>
 
@@ -46,8 +63,15 @@
                     </tr>
                 </thead>
                 <tbody id="transactionsBody">
-                    <tr>
+                    <tr id="transactionsContent">
                         <td colspan="4">Loading...</td>
+                    </tr>
+                    <tr id="transactionsSkeleton" class="skeleton hidden" aria-hidden="true">
+                        <td colspan="4">
+                            <div class="skeleton-line" style="height:1rem;margin-bottom:0.5rem;"></div>
+                            <div class="skeleton-line" style="height:1rem;margin-bottom:0.5rem;width:90%;"></div>
+                            <div class="skeleton-line" style="height:1rem;width:70%;"></div>
+                        </td>
                     </tr>
                 </tbody>
             </table>

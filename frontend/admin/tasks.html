@@ -26,12 +26,7 @@
                         <span id="themeModeLabel" data-i18n="theme.light">Light</span>
                     </label>
                 </li>
-                <li>
-                    <select id="languageSelect" data-i18n-aria-label="languages.label">
-                        <option value="en" data-i18n="languages.en">English</option>
-                        <option value="fr" data-i18n="languages.fr">French</option>
-                    </select>
-                </li>
+
                 <li>
                     <button id="logout" class="icon-button secondary" type="button">
                         <span class="btn-icon">⎋</span>
@@ -59,13 +54,14 @@
             <header class="section-header">
                 <h2 data-i18n="dashboard.admin.tasks.title">Tasks</h2>
                 <div class="toolbar">
-                    <button id="taskCreateBtn">
+                    <button id="taskCreateBtn" type="button">
                         <span class="btn-icon">➕</span>
                         <span data-i18n="dashboard.admin.tasks.create">Create New Task</span>
                     </button>
-                    <button id="taskGenerateBtn" class="secondary">
+                    <button id="taskGenerateBtn" type="button" class="secondary" data-action="generate-default-tasks">
                         <span class="btn-icon">🔄</span>
-                        <span data-i18n="dashboard.admin.tasks.generateDefault">Generate Default Tasks</span>
+                        <span class="btn-text" data-i18n="dashboard.admin.tasks.generateDefault">Generate Default Tasks</span>
+                        <span class="btn-spinner hidden" aria-hidden="true"></span>
                     </button>
                 </div>
             </header>

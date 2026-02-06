@@ -2,6 +2,20 @@
 
 const API_BASE = '';
 
+function t(key, fallback = '') {
+    if (window.i18n && typeof window.i18n.t === 'function') return window.i18n.t(key, fallback);
+    return fallback || key;
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // Helper function for API calls (send cookies)
 async function apiCall(endpoint, options = {}) {
     const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -45,9 +59,8 @@ async function apiCall(endpoint, options = {}) {
 // Load user data
 async function loadDashboard() {
     try {
+        showUserSkeleton();
         // Get current user info (assuming we have userId in token or fetch /auth/me)
-        // For now, assume we need to get user ID from somewhere
-        // Let's add a way to get current user
         const userResponse = await apiCall('/auth/me');
         if (!userResponse.success) {
             throw new Error('Failed to get user info');
@@ -57,7 +70,8 @@ async function loadDashboard() {
         // Load balance
         const balanceResponse = await apiCall(`/api/users/${userId}/balance`);
         if (balanceResponse.success) {
-            document.getElementById('balance').textContent = `$${balanceResponse.data.balance.toFixed(2)}`;
+            const balanceEl = document.getElementById('balanceContent');
+            if (balanceEl) balanceEl.textContent = `$${balanceResponse.data.balance.toFixed(2)}`;
         }
 
         // Load available tasks
@@ -68,46 +82,56 @@ async function loadDashboard() {
 
         // Load recent transactions
         const transactionsResponse = await apiCall(`/api/users/${userId}/transactions?limit=10`);
-        if (transactionsResponse.success) {
-            displayTransactions(transactionsResponse.data);
+        if (transactionsResponse && transactionsResponse.success) {
+            const rows = transactionsResponse.data && Array.isArray(transactionsResponse.data.transactions)
+                ? transactionsResponse.data.transactions
+                : [];
+            displayTransactions(rows);
+        } else {
+            displayTransactions([]);
         }
 
     } catch (error) {
         console.error('Error loading dashboard:', error);
-        document.getElementById('balance').textContent = 'Error loading balance';
+        const balanceEl = document.getElementById('balanceContent');
+        if (balanceEl) balanceEl.textContent = 'Error loading balance';
+    } finally {
+        hideUserSkeleton();
     }
 }
 
 function displayTasks(tasks) {
     const tasksList = document.getElementById('tasksList');
-    if (tasks.length === 0) {
-        tasksList.innerHTML = '<p>No tasks available</p>';
+    if (!tasksList) return;
+    if (!Array.isArray(tasks) || tasks.length === 0) {
+        tasksList.innerHTML = '<p data-i18n="common.noData">No tasks available</p>';
         return;
     }
 
     tasksList.innerHTML = tasks.map(task => `
         <article>
-            <h3>${task.name}</h3>
-            <p>${task.description}</p>
-            <p>Reward: $${task.reward_amount}</p>
-            <button onclick="completeTask(${task.id})">Complete Task</button>
+            <h3>${escapeHtml(task.name)}</h3>
+            <p>${escapeHtml(task.description || '')}</p>
+            <p>${t ? t('dashboard.user.tasks.reward','Reward') : 'Reward'}: $${Number(task.reward_amount || 0).toFixed(2)}</p>
+            <button onclick="completeTask(${task.id})">${t ? t('dashboard.user.complete','Complete Task') : 'Complete Task'}</button>
         </article>
     `).join('');
 }
 
 function displayTransactions(transactions) {
     const tbody = document.getElementById('transactionsBody');
-    if (transactions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4">No transactions yet</td></tr>';
+    if (!tbody) return;
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" data-i18n="common.noData">No transactions yet</td></tr>';
         return;
     }
 
     tbody.innerHTML = transactions.map(tx => `
         <tr>
-            <td>${new Date(tx.created_at).toLocaleDateString()}</td>
-            <td>${tx.type}</td>
-            <td>$${tx.amount.toFixed(2)}</td>
-            <td>${tx.description || ''}</td>
+            <td>${escapeHtml(new Date(tx.created_at).toLocaleDateString())}</td>
+            <td>${escapeHtml(tx.type)}</td>
+            <td>${escapeHtml(Number(tx.amount || 0).toFixed(2))}</td>
+            <td>${escapeHtml(tx.description || '')}</td>
         </tr>
     `).join('');
 }
@@ -143,6 +167,37 @@ document.addEventListener('click', (event) => {
         closeModal(target.id);
     }
 });
+
+// Skeleton show/hide helpers
+function showUserSkeleton() {
+    const balanceSkeleton = document.getElementById('balanceSkeleton');
+    const balanceContent = document.getElementById('balanceContent');
+    const tasksSkeleton = document.getElementById('tasksSkeleton');
+    const tasksContent = document.getElementById('tasksContent');
+    const transactionsSkeleton = document.getElementById('transactionsSkeleton');
+    const transactionsContent = document.getElementById('transactionsContent');
+    if (balanceSkeleton) balanceSkeleton.classList.remove('hidden');
+    if (balanceContent) balanceContent.classList.add('hidden');
+    if (tasksSkeleton) tasksSkeleton.classList.remove('hidden');
+    if (tasksContent) tasksContent.classList.add('hidden');
+    if (transactionsSkeleton) transactionsSkeleton.classList.remove('hidden');
+    if (transactionsContent) transactionsContent.classList.add('hidden');
+}
+
+function hideUserSkeleton() {
+    const balanceSkeleton = document.getElementById('balanceSkeleton');
+    const balanceContent = document.getElementById('balanceContent');
+    const tasksSkeleton = document.getElementById('tasksSkeleton');
+    const tasksContent = document.getElementById('tasksContent');
+    const transactionsSkeleton = document.getElementById('transactionsSkeleton');
+    const transactionsContent = document.getElementById('transactionsContent');
+    if (balanceSkeleton) balanceSkeleton.classList.add('hidden');
+    if (balanceContent) balanceContent.classList.remove('hidden');
+    if (tasksSkeleton) tasksSkeleton.classList.add('hidden');
+    if (tasksContent) tasksContent.classList.remove('hidden');
+    if (transactionsSkeleton) transactionsSkeleton.classList.add('hidden');
+    if (transactionsContent) transactionsContent.classList.remove('hidden');
+}
 
 // Prompt modal (input) - returns string or null if cancelled
 function showPromptModal(message, defaultValue = '') {

@@ -21,9 +21,12 @@
                 </label>
                 <label for="password">
                     Password
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
                 </label>
-                <button type="submit">Login</button>
+                <button type="submit" id="loginSubmitBtn">
+                    <span class="btn-text">Login</span>
+                    <span class="btn-spinner hidden" aria-hidden="true"></span>
+                </button>
             </form>
             <footer>
                 <p id="errorMessage" style="color: red; display: none;"></p>

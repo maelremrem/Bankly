@@ -58,6 +58,27 @@ button[type="submit"] {
 button[type="submit"]:hover {
     background-color: #2980b9;
 }
+button[type="submit"]:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
+/* Small inline spinner for buttons */
+.btn-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+    animation: spin 0.8s linear infinite;
+}
+
+.btn-text.hidden {
+    visibility: hidden;
+}
 
 .balance-display {
     font-size: 2rem;
@@ -353,6 +374,29 @@ button[type="submit"]:hover {
 .hidden {
     display: none;
 }
+
+/* Skeleton placeholders */
+.skeleton {
+    background: transparent;
+}
+.skeleton .skeleton-line {
+    background: linear-gradient(90deg,#eee,#f6f6f6,#eee);
+    border-radius: 6px;
+    animation: shimmer 1.2s infinite linear;
+}
+.skeleton .skeleton-item {
+    height: 60px;
+    background: linear-gradient(90deg,#eee,#f6f6f6,#eee);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    animation: shimmer 1.2s infinite linear;
+}
+
+@keyframes shimmer {
+    0% { background-position: -300px 0; }
+    100% { background-position: 300px 0; }
+}
+
 
 /* Stats loader */
 .stats-loader {

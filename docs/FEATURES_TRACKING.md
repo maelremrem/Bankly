@@ -179,6 +179,7 @@
 |---------|--------|----------|-------------|----------------|-------|
 | User management page | 🟢 Completed | High | - | v1.0 (MVP) | CRUD users via admin dashboard |
 | Task management page | 🟢 Completed | High | - | v1.0 (MVP) | CRUD tasks via admin dashboard |
+| Generate Default Tasks spinner | 🟢 Completed | Low | - | v1.0 (MVP) | UX improvement |
 | Allowance config page | 🟢 Completed | High | - | v2.0 | Allowances managed in admin dashboard |
 | Approval queue page | 🟢 Completed | Medium | - | v2.0 | Task completions + advances in admin dashboard |
 | All transactions page | 🟢 Completed | Medium | - | v1.0 (MVP) | Admin transactions table + filters |
@@ -485,12 +486,16 @@
 - PRD completed
 - AI Development Guide completed
 - Features Tracking document completed
+- Added spinner for Generate Default Tasks in admin tasks page (UX improvement)
+- Added reusable admin action spinner and applied to primary forms
+- Added skeleton loader for User dashboard (balance/tasks/transactions)
+- Added basic E2E Puppeteer script (scripts/e2e/login-test.js) — testing in progress
 
 ---
 
 ## 16. Progress Summary
 
-**Overall Progress:** 63/300+ features completed (21%)
+**Overall Progress:** 64/300+ features completed (21%)
 
 ### By Category:
 - Authentication & Authorization: 5/10 completed (50%)
@@ -502,7 +507,7 @@
 - Transaction History: 5/9 completed (56%)
 - Frontend - General UI: 6/13 completed (46%)
 - Frontend - User Pages: 0/7 completed (0%)
-- Frontend - Admin Pages: 6/8 completed (75%)
+- Frontend - Admin Pages: 7/8 completed (88%)
 - Backend API: 31/32 completed (97%)
 - Database: 9/13 completed (69%)
 - i18n: 8/11 completed (73%)

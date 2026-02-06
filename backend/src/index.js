@@ -42,8 +42,10 @@ if (process.env.SENTRY_DSN) {
 // }));
 app.use(
   rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 60,
+    // Make rate limiter configurable via env vars so it's less aggressive by default.
+    // Defaults: 15 minutes window, 600 requests in window (adjust with env vars).
+    windowMs: (parseInt(process.env.RATE_LIMIT_WINDOW_MINUTES, 10) || 15) * 60 * 1000,
+    max: parseInt(process.env.RATE_LIMIT_MAX, 10) || 600,
   })
 );
 
@@ -61,6 +63,10 @@ const advancesRoutes = require('./routes/advances');
 app.use('/api/advances', advancesRoutes);
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
+
+app.get('/api/config', (req, res) => {
+  res.json({ success: true, defaultLanguage: process.env.DEFAULT_LANGUAGE || 'en' });
+});
 
 // Start allowance scheduler (skip when running tests)
 const schedulerService = require('./services/schedulerService');

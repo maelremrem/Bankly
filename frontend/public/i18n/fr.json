@@ -172,7 +172,17 @@
     "loadFailed": "Échec du chargement des données.",
     "saved": "Enregistré avec succès.",
     "updated": "Mis à jour avec succès.",
-    "deleted": "Supprimé avec succès."
+    "deleted": "Supprimé avec succès.",
+    "loading": "Chargement..."
+  },
+  "errors": {
+    "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères.",
+    "usernameTooShort": "Le nom d'utilisateur doit contenir au moins 3 caractères.",
+    "usernameExists": "Le nom d'utilisateur existe déjà.",
+    "serverError": "Erreur du serveur.",
+    "noValidFields": "Aucun champ valide à mettre à jour.",
+    "invalidUserId": "Identifiant utilisateur invalide.",
+    "userNotFound": "Utilisateur introuvable."
   },
   "frequency": {
     "daily": "Quotidien",

@@ -32,3 +32,19 @@ For production deployment on Raspberry Pi:
 ## Installation Guide
 
 See the full installation guide in `docs/INSTALLATION.md` for detailed setup instructions for both development and production environments.
+ 
+## Rate Limiting
+
+The backend uses `express-rate-limit` to protect endpoints. The rate limiter is configurable via environment variables and defaults to values that are less aggressive:
+
+- `RATE_LIMIT_WINDOW_MINUTES` — window size in minutes (default: 15)
+- `RATE_LIMIT_MAX` — maximum number of requests allowed in the window (default: 600)
+
+Example `.env` entries:
+
+```
+RATE_LIMIT_WINDOW_MINUTES=15
+RATE_LIMIT_MAX=600
+```
+
+After changing these values, restart the backend for them to take effect.

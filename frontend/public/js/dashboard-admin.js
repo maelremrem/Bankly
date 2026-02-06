@@ -70,13 +70,82 @@ async function apiCall(endpoint, options = {}) {
     }
 }
 
+function translateValidationMessage(err) {
+    if (!err) return '';
+    const path = err.path;
+    const msg = (err.msg || err.message || '').toString();
+    const norm = msg.toLowerCase();
+
+    // Field-specific rules
+    if (path === 'password' && norm.includes('at least 6')) return t('errors.passwordTooShort') || msg;
+    if (path === 'username' && norm.includes('at least 3')) return t('errors.usernameTooShort') || msg;
+
+    // Generic matches
+    if (norm.includes('username already exists')) return t('errors.usernameExists') || msg;
+
+    // fallback
+    return msg;
+}
+
+function formatErrorMessage(message) {
+    if (!message) return '';
+    if (typeof message === 'string') return message;
+    if (Array.isArray(message)) {
+        const msgs = message.map((m) => {
+            if (!m) return '';
+            if (typeof m === 'string') return m;
+            const translated = translateValidationMessage(m);
+            if (m.path) return `${m.path}: ${translated}`;
+            return translated || m.msg || m.message || m.error || JSON.stringify(m);
+        }).filter(Boolean);
+        return msgs.join(', ');
+    }
+    if (typeof message === 'object') {
+        if (message.msg) return translateValidationMessage(message) || message.msg;
+        if (message.message) return message.message;
+        if (message.error) return formatErrorMessage(message.error);
+        try { return JSON.stringify(message); } catch (e) { return String(message); }
+    }
+    return String(message);
+}
+
 function showToast(message) {
     const toast = document.getElementById('toast');
     if (!toast) return;
-    toast.textContent = message;
+    const text = formatErrorMessage(message);
+    toast.textContent = text;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2500);
 }
+
+// Button spinner helpers (id is the button element id)
+function showBtnSpinner(btnId) {
+    try {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        btn.disabled = true;
+        const spinner = btn.querySelector('.btn-spinner');
+        const text = btn.querySelector('.btn-text');
+        if (spinner) spinner.classList.remove('hidden');
+        if (text) text.classList.add('hidden');
+    } catch (err) {
+        console.warn('showBtnSpinner failed', err);
+    }
+}
+
+function hideBtnSpinner(btnId) {
+    try {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        btn.disabled = false;
+        const spinner = btn.querySelector('.btn-spinner');
+        const text = btn.querySelector('.btn-text');
+        if (spinner) spinner.classList.add('hidden');
+        if (text) text.classList.remove('hidden');
+    } catch (err) {
+        console.warn('hideBtnSpinner failed', err);
+    }
+} 
 
 function escapeHtml(value) {
     return String(value ?? '')
@@ -494,18 +563,8 @@ function getStatusTag(status) {
 }
 
 function bindEvents() {
-    const languageSelect = document.getElementById('languageSelect');
-    bindOnce(languageSelect, 'change', async (event) => {
-        await window.i18n.setLanguage(event.target.value);
-        window.i18n.applyTranslations();
-        updateThemeLabel(document.documentElement.getAttribute('data-theme'));
-        refreshUsersTable();
-        refreshSection('#tasksBody', 'refreshTasks');
-        refreshSection('#allowancesBody', 'refreshAllowances');
-        refreshSection('#advancesBody', 'refreshAdvances');
-        refreshSection('#transactionsBody', 'refreshTransactions');
-        refreshSection('#reversalsBody', 'refreshReversals');
-    });
+    // Language is now controlled via server default (.env) and per-user preference. Top-bar selector removed.
+
 
     const logout = document.getElementById('logout');
     bindOnce(logout, 'click', async (event) => {
@@ -733,6 +792,13 @@ function bindEvents() {
             if (target.classList.contains('modal')) {
                 closeModal(target.id);
             }
+
+            // Delegated handler for generate default tasks button in case binding missed
+            const genBtn = event.target.closest && event.target.closest('[data-action="generate-default-tasks"]');
+            if (genBtn) {
+                event.preventDefault();
+                generateDefaultTasks();
+            }
         });
         state.eventsBound.documentClick = true;
     }
@@ -798,6 +864,7 @@ function openAdvanceRejectModal(advanceId) {
 
 async function handleUserSubmit(event) {
     event.preventDefault();
+    const btnId = 'userSaveBtn';
     const userId = document.getElementById('userId').value;
     const username = document.getElementById('userUsername').value.trim();
     const password = document.getElementById('userPassword').value.trim();
@@ -814,23 +881,29 @@ async function handleUserSubmit(event) {
     const payload = { username, role, language };
     if (password) payload.password = password;
 
-    const response = userId
-        ? await apiCall(`/api/users/${userId}`, { method: 'PUT', body: JSON.stringify(payload) })
-        : await apiCall('/api/users', { method: 'POST', body: JSON.stringify({ ...payload, password }) });
+    try {
+        showBtnSpinner(btnId);
+        const response = userId
+            ? await apiCall(`/api/users/${userId}`, { method: 'PUT', body: JSON.stringify(payload) })
+            : await apiCall('/api/users', { method: 'POST', body: JSON.stringify({ ...payload, password }) });
 
-    if (!response.success) {
-        showToast(response.error || t('messages.networkError'));
-        return;
+        if (!response.success) {
+            showToast(response.error || t('messages.networkError'));
+            return;
+        }
+
+        closeModal('userModal');
+        showToast(t('messages.saved'));
+        await loadUsers();
+        refreshUsersTable();
+    } finally {
+        hideBtnSpinner(btnId);
     }
-
-    closeModal('userModal');
-    showToast(t('messages.saved'));
-    await loadUsers();
-    refreshUsersTable();
 }
 
 async function handleTaskSubmit(event) {
     event.preventDefault();
+    const btnId = 'taskSaveBtn';
     const taskId = document.getElementById('taskId').value;
     const name = document.getElementById('taskName').value.trim();
     const description = document.getElementById('taskDescription').value.trim();
@@ -846,44 +919,61 @@ async function handleTaskSubmit(event) {
         requires_approval: requiresApproval
     };
 
-    const response = taskId
-        ? await apiCall(`/api/tasks/${taskId}`, { method: 'PUT', body: JSON.stringify(payload) })
-        : await apiCall('/api/tasks', { method: 'POST', body: JSON.stringify(payload) });
+    try {
+        showBtnSpinner(btnId);
+        const response = taskId
+            ? await apiCall(`/api/tasks/${taskId}`, { method: 'PUT', body: JSON.stringify(payload) })
+            : await apiCall('/api/tasks', { method: 'POST', body: JSON.stringify(payload) });
 
-    if (!response.success) {
-        showToast(response.error || t('messages.networkError'));
-        return;
+        if (!response.success) {
+            showToast(response.error || t('messages.networkError'));
+            return;
+        }
+
+        closeModal('taskModal');
+        showToast(t('messages.saved'));
+        await loadTasks();
+        refreshSection('#tasksBody', 'refreshTasks');
+    } finally {
+        hideBtnSpinner(btnId);
     }
-
-    closeModal('taskModal');
-    showToast(t('messages.saved'));
-    await loadTasks();
-    refreshSection('#tasksBody', 'refreshTasks');
 }
 
 async function generateDefaultTasks() {
+    const btn = document.getElementById('taskGenerateBtn');
     const confirmMessage = t('messages.confirmGenerateDefaultTasks') || 'Are you sure you want to generate default tasks? This will add new tasks if they don\'t already exist.';
     const ok = await showConfirmModal(confirmMessage);
     if (!ok) return;
 
-    const language = document.getElementById('languageSelect').value || 'en';
+    const language = (window.i18n && typeof window.i18n.getCurrentLanguage === 'function') ? window.i18n.getCurrentLanguage() : 'en';
 
-    const response = await apiCall('/api/tasks/generate-default', {
-        method: 'POST',
-        body: JSON.stringify({ language })
-    });
+    try {
+        if (btn) showBtnSpinner('taskGenerateBtn');
+        showToast(t('messages.loading') || 'Generating...');
+        console.log('Generating default tasks (lang=', language, ')');
+        const response = await apiCall('/api/tasks/generate-default', {
+            method: 'POST',
+            body: JSON.stringify({ language })
+        });
 
-    if (!response.success) {
-        showToast(response.error || 'Network error');
-        return;
+        if (!response || !response.success) {
+            showToast(response && response.error ? response.error : t('messages.networkError'));
+            return;
+        }
+
+        showToast(response.message || t('messages.saved') || 'Default tasks generated successfully');
+        refreshSection('#tasksBody', 'refreshTasks');
+    } catch (err) {
+        console.error('Error generating default tasks', err);
+        showToast(t('messages.networkError'));
+    } finally {
+        if (btn) hideBtnSpinner('taskGenerateBtn');
     }
-
-    showToast(response.message || 'Default tasks generated successfully');
-    refreshSection('#tasksBody', 'refreshTasks');
 }
 
 async function handleAllowanceSubmit(event) {
     event.preventDefault();
+    const btnId = 'allowanceSaveBtn';
     const allowanceId = document.getElementById('allowanceId').value;
     const userId = Number(document.getElementById('allowanceUser').value);
     const amount = parseFloat(document.getElementById('allowanceAmount').value || 0);
@@ -894,40 +984,51 @@ async function handleAllowanceSubmit(event) {
         ? { amount, frequency, enabled }
         : { userId, amount, frequency, enabled };
 
-    const response = allowanceId
-        ? await apiCall(`/api/allowances/${allowanceId}`, { method: 'PUT', body: JSON.stringify(payload) })
-        : await apiCall('/api/allowances', { method: 'POST', body: JSON.stringify(payload) });
+    try {
+        showBtnSpinner(btnId);
+        const response = allowanceId
+            ? await apiCall(`/api/allowances/${allowanceId}`, { method: 'PUT', body: JSON.stringify(payload) })
+            : await apiCall('/api/allowances', { method: 'POST', body: JSON.stringify(payload) });
 
-    if (!response.success) {
-        showToast(response.error || t('messages.networkError'));
-        return;
+        if (!response.success) {
+            showToast(response.error || t('messages.networkError'));
+            return;
+        }
+
+        closeModal('allowanceModal');
+        showToast(t('messages.saved'));
+        await loadAllowances();
+        refreshSection('#allowancesBody', 'refreshAllowances');
+    } finally {
+        hideBtnSpinner(btnId);
     }
-
-    closeModal('allowanceModal');
-    showToast(t('messages.saved'));
-    await loadAllowances();
-    refreshSection('#allowancesBody', 'refreshAllowances');
 }
 
 async function handleTransactionSubmit(event) {
     event.preventDefault();
+    const btnId = 'transactionSaveBtn';
     const userId = Number(document.getElementById('transactionUser').value);
     const amount = parseFloat(document.getElementById('transactionAmount').value || 0);
     const type = document.getElementById('transactionType').value.trim();
     const description = document.getElementById('transactionDescription').value.trim();
 
     const payload = { userId, amount, type, description };
-    const response = await apiCall('/api/transactions', { method: 'POST', body: JSON.stringify(payload) });
+    try {
+        showBtnSpinner(btnId);
+        const response = await apiCall('/api/transactions', { method: 'POST', body: JSON.stringify(payload) });
 
-    if (!response.success) {
-        showToast(response.error || t('messages.networkError'));
-        return;
+        if (!response.success) {
+            showToast(response.error || t('messages.networkError'));
+            return;
+        }
+
+        closeModal('transactionModal');
+        showToast(t('messages.saved'));
+        await loadTransactions();
+        await loadUsers();
+    } finally {
+        hideBtnSpinner(btnId);
     }
-
-    closeModal('transactionModal');
-    showToast(t('messages.saved'));
-    await loadTransactions();
-    await loadUsers();
     refreshSection('#transactionsBody', 'refreshTransactions');
     refreshSection('#reversalsBody', 'refreshReversals');
 }
@@ -1320,7 +1421,15 @@ async function loadDashboard() {
 async function init() {
     const me = await ensureAdmin();
     if (!me) return;
-    await window.i18n.init(me.language || undefined);
+    let defaultLang = 'en';
+    try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+            const json = await res.json();
+            defaultLang = json.defaultLanguage || defaultLang;
+        }
+    } catch (err) { /* ignore */ }
+    await window.i18n.init(me.language || defaultLang);
     window.i18n.applyTranslations();
     updatePageTitle();
     initTheme();

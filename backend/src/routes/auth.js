@@ -90,4 +90,43 @@ router.get('/rfid-redirect', (req, res) => {
   }
 });
 
+// Get list of users for login selection (public, no auth required)
+router.get('/users-public', (req, res) => {
+  db.all('SELECT id, username FROM users WHERE role = ?', ['user'], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ success: false, error: 'Server error' });
+    }
+    res.json({ success: true, data: rows });
+  });
+});
+
+// Login with username and PIN (for touch interface)
+router.post('/pin-login', async (req, res) => {
+  try {
+    const { username, pin } = req.body;
+    if (!username || !pin) return res.status(400).json({ success: false, error: 'Missing username or pin' });
+
+    db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, error: 'Server error' });
+      }
+      if (!user) return res.status(401).json({ success: false, error: 'User not found' });
+
+      if (!user.pin_hash) return res.status(401).json({ success: false, error: 'PIN not set for this user' });
+
+      const pinMatch = await bcrypt.compare(pin, user.pin_hash);
+      if (!pinMatch) return res.status(401).json({ success: false, error: 'Invalid PIN' });
+
+      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET || 'devsecret', { expiresIn: '8h' });
+      res.cookie('token', token, { httpOnly: true, maxAge: 8 * 3600 * 1000, sameSite: 'lax' });
+      return res.json({ success: true, data: { role: user.role, token } });
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 module.exports = router;

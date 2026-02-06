@@ -172,7 +172,17 @@
     "loadFailed": "Failed to load data.",
     "saved": "Saved successfully.",
     "updated": "Updated successfully.",
-    "deleted": "Deleted successfully."
+    "deleted": "Deleted successfully.",
+    "loading": "Loading..."
+  },
+  "errors": {
+    "passwordTooShort": "Password must be at least 6 characters.",
+    "usernameTooShort": "Username must be at least 3 characters.",
+    "usernameExists": "Username already exists.",
+    "serverError": "Server error.",
+    "noValidFields": "No valid fields to update.",
+    "invalidUserId": "Invalid user id.",
+    "userNotFound": "User not found."
   },
   "frequency": {
     "daily": "Daily",
