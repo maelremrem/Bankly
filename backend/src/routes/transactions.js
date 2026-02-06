@@ -239,6 +239,13 @@ router.post(
       // Begin transaction
       await runAsync('BEGIN TRANSACTION');
       try {
+        // Check negative balance prevention
+        const allowNegative = process.env.ALLOW_NEGATIVE_BALANCE === 'true';
+        const newBalance = Number(user.balance) + Number(amount);
+        if (!allowNegative && newBalance < 0) {
+          return res.status(400).json({ success: false, error: 'Insufficient funds' });
+        }
+
         // Insert transaction record
         const insert = await runAsync(
           'INSERT INTO transactions (user_id, type, amount, description, created_by) VALUES (?, ?, ?, ?, ?)',
@@ -246,7 +253,7 @@ router.post(
         );
 
         // Update user balance
-        const update = await runAsync('UPDATE users SET balance = balance + ? WHERE id = ?', [amount, userId]);
+        await runAsync('UPDATE users SET balance = balance + ? WHERE id = ?', [amount, userId]);
 
         // Commit
         await runAsync('COMMIT');
@@ -284,6 +291,15 @@ router.post('/:id/reverse', requireAuth, requireCanReverse, async (req, res) => 
     // Check if already reversed
     const existing = await getAsync('SELECT * FROM transaction_reversals WHERE original_transaction_id = ?', [origId]);
     if (existing) return res.status(409).json({ success: false, error: 'Transaction already reversed' });
+
+    // Check negative balance prevention for reversal
+    const allowNegative = process.env.ALLOW_NEGATIVE_BALANCE === 'true';
+    const user = await getAsync('SELECT id, balance FROM users WHERE id = ?', [orig.user_id]);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+    const newBalanceAfterReversal = Number(user.balance) + Number(-orig.amount);
+    if (!allowNegative && newBalanceAfterReversal < 0) {
+      return res.status(400).json({ success: false, error: 'Insufficient funds' });
+    }
 
     // Begin transaction
     await runAsync('BEGIN TRANSACTION');

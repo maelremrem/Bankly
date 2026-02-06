@@ -96,4 +96,35 @@ describe('Transaction reversal', () => {
     expect(res.statusCode).toBe(409);
     expect(res.body.success).toBe(false);
   });
+
+  test('Reverse fails if it would create negative balance', async () => {
+    const app = require('../index');
+
+    // Create a new original transaction of 50
+    const createTx = await request(app)
+      .post('/api/transactions')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ userId, amount: 50.0, type: 'manual', description: 'Big credit' });
+
+    expect(createTx.statusCode).toBe(201);
+    const newOrigId = createTx.body.data.transactionId;
+
+    // Debit user by 40 -> balance becomes 10
+    const debit = await request(app)
+      .post('/api/transactions')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ userId, amount: -40.0, type: 'manual', description: 'Partial debit' });
+
+    expect(debit.statusCode).toBe(201);
+
+    // Now attempt to reverse the 50 credit -> would lead to -40 which should be blocked
+    const res = await request(app)
+      .post(`/api/transactions/${newOrigId}/reverse`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send();
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Insufficient funds');
+  });
 });

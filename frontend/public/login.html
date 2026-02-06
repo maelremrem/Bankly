@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <link rel="stylesheet" href="/css/style.css">
     <style>
+        /* Improve readability for the login page */
+        body {
+            font-size: 18px;
+            line-height: 1.45;
+        }
         .user-selection {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -14,6 +19,7 @@
             margin-bottom: 2rem;
         }
         .user-card {
+            font-size: 1.05rem;
             padding: 1rem;
             border: 2px solid #ccc;
             border-radius: 8px;
@@ -26,7 +32,7 @@
             background-color: #f0f8ff;
         }
         .pin-display {
-            font-size: 2rem;
+            font-size: 2.25rem;
             text-align: center;
             margin: 1rem 0;
             min-height: 3rem;
@@ -43,8 +49,8 @@
             margin: 0 auto;
         }
         .keypad button {
-            padding: 1rem;
-            font-size: 1.5rem;
+            padding: 1.25rem;
+            font-size: 2rem;
             border: none;
             border-radius: 8px;
             background: #007bff;
@@ -64,24 +70,43 @@
         .login-btn {
             margin-top: 2rem;
             padding: 1rem;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
+        }
+        /* Align back button to left and center the selected user text */
+        #pinSection {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 1.5rem;
+        }
+        #backBtn {
+            position: absolute;
+            left: 1rem;
+            top: 0.6rem;
+        }
+        #selectedUser {
+            text-align: center;
+            margin: 0 1rem 0 1rem;
+            padding: 0.25rem 0;
+            font-weight: 700;
         }
     </style>
 </head>
-<body>
+<body data-theme="light">
     <main class="container">
         <article>
             <header>
-                <h1>Welcome to Bankly</h1>
-                <p>Select your account and enter your PIN</p>
+                <h1 data-i18n="login.title">Welcome to Bankly</h1>
+                <p data-i18n="login.selectAccount">Select your account and enter your PIN</p>
             </header>
             <div id="userSelection" class="user-selection">
                 <!-- Users will be loaded here -->
             </div>
             <div id="pinSection" style="display: none;">
                 <h3 id="selectedUser"></h3>
-                <button id="backBtn" style="margin-bottom: 1rem;">← Back to user selection</button>
-                <div id="pinDisplay" class="pin-display">Enter PIN</div>
+                <button id="backBtn" style="margin-bottom: 1rem;" data-i18n="login.back">← Back to user selection</button>
+                <div id="pinDisplay" class="pin-display" data-i18n="login.enterPin">Enter PIN</div>
                 <div class="keypad">
                     <button data-key="1">1</button>
                     <button data-key="2">2</button>
@@ -94,7 +119,7 @@
                     <button data-key="9">9</button>
                     <button data-key="0">0</button>
                     <button class="clear" data-key="clear">⌫</button>
-                    <button id="loginBtn" class="login-btn" style="grid-column: span 2;">Login</button>
+                    <button id="loginBtn" class="login-btn" style="grid-column: span 3;" data-i18n="login.pinLogin">Login</button>
                 </div>
             </div>
             <footer>
@@ -102,6 +127,18 @@
             </footer>
         </article>
     </main>
+    <script src="/js/client-config.js"></script>
+    <script src="/js/i18n.js"></script>
+    <script>
+        (async function() {
+            try {
+                const pref = (window.BANKLY_CONFIG && window.BANKLY_CONFIG.defaultLanguage) ? window.BANKLY_CONFIG.defaultLanguage : undefined;
+                await window.i18n.init(pref);
+            } catch (e) {
+                try { await window.i18n.init(); } catch (err) { console.warn('i18n init failed', err); }
+            }
+        })();
+    </script>
     <script src="/js/auth.js"></script>
 </body>
 </html>

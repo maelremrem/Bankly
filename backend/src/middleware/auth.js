@@ -70,20 +70,28 @@ function requireAuthWeb(req, res, next) {
     }
   }
 
-  if (!token) return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
+  if (!token) {
+    const loginPath = req.originalUrl && req.originalUrl.startsWith('/admin') ? '/admin/login' : '/login';
+    return res.redirect(`${loginPath}?next=${encodeURIComponent(req.originalUrl)}`);
+  }
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET || 'devsecret');
     req.user = payload;
     next();
   } catch (err) {
-    return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
+    const loginPath = req.originalUrl && req.originalUrl.startsWith('/admin') ? '/admin/login' : '/login';
+    return res.redirect(`${loginPath}?next=${encodeURIComponent(req.originalUrl)}`);
   }
 }
 
 function requireAdminWeb(req, res, next) {
-  if (!req.user) return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
-  if (req.user.role !== 'admin') return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
+  if (!req.user) {
+    return res.redirect(`/admin/login?next=${encodeURIComponent(req.originalUrl)}`);
+  }
+  if (req.user.role !== 'admin') {
+    return res.redirect(`/admin/login?next=${encodeURIComponent(req.originalUrl)}`);
+  }
   next();
 }
 

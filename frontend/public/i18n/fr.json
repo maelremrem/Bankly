@@ -43,6 +43,7 @@
     "allowances": "Allocations",
     "advances": "Avances",
     "transactions": "Transactions",
+    "refreshTokens": "Jetons de rafraîchissement",
     "reversals": "Annulations"
   },
   "login": {
@@ -50,17 +51,40 @@
     "username": "Nom d'utilisateur",
     "password": "Mot de passe",
     "submit": "Se connecter",
-    "error": "Échec de connexion"
+    "error": "Échec de connexion",
+    "enterCredentials": "Veuillez saisir le nom d'utilisateur et le mot de passe",
+    "selectedPrefix": "Bienvenue, ",
+    "selectUserEnterPin": "Veuillez sélectionner un utilisateur et saisir le PIN",
+    "selectAccount": "Sélectionnez votre compte et saisissez votre PIN",
+    "enterPin": "Saisir le PIN",
+    "back": "← Retour à la sélection",
+    "pinLogin": "Se connecter",
+    "pinCreated": "PIN créé avec succès"
   },
   "dashboard": {
     "user": {
       "title": "Tableau de bord utilisateur",
+      "greeting": {
+        "morning": "Bonjour",
+        "evening": "Bonsoir"
+      },
       "balance": "Votre solde",
       "tasks": "Tâches disponibles",
       "transactions": "Transactions récentes",
       "complete": "Compléter la tâche",
-      "logout": "Déconnexion"
+      "logout": "Déconnexion",
+      "changePin": "Modifier le PIN",
+      "oldPin": "Ancien PIN",
+      "newPin": "Nouveau PIN",
+      "pinChanged": "PIN modifié avec succès"
     },
+    "table": {
+      "date": "Date",
+      "type": "Type",
+      "amount": "Montant",
+      "description": "Description"
+    },
+    "loadingTasks": "Chargement des tâches...",
     "admin": {
       "title": "Tableau de bord administrateur",
       "pageTitle": "Tableau de bord administrateur - Bankly",
@@ -90,7 +114,8 @@
         "language": "Langue",
         "balance": "Solde",
         "createdAt": "Créé le",
-        "password": "Mot de passe"
+        "password": "Mot de passe",
+        "pin": "PIN"
       },
       "tasks": {
         "title": "Tâches",
@@ -157,9 +182,24 @@
         "reverted": "Rétablie",
         "undo": "Restaurer"
       },
+      "refreshTokens": {
+        "title": "Jetons de rafraîchissement",
+        "id": "ID",
+        "user": "Utilisateur",
+        "createdAt": "Créé",
+        "expiresAt": "Expire",
+        "revoke": "Révoquer",
+        "revokeAllForUser": "Révoquer tout pour l'utilisateur",
+        "confirmRevoke": "Voulez-vous vraiment révoquer ce jeton ?",
+        "confirmRevokeAll": "Voulez-vous vraiment révoquer tous les jetons pour cet utilisateur ?",
+        "revokedSuccess": "Jeton révoqué",
+        "revokedAllSuccess": "Tous les jetons révoqués pour l'utilisateur"
+      },
       "logout": "Déconnexion"
     }
   },
+
+  
   "messages": {
     "confirmDeleteUser": "Voulez-vous vraiment supprimer cet utilisateur ?",
     "confirmDeleteTask": "Voulez-vous vraiment supprimer cette tâche ?",
@@ -181,6 +221,7 @@
     "usernameExists": "Le nom d'utilisateur existe déjà.",
     "serverError": "Erreur du serveur.",
     "noValidFields": "Aucun champ valide à mettre à jour.",
+    "pinInvalid": "Le PIN doit contenir 4 à 8 chiffres.",
     "invalidUserId": "Identifiant utilisateur invalide.",
     "userNotFound": "Utilisateur introuvable."
   },
@@ -192,5 +233,20 @@
   "roles": {
     "admin": "Administrateur",
     "user": "Utilisateur"
+  }
+  ,
+  "table": {
+    "date": "Date",
+    "type": "Type",
+    "amount": "Montant",
+    "description": "Description"
+  }
+  ,
+  "loadingTasks": "Chargement des tâches..."
+  ,
+  "tabs": {
+    "tasks": "Tâches",
+    "transactions": "Transactions",
+    "changePin": "Modifier le PIN"
   }
 }

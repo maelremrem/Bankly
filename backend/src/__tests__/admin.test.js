@@ -84,7 +84,7 @@ describe('Admin API', () => {
     // without cookie should redirect to root
     const res1 = await request(app).get('/admin/dashboard.html');
     expect(res1.statusCode).toBe(302);
-    expect(res1.headers.location).toBe('/login?next=%2Fadmin%2Fdashboard.html');
+    expect(res1.headers.location).toBe('/admin/login?next=%2Fadmin%2Fdashboard.html');
 
     // with cookie should succeed
     const agent = request.agent(app);

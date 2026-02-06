@@ -7,6 +7,29 @@ function t(key, fallback = '') {
     return fallback || key;
 }
 
+function getCurrency() {
+    try {
+        if (window.BANKLY_CONFIG && window.BANKLY_CONFIG.currency) return String(window.BANKLY_CONFIG.currency);
+    } catch (e) {}
+    return '$';
+}
+
+function formatCurrency(amount) {
+    const currency = getCurrency();
+    const n = Number(amount || 0).toFixed(2);
+    try {
+        const pattern = (window.BANKLY_CONFIG && window.BANKLY_CONFIG.currencyPattern) ? String(window.BANKLY_CONFIG.currencyPattern) : null;
+        if (pattern && (pattern.includes('%v') || pattern.includes('%c'))) {
+            return pattern.replace('%v', n).replace('%c', currency);
+        }
+    } catch (e) {
+        /* ignore and fallback */
+    }
+    // Fallback heuristic: short currency treated as symbol prefix
+    if (String(currency).length <= 2) return `${currency}${n}`;
+    return `${n} ${currency}`;
+}
+
 function escapeHtml(value) {
     return String(value ?? '')
         .replace(/&/g, '&amp;')
@@ -15,6 +38,34 @@ function escapeHtml(value) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 }
+
+// Greeting helper state and updater
+let _currentUserForGreeting = null;
+function updateBalanceGreeting() {
+    try {
+        const el = document.getElementById('balanceGreeting');
+        if (!el) return;
+        if (!_currentUserForGreeting) {
+            el.textContent = '';
+            return;
+        }
+        function _getTimeGreetingKey() {
+            const h = new Date().getHours();
+            return (h >= 18 || h < 6) ? 'dashboard.user.greeting.evening' : 'dashboard.user.greeting.morning';
+        }
+        const greet = t(_getTimeGreetingKey(), 'Hello');
+        el.textContent = `${greet}, ${escapeHtml(_currentUserForGreeting.username)}`;
+    } catch (err) { /* ignore */ }
+}
+// Watch for language changes (document.lang) to refresh greeting
+const _greetingLangObserver = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+        if (m.type === 'attributes' && m.attributeName === 'lang') {
+            updateBalanceGreeting();
+        }
+    }
+});
+_greetingLangObserver.observe(document.documentElement, { attributes: true });
 
 // Helper function for API calls (send cookies)
 async function apiCall(endpoint, options = {}) {
@@ -65,13 +116,25 @@ async function loadDashboard() {
         if (!userResponse.success) {
             throw new Error('Failed to get user info');
         }
-        const userId = userResponse.data.id;
+        const me = userResponse.data;
+        const userId = me.id;
+        // show current user in header
+        try {
+            const currentUserEl = document.getElementById('currentUser');
+            if (currentUserEl) currentUserEl.textContent = `${escapeHtml(me.username)} • ${t('roles.user','User')}`;
+        } catch (err) { /* ignore */ }
+
+        // Set current user for greeting updater (auto updates on language change)
+        try {
+            _currentUserForGreeting = me;
+            updateBalanceGreeting();
+        } catch (err) { /* ignore */ }
 
         // Load balance
         const balanceResponse = await apiCall(`/api/users/${userId}/balance`);
         if (balanceResponse.success) {
             const balanceEl = document.getElementById('balanceContent');
-            if (balanceEl) balanceEl.textContent = `$${balanceResponse.data.balance.toFixed(2)}`;
+            if (balanceEl) balanceEl.textContent = formatCurrency(balanceResponse.data.balance);
         }
 
         // Load available tasks
@@ -105,6 +168,7 @@ function displayTasks(tasks) {
     if (!tasksList) return;
     if (!Array.isArray(tasks) || tasks.length === 0) {
         tasksList.innerHTML = '<p data-i18n="common.noData">No tasks available</p>';
+        if (window.i18n && typeof window.i18n.applyTranslations === 'function') window.i18n.applyTranslations(tasksList);
         return;
     }
 
@@ -112,7 +176,7 @@ function displayTasks(tasks) {
         <article>
             <h3>${escapeHtml(task.name)}</h3>
             <p>${escapeHtml(task.description || '')}</p>
-            <p>${t ? t('dashboard.user.tasks.reward','Reward') : 'Reward'}: $${Number(task.reward_amount || 0).toFixed(2)}</p>
+            <p>${t ? t('dashboard.user.tasks.reward','Reward') : 'Reward'}: ${formatCurrency(Number(task.reward_amount || 0).toFixed(2))}</p>
             <button onclick="completeTask(${task.id})">${t ? t('dashboard.user.complete','Complete Task') : 'Complete Task'}</button>
         </article>
     `).join('');
@@ -130,10 +194,11 @@ function displayTransactions(transactions) {
         <tr>
             <td>${escapeHtml(new Date(tx.created_at).toLocaleDateString())}</td>
             <td>${escapeHtml(tx.type)}</td>
-            <td>${escapeHtml(Number(tx.amount || 0).toFixed(2))}</td>
+            <td>${escapeHtml(formatCurrency(Number(tx.amount || 0)))}</td>
             <td>${escapeHtml(tx.description || '')}</td>
         </tr>
     `).join('');
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') window.i18n.applyTranslations(tbody);
 }
 
 // Modal helpers for user dashboard
@@ -289,5 +354,166 @@ document.getElementById('logout').addEventListener('click', () => {
     window.location.href = '../index.html';
 });
 
+// Change PIN form handler
+// Change PIN via keypad flow (old PIN -> verify -> new PIN)
+let _pinState = {
+    mode: 'idle', // 'idle' | 'old' | 'new'
+    entry: '',
+    oldPin: '',
+    username: ''
+};
+
+function resetPinState() {
+    _pinState = { mode: 'idle', entry: '', oldPin: '', username: _pinState.username };
+    const disp = document.getElementById('changePinDisplay'); if (disp) disp.textContent = '';
+    const prompt = document.getElementById('changePinPrompt'); if (prompt) prompt.textContent = window.i18n ? window.i18n.t('dashboard.user.oldPin','Enter old PIN') : 'Enter old PIN';
+}
+
+function setPinDisplay() {
+    const disp = document.getElementById('changePinDisplay');
+    if (!disp) return;
+    const stars = '*'.repeat(Math.min(8, _pinState.entry.length));
+    disp.textContent = stars;
+}
+
+function startChangePinFlow(username) {
+    _pinState.username = username || _pinState.username;
+    _pinState.mode = 'old';
+    _pinState.entry = '';
+    const prompt = document.getElementById('changePinPrompt'); if (prompt) prompt.textContent = window.i18n ? window.i18n.t('dashboard.user.oldPin','Enter old PIN') : 'Enter old PIN';
+    setPinDisplay();
+}
+
+// Keypad handling
+document.addEventListener('click', async (e) => {
+    const key = e.target && e.target.getAttribute && e.target.getAttribute('data-key');
+    if (key == null) return;
+    // ignore if not in changePin tab
+    const changeTab = document.getElementById('tab-changePin');
+    if (!changeTab || changeTab.style.display === 'none') return;
+    e.preventDefault();
+    if (key === 'clear') {
+        _pinState.entry = _pinState.entry.slice(0, -1);
+        setPinDisplay();
+        return;
+    }
+    // append digit
+    if (/^\d$/.test(key)) {
+        if (_pinState.entry.length < 8) _pinState.entry += key;
+        setPinDisplay();
+    }
+});
+
+// OK / Cancel buttons
+document.addEventListener('click', async (e) => {
+    if (!e.target) return;
+    if (e.target.id === 'changePinCancel') {
+        resetPinState();
+        return;
+    }
+    if (e.target.id === 'changePinOkBtn') {
+        e.preventDefault();
+        const entry = _pinState.entry;
+        if (!entry || !/^\d{4,8}$/.test(entry)) { showMessageModal(window.i18n ? window.i18n.t('errors.pinInvalid') : 'PIN must be 4-8 digits'); _pinState.entry = ''; setPinDisplay(); return; }
+        try {
+            if (_pinState.mode === 'old') {
+                // verify old PIN; if user has no PIN set, server returns 400->No PIN set
+                const res = await apiCall('/auth/verify-pin', { method: 'POST', body: JSON.stringify({ pin: entry }) });
+                if (res && res.success) {
+                    _pinState.oldPin = entry;
+                    _pinState.entry = '';
+                    _pinState.mode = 'new';
+                    const prompt = document.getElementById('changePinPrompt'); if (prompt) prompt.textContent = window.i18n ? window.i18n.t('dashboard.user.newPin','Enter new PIN') : 'Enter new PIN';
+                    setPinDisplay();
+                    return;
+                }
+                // handle special case: server tells us no PIN set (then proceed to new)
+                if (res && !res.success && res.error && res.error.toLowerCase().includes('no pin')) {
+                    _pinState.oldPin = '';
+                    _pinState.entry = '';
+                    _pinState.mode = 'new';
+                    const prompt = document.getElementById('changePinPrompt'); if (prompt) prompt.textContent = window.i18n ? window.i18n.t('dashboard.user.newPin','Enter new PIN') : 'Enter new PIN';
+                    setPinDisplay();
+                    return;
+                }
+                showMessageModal('Error: ' + (res && res.error ? res.error : 'Invalid PIN'));
+                _pinState.entry = '';
+                setPinDisplay();
+                return;
+            }
+            if (_pinState.mode === 'new') {
+                // submit change-pin
+                const res = await apiCall('/auth/change-pin', { method: 'POST', body: JSON.stringify({ oldPin: _pinState.oldPin, newPin: entry }) });
+                if (res && res.success) {
+                    showMessageModal(window.i18n ? window.i18n.t('dashboard.user.pinChanged') : 'PIN changed successfully');
+                    resetPinState();
+                    return;
+                }
+                showMessageModal('Error: ' + (res && res.error ? res.error : 'Failed to change PIN'));
+                _pinState.entry = '';
+                setPinDisplay();
+                return;
+            }
+        } catch (err) {
+            console.error('PIN keypad error', err);
+            showMessageModal('Network error');
+            _pinState.entry = '';
+            setPinDisplay();
+            return;
+        }
+    }
+});
+
+// Start flow when user opens changePin tab (listen for tab activation)
+function onTabActivated(name) {
+    if (name === 'changePin') {
+        // ensure we have username
+        (async () => {
+            try {
+                const me = await apiCall('/auth/me');
+                if (me && me.success && me.data && me.data.username) {
+                    startChangePinFlow(me.data.username);
+                } else {
+                    startChangePinFlow('');
+                }
+            } catch (e) {
+                startChangePinFlow('');
+            }
+        })();
+    }
+}
+
+// Patch: call onTabActivated from initTabs when switching
+
 // Load dashboard on page load
+// Initialize tabs (show/hide sections)
+function initTabs() {
+    const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+    const contents = Array.from(document.querySelectorAll('.tab-content'));
+    function activate(name) {
+        tabs.forEach(b => {
+            const active = b.dataset.tab === name;
+            b.classList.toggle('active', active);
+            b.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        contents.forEach(c => {
+            // ensure the active tab content is shown; inline style overrides the .tab-content rule
+            if (c.id === ('tab-' + name)) {
+                c.style.display = 'block';
+            } else {
+                c.style.display = 'none';
+            }
+        });
+        const visible = document.getElementById('tab-' + name);
+        if (visible && window.i18n && typeof window.i18n.applyTranslations === 'function') window.i18n.applyTranslations(visible);
+        if (typeof onTabActivated === 'function') onTabActivated(name);
+    }
+    tabs.forEach(b => b.addEventListener('click', () => activate(b.dataset.tab)));
+    // default
+    if (tabs.length) activate(tabs[0].dataset.tab || 'tasks');
+}
+
+initTabs();
+
+// Then load data
 loadDashboard();

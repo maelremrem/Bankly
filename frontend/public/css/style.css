@@ -81,11 +81,19 @@ button[type="submit"]:disabled {
 }
 
 .balance-display {
-    font-size: 2rem;
-    font-weight: bold;
+    font-size: 1.6rem;
+    font-weight: 700;
     text-align: center;
-    color: #27ae60;
-    margin: 1rem 0;
+    color: var(--text);
+    margin: 0.5rem 0 1rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(2,6,23,0.06);
+    position: sticky;
+    top: 3.5rem;
+    z-index: 5;
 }
 
 /* Modal styles */
@@ -362,6 +370,12 @@ button[type="submit"]:disabled {
     background: #e2e8f0;
     color: #475569;
 }
+
+/* Tabs for user dashboard */
+.tabs { display:flex; gap:0.5rem; margin:1rem 0; flex-wrap:wrap; }
+.tab-btn { padding:0.4rem 0.75rem; border-radius:8px; background: transparent; border:1px solid var(--border); cursor:pointer; font-weight:600; color:var(--muted-text); }
+.tab-btn.active{ background:var(--surface); color:var(--text); border-color: #3498db; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+.tab-content { margin-top:0.75rem; }
 
 .panel {
     margin-top: 1.5rem;

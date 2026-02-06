@@ -11,11 +11,24 @@ const db = new sqlite3.Database(dbFile);
 
 // Promisify database operations for easier use
 const dbRun = (sql, params = []) => {
+  const maxRetries = 5;
+  const baseDelay = 20; // ms
   return new Promise((resolve, reject) => {
-    db.run(sql, params, function(err) {
-      if (err) reject(err);
-      else resolve({ lastID: this.lastID, changes: this.changes });
-    });
+    const attempt = (triesLeft) => {
+      db.run(sql, params, function(err) {
+        if (err) {
+          // Retry transient SQLITE_BUSY errors briefly
+          if ((err.code === 'SQLITE_BUSY' || (err.message && err.message.includes('SQLITE_BUSY'))) && triesLeft > 0) {
+            setTimeout(() => attempt(triesLeft - 1), baseDelay);
+          } else {
+            reject(err);
+          }
+        } else {
+          resolve({ lastID: this.lastID, changes: this.changes });
+        }
+      });
+    };
+    attempt(maxRetries);
   });
 };
 
@@ -80,6 +93,31 @@ if (fs.existsSync(schemaPath)) {
             }
           });
         }
+      });
+
+      // Ensure refresh_tokens table exists for refresh token handling
+      db.exec(`CREATE TABLE IF NOT EXISTS refresh_tokens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        token_hash TEXT NOT NULL,
+        expires_at DATETIME NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      );`, (err8) => {
+        if (err8) console.error('Failed to create refresh_tokens table', err8);
+      });
+
+      // Ensure pin_audit table exists for PIN change/set auditing
+      db.exec(`CREATE TABLE IF NOT EXISTS pin_audit (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        action TEXT NOT NULL,
+        performed_by INTEGER,
+        details TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      );`, (err9) => {
+        if (err9) console.error('Failed to create pin_audit table', err9);
       });
     });
   });

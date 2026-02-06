@@ -18,6 +18,14 @@
                 </li>
             </ul>
             <ul class="nav-actions">
+                <li><small id="currentUser"></small></li>
+                <li>
+                    <label class="theme-switch" style="margin-right:0.5rem;">
+                        <input type="checkbox" id="themeToggle" role="switch">
+                        <span data-i18n="theme.label">Theme</span>
+                        <span id="themeModeLabel" data-i18n="theme.light">Light</span>
+                    </label>
+                </li>
                 <li>
                     <button id="logout" class="icon-button secondary" type="button">
                         <span class="btn-icon">⎋</span>
@@ -29,42 +37,60 @@
     </header>
 
     <main class="container">
-        <section>
-            <h2>Your Balance</h2>
+        <style>
+            /* Simple tab styles, keep balance sticky */
+            .tabs { display:flex; gap:0.5rem; margin:1rem 0; }
+            .tab-btn { padding:0.5rem 1rem; border-radius:6px; background:var(--surface); cursor:pointer; border:1px solid transparent; }
+            .tab-btn.active { border-color:var(--primary); box-shadow:0 1px 0 rgba(0,0,0,0.05); }
+            .tab-content { display:none; }
+            .balance-display { position:sticky; top:3.5rem; z-index:2; background:var(--bg); padding:0.5rem 0.25rem; border-radius:6px; }
+            .balance-greeting { font-size:0.95rem; color:var(--muted); margin-bottom:0.25rem; } 
+        </style>
+
+        <section id="balanceSection">
+            <h2 data-i18n="dashboard.user.balance">Your Balance</h2>
             <div id="balance" class="balance-display">
-                <div id="balanceContent">Loading...</div>
+                <!-- Greeting will be placed above the amount -->
+                <div id="balanceGreeting" class="balance-greeting" aria-live="polite"></div>
+                <div id="balanceContent" data-i18n="common.loading">Loading...</div>
                 <div id="balanceSkeleton" class="skeleton hidden" aria-hidden="true">
                     <div class="skeleton-line" style="width:60%;height:1.6rem;"></div>
                 </div>
             </div>
         </section>
 
-        <section>
-            <h2>Available Tasks</h2>
+        <nav class="tabs" role="tablist" aria-label="User sections">
+            <button class="tab-btn" data-tab="tasks" role="tab" aria-selected="true" data-i18n="tabs.tasks">Tasks</button>
+            <button class="tab-btn" data-tab="transactions" role="tab" aria-selected="false" data-i18n="tabs.transactions">Transactions</button>
+            <button class="tab-btn" data-tab="changePin" role="tab" aria-selected="false" data-i18n="tabs.changePin">Change PIN</button>
+        </nav>
+
+        <div id="tab-tasks" class="tab-content">
+            <h2 data-i18n="dashboard.user.tasks">Available Tasks</h2>
             <div id="tasksList">
-                <div id="tasksContent">Loading tasks...</div>
+                <div id="tasksContent" data-i18n="loadingTasks">Loading tasks...</div>
                 <div id="tasksSkeleton" class="skeleton hidden" aria-hidden="true">
                     <div class="skeleton-item"></div>
                     <div class="skeleton-item"></div>
                     <div class="skeleton-item"></div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <section>
-            <h2>Recent Transactions</h2>
+        <div id="tab-transactions" class="tab-content">
+            <h2 data-i18n="dashboard.user.transactions">Recent Transactions</h2>
             <table id="transactionsTable">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Description</th>
+                        <th data-i18n="table.date">Date</th>
+                        <th data-i18n="table.type">Type</th>
+                        <th data-i18n="table.amount">Amount</th>
+                        <th data-i18n="table.description">Description</th>
                     </tr>
                 </thead>
                 <tbody id="transactionsBody">
                     <tr id="transactionsContent">
-                        <td colspan="4">Loading...</td>
+                        <td colspan="4" data-i18n="common.loading">Loading...</td>
                     </tr>
                     <tr id="transactionsSkeleton" class="skeleton hidden" aria-hidden="true">
                         <td colspan="4">
@@ -75,7 +101,44 @@
                     </tr>
                 </tbody>
             </table>
-        </section>
+        </div>
+
+        <div id="tab-changePin" class="tab-content">
+            <h2 data-i18n="dashboard.user.changePin">Change PIN</h2>
+            <style>
+                /* Keypad styles copied from login for high contrast */
+                .pin-display { font-size: 2.25rem; text-align: center; margin: 1rem 0; min-height: 3rem; border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem; background: #f9f9f9; }
+                .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; max-width: 300px; margin: 0 auto; }
+                .keypad button { padding: 1.25rem; font-size: 2rem; border: none; border-radius: 8px; background: #007bff; color: white; cursor: pointer; transition: background 0.3s; }
+                .keypad button:hover { background: #0056b3; }
+                .keypad .clear { background: #dc3545; }
+                .keypad .clear:hover { background: #c82333; }
+                .login-btn { margin-top: 0.75rem; padding: 1rem; font-size: 1.25rem; grid-column: span 3; }
+                .keypad .secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+            </style>
+
+            <div id="changePinArea">
+                <div id="changePinPrompt" data-i18n="dashboard.user.oldPin">Enter old PIN</div>
+                <div id="changePinDisplay" class="pin-display" data-i18n="login.enterPin">Enter PIN</div>
+                <div class="keypad" id="changePinKeypad">
+                    <button data-key="1">1</button>
+                    <button data-key="2">2</button>
+                    <button data-key="3">3</button>
+                    <button data-key="4">4</button>
+                    <button data-key="5">5</button>
+                    <button data-key="6">6</button>
+                    <button data-key="7">7</button>
+                    <button data-key="8">8</button>
+                    <button data-key="9">9</button>
+                    <button data-key="0">0</button>
+                    <button class="clear" data-key="clear">⌫</button>
+                    <button id="changePinOkBtn" class="login-btn">OK</button>
+                </div>
+                <div style="text-align:center;margin-top:0.5rem;">
+                    <button id="changePinCancel" class="secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <div id="messageModal" class="modal" aria-hidden="true" style="display:none;">
@@ -83,7 +146,7 @@
             <button class="close" data-action="close" data-target="messageModal">&times;</button>
             <p id="messageModalBody"></p>
             <div class="modal-actions">
-                <button type="button" data-action="close" data-target="messageModal">OK</button>
+                <button type="button" data-action="close" data-target="messageModal" data-i18n="common.yes">OK</button>
             </div>
         </div>
     </div>
@@ -91,16 +154,65 @@
     <div id="promptModal" class="modal" aria-hidden="true" style="display:none;">
         <div class="modal-content">
             <button class="close" data-action="close" data-target="promptModal">&times;</button>
-            <h3>Input</h3>
+            <h3 data-i18n="dashboard.admin.tasks.promptTitle">Input</h3>
             <div class="prompt-body" style="margin:0.5rem 0 1rem"></div>
             <input id="promptModalInput" class="prompt-input" type="text" />
             <div class="modal-actions">
-                <button type="button" data-action="prompt-ok">OK</button>
-                <button type="button" class="secondary" data-action="prompt-cancel">Cancel</button>
+                <button type="button" data-action="prompt-ok" data-i18n="common.yes">OK</button>
+                <button type="button" class="secondary" data-action="prompt-cancel" data-i18n="common.cancel">Cancel</button>
             </div>
         </div>
     </div>
 
+    <script src="/js/client-config.js"></script>
+    <script src="../js/i18n.js"></script>
+    <script>
+        (async function() {
+            try {
+                const pref = (window.BANKLY_CONFIG && window.BANKLY_CONFIG.defaultLanguage) ? window.BANKLY_CONFIG.defaultLanguage : undefined;
+                await window.i18n.init(pref);
+                window.i18n.applyTranslations(document);
+            } catch (e) {
+                try { await window.i18n.init(); window.i18n.applyTranslations(document); } catch(err) { console.warn('i18n init failed', err); }
+            }
+
+            // Theme init using same helpers as admin
+            function tLocal(key, fallback = '') {
+                if (window.i18n && typeof window.i18n.t === 'function') return window.i18n.t(key, fallback);
+                return fallback || key;
+            }
+
+            function updateThemeLabel(theme) {
+                const label = document.getElementById('themeModeLabel');
+                if (!label) return;
+                const isDark = theme === 'dark';
+                label.setAttribute('data-i18n', isDark ? 'theme.dark' : 'theme.light');
+                label.textContent = tLocal(isDark ? 'theme.dark' : 'theme.light');
+            }
+
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('bankly_theme', theme);
+                updateThemeLabel(theme);
+            }
+
+            function initTheme() {
+                const stored = localStorage.getItem('bankly_theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = stored || (prefersDark ? 'dark' : 'light');
+                const toggle = document.getElementById('themeToggle');
+                applyTheme(theme);
+                if (toggle) {
+                    toggle.checked = theme === 'dark';
+                    toggle.addEventListener('change', () => {
+                        applyTheme(toggle.checked ? 'dark' : 'light');
+                    });
+                }
+            }
+
+            initTheme();
+        })();
+    </script>
     <script src="../js/dashboard-user.js"></script>
 </body>
 </html>

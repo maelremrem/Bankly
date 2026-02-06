@@ -43,6 +43,7 @@
     "allowances": "Allowances",
     "advances": "Advances",
     "transactions": "Transactions",
+    "refreshTokens": "Refresh Tokens",
     "reversals": "Reversals"
   },
   "login": {
@@ -50,17 +51,40 @@
     "username": "Username",
     "password": "Password",
     "submit": "Login",
-    "error": "Login failed"
+    "error": "Login failed",
+    "enterCredentials": "Please enter username and password",
+    "selectedPrefix": "Welcome, ",
+    "selectUserEnterPin": "Please select a user and enter PIN",
+    "selectAccount": "Select your account and enter your PIN",
+    "enterPin": "Enter PIN",
+    "back": "Back to user selection",
+    "pinLogin": "Login",
+    "pinCreated": "PIN created successfully"
   },
   "dashboard": {
     "user": {
       "title": "User Dashboard",
+      "greeting": {
+        "morning": "Good morning",
+        "evening": "Good evening"
+      },
       "balance": "Your Balance",
       "tasks": "Available Tasks",
       "transactions": "Recent Transactions",
       "complete": "Complete Task",
-      "logout": "Logout"
+      "logout": "Logout",
+      "changePin": "Change PIN",
+      "oldPin": "Old PIN",
+      "newPin": "New PIN",
+      "pinChanged": "PIN changed successfully"
     },
+    "table": {
+      "date": "Date",
+      "type": "Type",
+      "amount": "Amount",
+      "description": "Description"
+    },
+    "loadingTasks": "Loading tasks...",
     "admin": {
       "title": "Admin Dashboard",
       "pageTitle": "Admin Dashboard - Bankly",
@@ -90,7 +114,8 @@
         "language": "Language",
         "balance": "Balance",
         "createdAt": "Created",
-        "password": "Password"
+        "password": "Password",
+      "pin": "PIN"
       },
       "tasks": {
         "title": "Tasks",
@@ -157,9 +182,23 @@
         "reverted": "Reverted",
         "undo": "Undo"
       },
+      "refreshTokens": {
+        "title": "Refresh Tokens",
+        "id": "ID",
+        "user": "User",
+        "createdAt": "Created",
+        "expiresAt": "Expires",
+        "revoke": "Revoke",
+        "revokeAllForUser": "Revoke all for user",
+        "confirmRevoke": "Are you sure you want to revoke this token?",
+        "confirmRevokeAll": "Are you sure you want to revoke all tokens for this user?",
+        "revokedSuccess": "Token revoked",
+        "revokedAllSuccess": "All tokens revoked for user"
+      },
       "logout": "Logout"
     }
-  },
+  }
+  
   "messages": {
     "confirmDeleteUser": "Are you sure you want to delete this user?",
     "confirmDeleteTask": "Are you sure you want to delete this task?",
@@ -181,6 +220,7 @@
     "usernameExists": "Username already exists.",
     "serverError": "Server error.",
     "noValidFields": "No valid fields to update.",
+    "pinInvalid": "PIN must be 4-8 digits.",
     "invalidUserId": "Invalid user id.",
     "userNotFound": "User not found."
   },
@@ -192,5 +232,20 @@
   "roles": {
     "admin": "Admin",
     "user": "User"
+  }
+  ,
+  "table": {
+    "date": "Date",
+    "type": "Type",
+    "amount": "Amount",
+    "description": "Description"
+  }
+  ,
+  "loadingTasks": "Loading tasks..."
+  ,
+  "tabs": {
+    "tasks": "Tasks",
+    "transactions": "Transactions",
+    "changePin": "Change PIN"
   }
 }

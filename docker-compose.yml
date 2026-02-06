@@ -7,6 +7,8 @@ services:
       - "3000:3000"
     volumes:
       - ./backend/data:/app/data
+      - ./frontend/public:/app/frontend/public:ro
+      - ./frontend/public:/frontend/public:ro
     environment:
       - PORT=3000
       - NODE_ENV=production

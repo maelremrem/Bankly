@@ -27,22 +27,44 @@ describe('Users API', () => {
     expect(login.statusCode).toBe(200);
     const token = login.body.data.token;
 
-    // create new user
+    // create new user (no password required for regular users)
     const res = await request(app)
       .post('/api/users')
       .set('Authorization', `Bearer ${token}`)
-      .send({ username: 'newuser', password: 'newpass123' });
+      .send({ username: 'newuser' });
 
     expect(res.statusCode).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toHaveProperty('id');
 
-    // Update user: change username and password
+    // Admin sets a PIN for the user
     const userId = res.body.data.id;
+    const pinSet = await request(app)
+      .put(`/api/users/${userId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ pin: '1234' });
+
+    expect(pinSet.statusCode).toBe(200);
+    expect(pinSet.body.success).toBe(true);
+
+    // verify audit entry exists for admin_set
+    const audit = await new Promise((resolve, reject) => {
+      db.get('SELECT * FROM pin_audit WHERE user_id = ? AND action = ?', [userId, 'admin_set'], (err, row) => {
+        if (err) return reject(err);
+        resolve(row);
+      });
+    });
+    expect(audit).toBeDefined();
+
+    // User can login with PIN
+    const pinLogin = await request(app).post('/auth/pin-login').send({ username: 'newuser', pin: '1234' });
+    expect(pinLogin.statusCode).toBe(200);
+
+    // Update user: change username and password (make user an admin now)
     const update = await request(app)
       .put(`/api/users/${userId}`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ username: 'updateduser', password: 'updatedPass1' });
+      .send({ username: 'updateduser', password: 'updatedPass1', role: 'admin' });
 
     expect(update.statusCode).toBe(200);
     expect(update.body.success).toBe(true);

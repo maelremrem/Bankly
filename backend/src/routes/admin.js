@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
+const logger = require('../config/logger');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -191,7 +192,64 @@ router.get('/users', requireAuth, requireAdmin, (req, res) => {
     res.json({ success: true, data: rows });
   });
 });
+// ===== Refresh token management (admin) =====
+// List refresh tokens (optionally filter by userId)
+router.get('/refresh-tokens', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const userId = req.query.userId ? Number(req.query.userId) : null;
+    // Join with users to include username for display
+    let sql = 'SELECT r.id, r.user_id, r.created_at, r.expires_at, u.username FROM refresh_tokens r LEFT JOIN users u ON r.user_id = u.id';
+    const params = [];
+    if (userId) {
+      sql += ' WHERE r.user_id = ?';
+      params.push(userId);
+    }
+    sql += ' ORDER BY r.created_at DESC';
 
+    const rows = await db.allAsync(sql, params);
+    return res.json({ success: true, data: rows || [] });
+  } catch (error) {
+    console.error('Error listing refresh tokens', error);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+// Revoke a single refresh token by id
+router.post('/refresh-tokens/:id/revoke', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id) return res.status(400).json({ success: false, error: 'Invalid token id' });
+
+    const result = await db.runAsync('DELETE FROM refresh_tokens WHERE id = ?', [id]);
+    const deleted = result && result.changes ? result.changes : 0;
+    if (deleted > 0) {
+      const logger = require('../config/logger');
+      logger.info(`admin revoked refresh token id=${id} by admin=${req.user.userId}`);
+    }
+    return res.json({ success: true, data: { deleted } });
+  } catch (error) {
+    console.error('Error revoking refresh token', error);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+// Revoke all refresh tokens for a user (body: { userId })
+router.post('/refresh-tokens/revoke', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ success: false, error: 'Missing userId' });
+
+    const result = await db.runAsync('DELETE FROM refresh_tokens WHERE user_id = ?', [Number(userId)]);
+    const deleted = result && result.changes ? result.changes : 0;
+    const logger = require('../config/logger');
+    logger.info(`admin revoked ${deleted} refresh tokens for user=${userId} by admin=${req.user.userId}`);
+
+    return res.json({ success: true, data: { deleted } });
+  } catch (error) {
+    console.error('Error revoking refresh tokens by user', error);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
 // Users list (HTML fragment for HTMX)
 router.get('/users/html', requireAuth, requireAdmin, (req, res) => {
   const searchTerm = req.query.search ? `%${req.query.search}%` : null;

@@ -160,7 +160,16 @@ function formatCurrency(amount) {
     if (window.utils && typeof window.utils.formatCurrency === 'function') {
         return window.utils.formatCurrency(amount);
     }
-    return `$${Number(amount || 0).toFixed(2)}`;
+    const currency = (window.BANKLY_CONFIG && window.BANKLY_CONFIG.currency) ? String(window.BANKLY_CONFIG.currency) : '$';
+    const n = Number(amount || 0).toFixed(2);
+    try {
+        const pattern = (window.BANKLY_CONFIG && window.BANKLY_CONFIG.currencyPattern) ? String(window.BANKLY_CONFIG.currencyPattern) : null;
+        if (pattern && (pattern.includes('%v') || pattern.includes('%c'))) {
+            return pattern.replace('%v', n).replace('%c', currency);
+        }
+    } catch (e) {}
+    if (String(currency).length <= 2) return `${currency}${n}`;
+    return `${n} ${currency}`;
 }
 
 function formatDateTime(value) {
@@ -868,18 +877,21 @@ async function handleUserSubmit(event) {
     const userId = document.getElementById('userId').value;
     const username = document.getElementById('userUsername').value.trim();
     const password = document.getElementById('userPassword').value.trim();
+    const pin = (document.getElementById('userPin') && document.getElementById('userPin').value) ? document.getElementById('userPin').value.trim() : null;
     const role = document.getElementById('userRole').value;
     const language = document.getElementById('userLanguage').value;
 
     if (!username) return;
 
-    if (!userId && !password) {
+    // Only require password when creating an admin user
+    if (!userId && role === 'admin' && !password) {
         showToast(t('messages.passwordRequired'));
         return;
     }
 
     const payload = { username, role, language };
     if (password) payload.password = password;
+    if (pin) payload.pin = pin;
 
     try {
         showBtnSpinner(btnId);

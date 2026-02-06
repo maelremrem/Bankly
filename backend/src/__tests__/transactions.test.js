@@ -90,6 +90,22 @@ describe('Transactions API', () => {
     expect(tx.description).toBe('Test debit');
   });
 
+  test('POST /api/transactions rejects if insufficient funds', async () => {
+    const app = require('../index');
+    // Attempt to debit more than current balance (current is 12 from previous tests)
+    const res = await adminAgent
+      .post('/api/transactions')
+      .send({ userId: targetUserId, amount: -20.0, type: 'manual', description: 'Overdraft attempt' });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Insufficient funds');
+
+    // Ensure balance unchanged
+    const u = await getAsync('SELECT balance FROM users WHERE id = ?', [targetUserId]);
+    expect(Number(u.balance)).toBeCloseTo(12.0);
+  });
+
   test('GET /api/transactions returns all transactions for admin', async () => {
     const app = require('../index');
     const res = await adminAgent

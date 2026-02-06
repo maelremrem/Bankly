@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const username = document.getElementById('username') ? document.getElementById('username').value : '';
             const password = document.getElementById('password') ? document.getElementById('password').value : '';
             if (!username || !password) {
-                showError('Please enter username and password');
+                showError(window.i18n ? window.i18n.t('login.enterCredentials') : 'Please enter username and password');
                 return;
             }
 
@@ -48,12 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (role === 'admin') window.location.href = '/admin/dashboard.html';
                     else window.location.href = '/user/dashboard.html';
                 } else {
-                    const errMsg = (data && data.error) ? data.error : 'Login failed';
+                    const errMsg = (data && data.error) ? data.error : (window.i18n ? window.i18n.t('login.error') : 'Login failed');
                     showError(errMsg);
                 }
             } catch (err) {
                 console.error('Login failed', err);
-                showError('Network error. Please try again.');
+                showError(window.i18n ? window.i18n.t('messages.networkError') : 'Network error. Please try again.');
             } finally {
                 hideLoginSpinner(submitBtnId);
             }
@@ -70,12 +70,31 @@ function showError(msg, timeout = 4000) {
             return;
         }
         el.textContent = msg;
+        el.style.color = 'red';
         el.style.display = '';
         if (timeout > 0) {
             setTimeout(() => { el.style.display = 'none'; }, timeout);
         }
     } catch (err) {
         console.warn('showError failed', err);
+    }
+}
+
+function showInfo(msg, timeout = 3000) {
+    try {
+        const el = document.getElementById('errorMessage');
+        if (!el) {
+            console.warn('showInfo: no #errorMessage element present');
+            return;
+        }
+        el.textContent = msg;
+        el.style.color = 'green';
+        el.style.display = '';
+        if (timeout > 0) {
+            setTimeout(() => { el.style.display = 'none'; }, timeout);
+        }
+    } catch (err) {
+        console.warn('showInfo failed', err);
     }
 }
 
@@ -115,11 +134,11 @@ async function loadUsers() {
         if (data.success) {
             displayUsers(data.data);
         } else {
-            showError('Failed to load users');
+                showError(window.i18n ? window.i18n.t('messages.loadFailed') : 'Failed to load users');
         }
     } catch (error) {
         console.error('Error loading users:', error);
-        showError('Network error');
+            showError(window.i18n ? window.i18n.t('messages.networkError') : 'Network error');
     }
 }
 
@@ -145,7 +164,7 @@ function selectUser(user, evt) {
     const target = (evt && (evt.currentTarget || evt.target)) || null;
     if (target && target.classList) target.classList.add('selected');
     const sel = document.getElementById('selectedUser');
-    if (sel) sel.textContent = `Selected: ${user.username}`;
+    if (sel) sel.textContent = `${window.i18n ? window.i18n.t('login.selectedPrefix') : 'Selected:'} ${user.username}`;
     const us = document.getElementById('userSelection');
     if (us) us.style.display = 'none';
     const ps = document.getElementById('pinSection');
@@ -180,12 +199,12 @@ function setupKeypad() {
 function updatePinDisplay() {
     const display = document.getElementById('pinDisplay');
     if (!display) return;
-    display.textContent = pin.length ? '*'.repeat(pin.length) : 'Enter PIN';
+    display.textContent = pin.length ? '*'.repeat(pin.length) : (window.i18n ? window.i18n.t('login.enterPin') : 'Enter PIN');
 }
 
 async function loginWithPin() {
     if (!selectedUser || pin.length === 0) {
-        showError('Please select a user and enter PIN');
+        showError(window.i18n ? window.i18n.t('login.selectUserEnterPin') : 'Please select a user and enter PIN');
         return;
     }
 
@@ -204,6 +223,13 @@ async function loginWithPin() {
         const data = await response.json();
 
         if (data.success) {
+            // If server created the PIN now, show a brief confirmation so user knows
+            if (data.data && data.data.pinCreated) {
+                showInfo(window.i18n ? window.i18n.t('login.pinCreated') : 'PIN created successfully');
+                // small delay so user sees message
+                await new Promise(r => setTimeout(r, 700));
+            }
+
             // After server sets cookie, fetch user info to get role
             const meRes = await fetch('/auth/me', { credentials: 'same-origin' });
             const meData = await meRes.json();
@@ -224,13 +250,13 @@ async function loginWithPin() {
                 window.location.href = 'user/dashboard.html';
             }
         } else {
-            showError(data.error || 'Login failed');
+            showError(data.error || (window.i18n ? window.i18n.t('login.error') : 'Login failed'));
             pin = '';
             updatePinDisplay();
         }
     } catch (error) {
         console.error('Login error:', error);
-        showError('Network error. Please try again.');
+        showError(window.i18n ? window.i18n.t('messages.networkError') : 'Network error. Please try again.');
         pin = '';
         updatePinDisplay();
     } finally {

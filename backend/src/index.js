@@ -1,6 +1,7 @@
-require('dotenv').config();
-const express = require('express');
 const path = require('path');
+// Load .env from repository root (project runs with cwd=backend/, .env is at repo root)
+require('dotenv').config({ path: path.join(__dirname, '../../.env') });
+const express = require('express');
 const authRoutes = require('./routes/auth');
 const app = express();
 
@@ -9,6 +10,13 @@ app.use(express.json());
 // Serve static files from frontend
 const frontendPath = path.join(__dirname, '../../frontend/public');
 console.log('Serving frontend from:', frontendPath);
+
+// Root should show the user login page
+app.get('/', (req, res) => {
+  res.redirect('/login.html');
+});
+
+// Make the public frontend available
 app.use(express.static(frontendPath));
 
 // Redirect /login to /login.html
@@ -20,6 +28,11 @@ app.get('/login', (req, res) => {
 const adminFrontendPath = path.join(__dirname, '../../frontend/admin');
 const userFrontendPath = path.join(__dirname, '../../frontend/user');
 const { requireAuth, requireAdmin, requireAuthWeb, requireAdminWeb } = require('./middleware/auth');
+
+// Serve an admin-specific login endpoint so requests to /admin redirect there when unauthenticated
+app.get('/admin/login', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'login.html'));
+});
 
 // Protect admin static assets with web-friendly middleware that redirects non-admins
 app.use('/admin', requireAuthWeb, requireAdminWeb, express.static(adminFrontendPath));
@@ -66,6 +79,23 @@ app.use('/api/admin', adminRoutes);
 
 app.get('/api/config', (req, res) => {
   res.json({ success: true, defaultLanguage: process.env.DEFAULT_LANGUAGE || 'en' });
+});
+
+// Expose a small client-side config JS so frontend can reliably read server envs
+app.get('/js/client-config.js', (req, res) => {
+  res.type('application/javascript');
+  const cfg = {
+    defaultLanguage: process.env.DEFAULT_LANGUAGE || 'en',
+    // DEFAULT_CURRENCY can be a symbol ("$", "€") or a word ("token", "argent")
+    currency: process.env.DEFAULT_CURRENCY || '$',
+    // DEFAULT_CURRENCY_PATTERN allows placing currency before/after value.
+    // Use '%c' for currency and '%v' for numeric value. Examples:
+    //  DEFAULT_CURRENCY_PATTERN="%c%v"  -> $12.34
+    //  DEFAULT_CURRENCY_PATTERN="%v %c" -> 12.34 token
+    // If unset, frontend fallbacks to heuristic (short currency -> prefix, word -> suffix).
+    currencyPattern: process.env.DEFAULT_CURRENCY_PATTERN || undefined
+  };
+  res.send(`window.BANKLY_CONFIG = ${JSON.stringify(cfg)};`);
 });
 
 // Start allowance scheduler (skip when running tests)

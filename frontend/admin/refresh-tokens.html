@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Reversals</title>
+    <title data-i18n="dashboard.admin.refreshTokens.title">Refresh Tokens - Admin</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -45,42 +45,60 @@
             <a href="/admin/allowances.html" data-i18n="menu.allowances">Allowances</a>
             <a href="/admin/advances.html" data-i18n="menu.advances">Advances</a>
             <a href="/admin/transactions.html" data-i18n="menu.transactions">Transactions</a>
-            <a href="/admin/refresh-tokens.html" data-i18n="menu.refreshTokens">Refresh Tokens</a>
-            <a class="active" href="/admin/reversals.html" data-i18n="menu.reversals">Reversals</a>
+            <a class="active" href="/admin/refresh-tokens.html" data-i18n="menu.refreshTokens">Refresh Tokens</a>
+            <a href="/admin/reversals.html" data-i18n="menu.reversals">Reversals</a>
         </nav>
     </div>
 
     <main class="container">
         <section>
             <header class="section-header">
-                <h2 data-i18n="dashboard.admin.reversals.title">Reversals</h2>
+                <h2 data-i18n="dashboard.admin.refreshTokens.title">Refresh Tokens</h2>
+                <div class="toolbar">
+                    <button id="refreshTokensReload">
+                        <span class="btn-icon">🔄</span>
+                        <span data-i18n="common.refresh">Refresh</span>
+                    </button>
+                </div>
             </header>
-            <div class="table-scroll">
-                <table id="reversalsTable">
+
+            <div id="tokensSection">
+                <table>
                     <thead>
                         <tr>
-                            <th data-i18n="dashboard.admin.reversals.originalId">Original Tx</th>
-                            <th data-i18n="dashboard.admin.reversals.reversalId">Reversal Tx</th>
-                            <th data-i18n="dashboard.admin.reversals.reversedBy">Reversed By</th>
-                            <th data-i18n="dashboard.admin.reversals.reversedAt">Reversed At</th>
-                            <th data-i18n="dashboard.admin.reversals.reverted">Reverted</th>
+                            <th data-i18n="dashboard.admin.refreshTokens.id">ID</th>
+                            <th data-i18n="dashboard.admin.refreshTokens.user">User</th>
+                            <th data-i18n="dashboard.admin.refreshTokens.createdAt">Created</th>
+                            <th data-i18n="dashboard.admin.refreshTokens.expiresAt">Expires</th>
                             <th data-i18n="common.actions">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="reversalsBody" hx-get="/api/transactions/reversals/html" hx-trigger="load, refreshReversals" hx-target="#reversalsBody" hx-swap="innerHTML">
-                        <tr>
-                            <td colspan="6" data-i18n="common.loading">Loading...</td>
-                        </tr>
+                    <tbody id="tokensBody">
+                        <tr><td colspan="5" data-i18n="common.noData">No data available</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
-        <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </main>
 
-    <script src="../vendor/htmx.2.0.8.min.js"></script>
-    <script src="../js/i18n.js"></script>
-    <script src="../js/utils.js"></script>
+    <!-- Shared confirm modal from dashboard-admin.js (exists in HTML pages) -->
+    <div id="confirmModal" class="modal" style="display:none;" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="common.confirm">Confirm</h3>
+                <button data-action="close" class="close">✕</button>
+            </div>
+            <div class="modal-body confirm-body"></div>
+            <div class="modal-footer">
+                <button data-action="confirm-no">Cancel</button>
+                <button data-action="confirm-yes" class="danger">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" aria-hidden="true" class="toast"></div>
+
     <script src="../js/dashboard-admin.js"></script>
+    <script src="../js/admin-refresh-tokens.js"></script>
 </body>
 </html>
