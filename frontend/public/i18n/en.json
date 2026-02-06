@@ -279,7 +279,8 @@
     "failedChangePin": "Failed to change PIN",
     "failedLoadUsers": "Failed to load users",
     "pinChangeError": "Error changing PIN",
-    "requestError": "Request error"
+    "requestError": "Request error",
+    "errorPrefix": "Error: "
   },
   "frequency": {
     "daily": "Daily",

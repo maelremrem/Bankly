@@ -279,7 +279,8 @@
     "failedChangePin": "Échec de modification du PIN",
     "failedLoadUsers": "Échec du chargement des utilisateurs",
     "pinChangeError": "Erreur lors de la modification du PIN",
-    "requestError": "Erreur de requête"
+    "requestError": "Erreur de requête",
+    "errorPrefix": "Erreur : "
   },
   "frequency": {
     "daily": "Quotidien",

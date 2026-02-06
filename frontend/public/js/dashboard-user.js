@@ -311,7 +311,7 @@ document.addEventListener('click', async (e) => {
                 document.getElementById('advanceReason').value = '';
                 loadUserMoneyRequests();
             } else {
-                showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.requestError'));
+                showMessageModal(formatErrorMessage('errors.errorPrefix', res, 'errors.requestError'));
             }
         } catch (err) { console.error(err); showMessageModal(t('errors.networkError', 'Network error')); }
     }
@@ -327,7 +327,7 @@ document.addEventListener('click', async (e) => {
                 document.getElementById('depositReference').value = '';
                 loadUserMoneyRequests();
             } else {
-                showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.requestError'));
+                showMessageModal(formatErrorMessage('errors.errorPrefix', res, 'errors.requestError'));
             }
         } catch (err) { console.error(err); showMessageModal(t('errors.networkError', 'Network error')); }
     }
@@ -343,7 +343,7 @@ document.addEventListener('click', async (e) => {
             showMessageModal(t('messages.cancelled', 'Cancelled'));
             loadUserMoneyRequests();
         } else {
-            showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.requestError'));
+            showMessageModal(formatErrorMessage('errors.errorPrefix', res, 'errors.requestError'));
         }
     }
     if (action === 'cancel-deposit') {
@@ -355,7 +355,7 @@ document.addEventListener('click', async (e) => {
             showMessageModal(t('messages.cancelled', 'Cancelled'));
             loadUserMoneyRequests();
         } else {
-            showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.requestError'));
+            showMessageModal(formatErrorMessage('errors.errorPrefix', res, 'errors.requestError'));
         }
     }
 });
@@ -599,7 +599,7 @@ document.addEventListener('click', async (e) => {
                     setPinDisplay();
                     return;
                 }
-                showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.pinInvalid'));
+                showMessageModal(formatErrorMessage('errors.errorPrefix', res, 'errors.pinInvalid'));
                 _pinState.entry = '';
                 setPinDisplay();
                 return;
@@ -612,7 +612,7 @@ document.addEventListener('click', async (e) => {
                     resetPinState();
                     return;
                 }
-                showMessageModal(formatErrorMessage('messages.taskCompleteError', res, 'errors.failedChangePin'));
+                showMessageModal(formatErrorMessage('errors.errorPrefix', res, 'errors.failedChangePin'));
                 _pinState.entry = '';
                 setPinDisplay();
                 return;
