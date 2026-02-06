@@ -70,7 +70,7 @@ function requireAuthWeb(req, res, next) {
     }
   }
 
-  if (!token) return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
+  if (!token) return res.redirect(`/login.html?next=${encodeURIComponent(req.originalUrl)}`);
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET || 'devsecret');
@@ -82,8 +82,8 @@ function requireAuthWeb(req, res, next) {
 }
 
 function requireAdminWeb(req, res, next) {
-  if (!req.user) return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
-  if (req.user.role !== 'admin') return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
+  if (!req.user) return res.redirect(`/login.html?next=${encodeURIComponent(req.originalUrl)}`);
+  if (req.user.role !== 'admin') return res.redirect(`/login.html?next=${encodeURIComponent(req.originalUrl)}`);
   next();
 }
 

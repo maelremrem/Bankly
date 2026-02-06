@@ -59,6 +59,27 @@ describe('Admin API', () => {
     expect(Array.isArray(res.body.data)).toBe(true);
   });
 
+  test('GET /api/admin/overview/transactions/daily returns data', async () => {
+    const res = await adminAgent.get('/api/admin/overview/transactions/daily');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('success', true);
+    expect(Array.isArray(res.body.data)).toBe(true);
+  });
+
+  test('GET /api/admin/overview/balances/top returns data', async () => {
+    const res = await adminAgent.get('/api/admin/overview/balances/top');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('success', true);
+    expect(Array.isArray(res.body.data)).toBe(true);
+  });
+
+  test('GET /api/admin/overview/allowances/monthly returns data', async () => {
+    const res = await adminAgent.get('/api/admin/overview/allowances/monthly');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('success', true);
+    expect(Array.isArray(res.body.data)).toBe(true);
+  });
+
   test('GET /admin/dashboard.html is protected and requires cookie', async () => {
     // without cookie should redirect to root
     const res1 = await request(app).get('/admin/dashboard.html');

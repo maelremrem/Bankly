@@ -54,6 +54,29 @@
         </section>
     </main>
 
+    <div id="messageModal" class="modal" aria-hidden="true" style="display:none;">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="messageModal">&times;</button>
+            <p id="messageModalBody"></p>
+            <div class="modal-actions">
+                <button type="button" data-action="close" data-target="messageModal">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="promptModal" class="modal" aria-hidden="true" style="display:none;">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="promptModal">&times;</button>
+            <h3>Input</h3>
+            <div class="prompt-body" style="margin:0.5rem 0 1rem"></div>
+            <input id="promptModalInput" class="prompt-input" type="text" />
+            <div class="modal-actions">
+                <button type="button" data-action="prompt-ok">OK</button>
+                <button type="button" class="secondary" data-action="prompt-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../js/dashboard-user.js"></script>
 </body>
 </html>

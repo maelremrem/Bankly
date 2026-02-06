@@ -5,6 +5,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "close": "Close",
+    "confirm": "Confirm",
     "edit": "Edit",
     "delete": "Delete",
     "view": "View",
@@ -69,7 +70,16 @@
         "totalBalance": "Total Balance",
         "totalTransactions": "Total Transactions",
         "pendingAdvances": "Pending Advances",
-        "pendingCompletions": "Pending Task Reviews"
+        "pendingCompletions": "Pending Task Reviews",
+        "transactions30d": "Transactions (30d)",
+        "topBalances": "Top Balances",
+        "allowancesMonthly": "Allowances (Monthly)",
+        "statsTitle": "Statistics",
+        "txCount": "Transactions",
+        "txAmount": "Amount",
+        "count": "Count",
+        "amount": "Amount",
+        "averageAllowance": "Average Allowance"
       },
       "users": {
         "title": "Users",
@@ -95,7 +105,8 @@
         "requiresApproval": "Requires Approval",
         "autoApproval": "Auto Approval",
         "completionsTitle": "Task Completions",
-        "reviewNotes": "Review Notes"
+        "reviewNotes": "Review Notes",
+        "promptTitle": "Input"
       },
       "allowances": {
         "title": "Allowances",
@@ -155,6 +166,7 @@
     "confirmDeleteAllowance": "Are you sure you want to delete this allowance?",
     "confirmReverseTransaction": "Are you sure you want to reverse this transaction?",
     "confirmUndoReversal": "Are you sure you want to undo this reversal?",
+    "confirmGenerateDefaultTasks": "Are you sure you want to generate default tasks? This will add new tasks if they don't already exist.",
     "passwordRequired": "Password is required to create a user.",
     "networkError": "Network error. Please try again.",
     "loadFailed": "Failed to load data.",

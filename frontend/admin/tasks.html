@@ -54,7 +54,7 @@
         </nav>
     </div>
 
-    <main class="container" id="pageContent">
+    <main class="container">
         <section>
             <header class="section-header">
                 <h2 data-i18n="dashboard.admin.tasks.title">Tasks</h2>
@@ -179,6 +179,31 @@
             </div>
         </div>
     </main>
+
+    <div id="confirmModal" class="modal" aria-hidden="true" style="display:none;">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="confirmModal" data-i18n-aria-label="common.close">&times;</button>
+            <h3 data-i18n="common.confirm">Confirm</h3>
+            <div class="confirm-body" style="margin:1rem 0"></div>
+            <div class="modal-actions">
+                <button type="button" data-action="confirm-yes" data-i18n="common.yes">Yes</button>
+                <button type="button" class="secondary" data-action="confirm-no" data-i18n="common.no">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="promptModal" class="modal" aria-hidden="true" style="display:none;">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="promptModal" data-i18n-aria-label="common.close">&times;</button>
+            <h3 data-i18n="dashboard.admin.tasks.promptTitle">Input</h3>
+            <div class="prompt-body" style="margin:0.5rem 0 1rem"></div>
+            <input id="promptModalInput" class="prompt-input" type="text" />
+            <div class="modal-actions">
+                <button type="button" data-action="prompt-ok" data-i18n="common.yes">OK</button>
+                <button type="button" class="secondary" data-action="prompt-cancel" data-i18n="common.cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <script src="../vendor/htmx.2.0.8.min.js"></script>
     <script src="../js/i18n.js"></script>

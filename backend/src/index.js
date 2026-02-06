@@ -11,6 +11,11 @@ const frontendPath = path.join(__dirname, '../../frontend/public');
 console.log('Serving frontend from:', frontendPath);
 app.use(express.static(frontendPath));
 
+// Redirect /login to /login.html
+app.get('/login', (req, res) => {
+    res.redirect('/login.html');
+});
+
 // Expose the standalone admin and user dashboards (protected)
 const adminFrontendPath = path.join(__dirname, '../../frontend/admin');
 const userFrontendPath = path.join(__dirname, '../../frontend/user');

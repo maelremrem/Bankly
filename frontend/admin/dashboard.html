@@ -43,7 +43,7 @@
     </header>
 
     <div class="menu-bar">
-        <nav class="container menu-links" hx-boost="true" hx-target="main" hx-select="main" hx-swap="innerHTML" hx-push-url="true" hx-scroll="none">
+        <nav class="container menu-links" hx-boost="true" hx-target="main" hx-select="main > *" hx-swap="innerHTML" hx-push-url="true" hx-scroll="none">
             <a class="active" href="/admin/dashboard.html" data-i18n="menu.overview">Overview</a>
             <a href="/admin/users.html" data-i18n="menu.users">Users</a>
             <a href="/admin/tasks.html" data-i18n="menu.tasks">Tasks</a>
@@ -64,8 +64,90 @@
                 </button>
             </header>
             <div id="overviewCards" class="overview-grid" hx-get="/api/admin/overview/html" hx-trigger="load" hx-target="#overviewCards" hx-swap="innerHTML"></div>
+
+            <!-- Stats section under the cards -->
+            <section id="overviewStats" class="stats-section container">
+                <header class="section-header">
+                    <h3 data-i18n="dashboard.admin.overview.statsTitle">Statistics</h3>
+                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                        <label for="statsPeriod">Period</label>
+                        <select id="statsPeriod" style="margin-left:0.5rem">
+                            <option value="7">7</option>
+                            <option value="30" selected>30</option>
+                            <option value="90">90</option>
+                        </select>
+                    </div>
+                </header>
+
+                <!-- Loader shown while charts load -->
+                <div id="statsLoader" class="stats-loader hidden" role="status" aria-live="polite">
+                    <div class="stats-overlay">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <div class="stats-loading-text" data-i18n="common.loading">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="stats-grid" style="display:grid;grid-template-columns:1fr;gap:1rem;margin-top:0.5rem;">
+                    <div class="stats-row" style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;">
+                        <div class="card" style="padding:0.75rem;">
+                            <h4 data-i18n="dashboard.admin.overview.transactions30d">Transactions</h4>
+                            <canvas id="transactionsChart" height="200"></canvas>
+                        </div>
+                        <div style="display:grid;grid-template-rows:1fr 1fr;gap:1rem;">
+                            <div class="card" style="padding:0.75rem;">
+                                <h4 data-i18n="dashboard.admin.overview.topBalances">Top Balances</h4>
+                                <canvas id="balancesChart" height="120"></canvas>
+                            </div>
+                            <div class="card" style="padding:0.75rem;">
+                                <h4 data-i18n="dashboard.admin.overview.allowancesMonthly">Allowances (Monthly)</h4>
+                                <canvas id="allowancesChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-summary" style="display:flex;gap:1rem;">
+                        <div class="card" style="padding:0.75rem;flex:1;">
+                            <h4 data-i18n="dashboard.admin.overview.pendingAdvances">Pending Advances</h4>
+                            <p id="pendingAdvancesCount">-</p>
+                        </div>
+                        <div class="card" style="padding:0.75rem;flex:1;">
+                            <h4 data-i18n="dashboard.admin.overview.pendingCompletions">Pending Task Reviews</h4>
+                            <p id="pendingCompletionsCount">-</p>
+                        </div>
+                        <div class="card" style="padding:0.75rem;flex:1;">
+                            <h4 data-i18n="dashboard.admin.overview.averageAllowance">Average Allowance</h4>
+                            <p id="averageAllowance">-</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </section>
         <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <div id="confirmModal" class="modal" aria-hidden="true" style="display:none;">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="confirmModal" data-i18n-aria-label="common.close">&times;</button>
+            <h3 data-i18n="common.confirm">Confirm</h3>
+            <div class="confirm-body" style="margin:1rem 0"></div>
+            <div class="modal-actions">
+                <button type="button" data-action="confirm-yes" data-i18n="common.yes">Yes</button>
+                <button type="button" class="secondary" data-action="confirm-no" data-i18n="common.no">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="promptModal" class="modal" aria-hidden="true" style="display:none;">
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="promptModal" data-i18n-aria-label="common.close">&times;</button>
+            <h3 data-i18n="dashboard.admin.tasks.promptTitle">Input</h3>
+            <div class="prompt-body" style="margin:0.5rem 0 1rem"></div>
+            <input id="promptModalInput" class="prompt-input" type="text" />
+            <div class="modal-actions">
+                <button type="button" data-action="prompt-ok" data-i18n="common.yes">OK</button>
+                <button type="button" class="secondary" data-action="prompt-cancel" data-i18n="common.cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <div id="userModal" class="modal" aria-hidden="true">
         <div class="modal-content">
@@ -273,6 +355,7 @@
     <script src="../vendor/htmx.2.0.8.min.js"></script>
     <script src="../js/i18n.js"></script>
     <script src="../js/utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../js/dashboard-admin.js"></script>
 </body>
 </html>

@@ -24,9 +24,15 @@ body {
     color: var(--text);
 }
 
+/* Smaller buttons */
+button {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
 .container {
     max-width: 1200px;
-    margin: 2rem auto;
+    margin: 0 auto;
     padding: 2rem;
     background: var(--surface);
     border-radius: 8px;
@@ -40,12 +46,12 @@ h1 {
 
 button[type="submit"] {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.5rem;
     background-color: #3498db;
     color: white;
     border: none;
     border-radius: 4px;
-    font-size: 1rem;
+    font-size: 0.875rem;
     cursor: pointer;
 }
 
@@ -70,30 +76,89 @@ button[type="submit"]:hover {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0,0,0,0.45);
     display: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.modal[aria-hidden="false"], .modal[style*="display:block"] {
+    display: flex;
 }
 
 .modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-    border-radius: 8px;
+    background-color: var(--surface);
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 520px;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.25);
+    color: var(--text);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
 }
 
 .close {
-    color: #aaa;
+    color: #777;
     float: right;
-    font-size: 28px;
-    font-weight: bold;
+    font-size: 24px;
+    font-weight: 700;
     cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0 0.25rem;
 }
 
 .close:hover {
-    color: black;
+    color: var(--text);
+}
+
+.prompt-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+/* Modal action button styles to keep look consistent */
+.modal-actions button {
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: #3498db;
+    color: #ffffff;
+}
+
+.modal-actions button:hover {
+    filter: brightness(0.95);
+}
+
+.modal-actions button.secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.modal-actions button.secondary:hover {
+    background: var(--surface-muted);
 }
 
 /* Admin dashboard layout */
@@ -288,6 +353,40 @@ button[type="submit"]:hover {
 .hidden {
     display: none;
 }
+
+/* Stats loader */
+.stats-loader {
+    position: relative;
+    min-height: 80px;
+}
+
+.stats-loader .stats-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: rgba(255,255,255,0.8);
+    border-radius: 8px;
+    z-index: 2;
+}
+
+[data-theme="dark"] .stats-loader .stats-overlay {
+    background: rgba(0,0,0,0.45);
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0,0,0,0.1);
+    border-top-color: #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
 
 .filters-grid {
     display: grid;

@@ -5,6 +5,7 @@
     "save": "Enregistrer",
     "cancel": "Annuler",
     "close": "Fermer",
+    "confirm": "Confirmer",
     "edit": "Modifier",
     "delete": "Supprimer",
     "view": "Voir",
@@ -69,7 +70,16 @@
         "totalBalance": "Solde total",
         "totalTransactions": "Total des transactions",
         "pendingAdvances": "Avances en attente",
-        "pendingCompletions": "Tâches en attente"
+        "pendingCompletions": "Tâches en attente",
+        "transactions30d": "Transactions (30j)",
+        "topBalances": "Meilleurs soldes",
+        "allowancesMonthly": "Allocations (mensuel)",
+        "statsTitle": "Statistiques",
+        "txCount": "Transactions",
+        "txAmount": "Montant",
+        "count": "Nombre",
+        "amount": "Montant",
+        "averageAllowance": "Allocation moyenne"
       },
       "users": {
         "title": "Utilisateurs",
@@ -95,7 +105,8 @@
         "requiresApproval": "Approbation requise",
         "autoApproval": "Auto-approbation",
         "completionsTitle": "Validations de tâches",
-        "reviewNotes": "Notes de validation"
+        "reviewNotes": "Notes de validation",
+        "promptTitle": "Saisie"
       },
       "allowances": {
         "title": "Allocations",
@@ -155,6 +166,7 @@
     "confirmDeleteAllowance": "Voulez-vous vraiment supprimer cette allocation ?",
     "confirmReverseTransaction": "Voulez-vous vraiment annuler cette transaction ?",
     "confirmUndoReversal": "Voulez-vous vraiment restaurer cette annulation ?",
+    "confirmGenerateDefaultTasks": "Voulez-vous générer les tâches par défaut ? Cela ajoutera de nouvelles tâches si elles n'existent pas déjà.",
     "passwordRequired": "Le mot de passe est requis pour créer un utilisateur.",
     "networkError": "Erreur réseau. Veuillez réessayer.",
     "loadFailed": "Échec du chargement des données.",

@@ -44,7 +44,7 @@ function t(key, fallback = '') {
 }
 
 function redirectToLogin() {
-    window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
+    window.location.href = `/login.html?next=${encodeURIComponent(window.location.pathname)}`;
 }
 
 async function apiCall(endpoint, options = {}) {
@@ -137,12 +137,104 @@ function openModal(modalId) {
     modal.setAttribute('aria-hidden', 'false');
 }
 
+
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
     modal.style.display = 'none';
     modal.setAttribute('aria-hidden', 'true');
 }
+
+/**
+ * showConfirmModal(message) -> Promise<boolean>
+ * Opens a confirmation modal and resolves to true if user confirms, false otherwise.
+ */
+function showConfirmModal(message) {
+    return new Promise((resolve) => {
+        // Do not show empty confirmation dialogs
+        if (!message || String(message).trim() === '') {
+            resolve(false);
+            return;
+        }
+
+        const modal = document.getElementById('confirmModal');
+        if (!modal) {
+            resolve(false);
+            return;
+        }
+        const body = modal.querySelector('.confirm-body');
+        const yesBtn = modal.querySelector('[data-action="confirm-yes"]');
+        const noBtn = modal.querySelector('[data-action="confirm-no"]');
+        const closeBtn = modal.querySelector('[data-action="close"]');
+
+        if (body) body.textContent = message;
+
+        function cleanup() {
+            if (yesBtn) yesBtn.removeEventListener('click', onYes);
+            if (noBtn) noBtn.removeEventListener('click', onNo);
+            if (closeBtn) closeBtn.removeEventListener('click', onNo);
+            modal.removeEventListener('click', onBackdropClick);
+            closeModal('confirmModal');
+        }
+
+        function onYes() { cleanup(); resolve(true); }
+        function onNo() { cleanup(); resolve(false); }
+
+        function onBackdropClick(e) {
+            if (e.target === modal) {
+                onNo();
+            }
+        }
+
+        if (yesBtn) yesBtn.addEventListener('click', onYes);
+        if (noBtn) noBtn.addEventListener('click', onNo);
+        if (closeBtn) closeBtn.addEventListener('click', onNo);
+        modal.addEventListener('click', onBackdropClick);
+
+        openModal('confirmModal');
+    });
+}
+
+// Prompt modal (input) - returns string or null if cancelled
+function showPromptModal(message, defaultValue = '') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('promptModal');
+        if (!modal) {
+            resolve(null);
+            return;
+        }
+        const body = modal.querySelector('.prompt-body');
+        const input = modal.querySelector('#promptModalInput');
+        const okBtn = modal.querySelector('[data-action="prompt-ok"]');
+        const cancelBtn = modal.querySelector('[data-action="prompt-cancel"]');
+
+        if (body) body.textContent = message;
+        if (input) {
+            input.value = defaultValue == null ? '' : String(defaultValue);
+            setTimeout(() => input.focus(), 0);
+        }
+
+        function cleanup() {
+            if (okBtn) okBtn.removeEventListener('click', onOk);
+            if (cancelBtn) cancelBtn.removeEventListener('click', onCancel);
+            if (input) input.removeEventListener('keydown', onKey);
+            modal.removeEventListener('click', onBackdrop);
+            closeModal('promptModal');
+        }
+
+        function onOk() { cleanup(); resolve(input ? input.value : ''); }
+        function onCancel() { cleanup(); resolve(null); }
+        function onKey(e) { if (e.key === 'Enter') onOk(); if (e.key === 'Escape') onCancel(); }
+        function onBackdrop(e) { if (e.target === modal) onCancel(); }
+
+        if (okBtn) okBtn.addEventListener('click', onOk);
+        if (cancelBtn) cancelBtn.addEventListener('click', onCancel);
+        if (input) input.addEventListener('keydown', onKey);
+        modal.addEventListener('click', onBackdrop);
+
+        openModal('promptModal');
+    });
+} 
 
 async function ensureAdmin() {
     try {
@@ -535,7 +627,100 @@ function bindEvents() {
                 refreshAllSections();
                 void loadDashboard();
             }
+
+                    // If overview cards were swapped, initialize the stats charts and summary
+            if (event.target && event.target.id === 'overviewCards') {
+                const periodSelect = document.getElementById('statsPeriod');
+                const days = periodSelect ? Number(periodSelect.value) || 30 : 30;
+
+                // show loader while charts load
+                showStatsLoader();
+                Promise.all([
+                    loadTransactionsChart(days),
+                    loadBalancesChart(10),
+                    loadAllowancesChart(6)
+                ]).then(() => {
+                    hideStatsLoader();
+                }).catch(() => {
+                    hideStatsLoader();
+                });
+
+                // update summaries
+                apiCall('/api/admin/overview').then((res) => {
+                    if (res && res.success && res.data) {
+                        const pAdv = document.getElementById('pendingAdvancesCount');
+                        const pComp = document.getElementById('pendingCompletionsCount');
+                        const avg = document.getElementById('averageAllowance');
+                        if (pAdv) pAdv.textContent = res.data.pendingAdvances || 0;
+                        if (pComp) pComp.textContent = res.data.pendingCompletions || 0;
+                        if (avg) avg.textContent = formatCurrency(res.data.averageAllowance || 0);
+                    }
+                }).catch(() => {});
+
+                if (periodSelect) {
+                    periodSelect.addEventListener('change', () => {
+                        const d = Number(periodSelect.value) || 30;
+                        showStatsLoader();
+                        loadTransactionsChart(d).then(() => hideStatsLoader()).catch(() => hideStatsLoader());
+                    });
+                }
+            }
         });
+
+        // Intercept htmx confirm prompts and use the app modal (prevent native confirm)
+        document.body.addEventListener('htmx:confirm', (evt) => {
+            try {
+                const payload = evt.detail || {};
+                const question = payload && payload.question ? String(payload.question) : '';
+
+
+                // If question empty, prevent default behavior (which would call native confirm with empty text)
+                if (!question || question.trim() === '') {
+                    if (evt && typeof evt.preventDefault === 'function') evt.preventDefault();
+                    if (payload && typeof payload.issueRequest === 'function') payload.issueRequest(false);
+                    return;
+                }
+
+                // Prevent default handling and show our modal for non-empty questions
+                if (evt && typeof evt.preventDefault === 'function') evt.preventDefault();
+
+                showConfirmModal(question).then((ok) => {
+                    if (ok && payload && typeof payload.issueRequest === 'function') {
+                        payload.issueRequest(true);
+                    } else if (payload && typeof payload.issueRequest === 'function') {
+                        payload.issueRequest(false);
+                    }
+                });
+            } catch (err) {
+                console.warn('htmx confirm handler failed', err);
+            }
+        });
+
+        // Intercept htmx prompt requests and use app prompt modal
+        document.body.addEventListener('htmx:prompt', (evt) => {
+            try {
+                const payload = evt.detail || {};
+                const question = payload.prompt || '';
+                if (evt && typeof evt.preventDefault === 'function') evt.preventDefault();
+
+                // If the question is empty, cancel the prompt to avoid showing an empty modal
+                if (!question || String(question).trim() === '') {
+                    if (payload && typeof payload.issueRequest === 'function') payload.issueRequest(null);
+                    return;
+                }
+
+                showPromptModal(question, payload.default || '').then((value) => {
+                    // If null, user cancelled
+                    if (payload && typeof payload.issueRequest === 'function') {
+                        // issueRequest expects the prompt value (or null to cancel)
+                        payload.issueRequest(value);
+                    }
+                });
+            } catch (err) {
+                console.warn('htmx prompt handler failed', err);
+            }
+        });
+
         state.eventsBound.htmx = true;
     }
 
@@ -677,9 +862,9 @@ async function handleTaskSubmit(event) {
 }
 
 async function generateDefaultTasks() {
-    if (!confirm('Are you sure you want to generate default tasks? This will add new tasks if they don\'t already exist.')) {
-        return;
-    }
+    const confirmMessage = t('messages.confirmGenerateDefaultTasks') || 'Are you sure you want to generate default tasks? This will add new tasks if they don\'t already exist.';
+    const ok = await showConfirmModal(confirmMessage);
+    if (!ok) return;
 
     const language = document.getElementById('languageSelect').value || 'en';
 
@@ -807,7 +992,8 @@ async function handleUsersTableClick(event) {
     }
 
     if (action === 'delete-user') {
-        if (!confirm(t('messages.confirmDeleteUser'))) return;
+        const ok = await showConfirmModal(t('messages.confirmDeleteUser'));
+        if (!ok) return;
         const response = await apiCall(`/api/users/${id}`, { method: 'DELETE' });
         if (response.success) {
             showToast(t('messages.deleted'));
@@ -831,7 +1017,8 @@ async function handleTasksTableClick(event) {
     }
 
     if (action === 'delete-task') {
-        if (!confirm(t('messages.confirmDeleteTask'))) return;
+        const ok = await showConfirmModal(t('messages.confirmDeleteTask'));
+        if (!ok) return;
         const response = await apiCall(`/api/tasks/${id}`, { method: 'DELETE' });
         if (response.success) {
             showToast(t('messages.deleted'));
@@ -882,7 +1069,8 @@ async function handleAllowancesTableClick(event) {
     }
 
     if (action === 'delete-allowance') {
-        if (!confirm(t('messages.confirmDeleteAllowance'))) return;
+        const ok = await showConfirmModal(t('messages.confirmDeleteAllowance'));
+        if (!ok) return;
         const response = await apiCall(`/api/allowances/${id}`, { method: 'DELETE' });
         if (response.success) {
             showToast(t('messages.deleted'));
@@ -923,7 +1111,8 @@ async function handleTransactionsTableClick(event) {
     const id = button.getAttribute('data-id');
 
     if (action === 'reverse-transaction') {
-        if (!confirm(t('messages.confirmReverseTransaction'))) return;
+        const ok = await showConfirmModal(t('messages.confirmReverseTransaction'));
+        if (!ok) return;
         const response = await apiCall(`/api/transactions/${id}/reverse`, { method: 'POST' });
         if (response.success) {
             showToast(t('messages.saved'));
@@ -945,7 +1134,8 @@ async function handleReversalsTableClick(event) {
     const id = button.getAttribute('data-id');
 
     if (action === 'undo-reversal') {
-        if (!confirm(t('messages.confirmUndoReversal'))) return;
+        const ok = await showConfirmModal(t('messages.confirmUndoReversal'));
+        if (!ok) return;
         const response = await apiCall(`/api/transactions/reversals/${id}/undo`, { method: 'POST' });
         if (response.success) {
             showToast(t('messages.saved'));
@@ -960,6 +1150,155 @@ async function handleReversalsTableClick(event) {
     }
 }
 
+let transactionsChart = null;
+let balancesChart = null;
+let allowancesChart = null;
+
+function showStatsLoader() {
+    const loader = document.getElementById('statsLoader');
+    if (!loader) return;
+    loader.classList.remove('hidden');
+}
+
+function hideStatsLoader() {
+    const loader = document.getElementById('statsLoader');
+    if (!loader) return;
+    loader.classList.add('hidden');
+}
+
+async function loadTransactionsChart(days = 30) {
+    const canvas = document.getElementById('transactionsChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const res = await apiCall(`/api/admin/overview/transactions/daily?days=${days}`);
+    if (!res.success) {
+        console.warn('Failed to load daily transactions');
+        return;
+    }
+
+    const rows = res.data || [];
+    const map = {};
+    rows.forEach((r) => {
+        map[r.day] = { count: Number(r.count || 0), total: Number(r.total || 0) };
+    });
+
+    const labels = [];
+    const counts = [];
+    const totals = [];
+    const today = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        const iso = d.toISOString().slice(0, 10);
+        labels.push(`${d.getMonth() + 1}/${d.getDate()}`);
+        const item = map[iso] || { count: 0, total: 0 };
+        counts.push(item.count);
+        totals.push(item.total);
+    }
+
+    if (!transactionsChart) {
+        const ctx = canvas.getContext('2d');
+        transactionsChart = new Chart(ctx, {
+            data: {
+                labels,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: t('dashboard.admin.overview.txCount', 'Transactions'),
+                        data: counts,
+                        backgroundColor: 'rgba(54,162,235,0.6)',
+                        yAxisID: 'y'
+                    },
+                    {
+                        type: 'line',
+                        label: t('dashboard.admin.overview.txAmount', 'Amount'),
+                        data: totals,
+                        borderColor: 'rgba(255,99,132,1)',
+                        backgroundColor: 'rgba(255,99,132,0.2)',
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                        title: { display: true, text: t('dashboard.admin.overview.count', 'Count') }
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: t('dashboard.admin.overview.amount', 'Amount') }
+                    }
+                }
+            }
+        });
+    } else {
+        transactionsChart.data.labels = labels;
+        transactionsChart.data.datasets[0].data = counts;
+        transactionsChart.data.datasets[1].data = totals;
+        transactionsChart.update();
+    }
+}
+
+async function loadBalancesChart(limit = 10) {
+    const canvas = document.getElementById('balancesChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const res = await apiCall(`/api/admin/overview/balances/top?limit=${limit}`);
+    if (!res.success) {
+        console.warn('Failed to load balances');
+        return;
+    }
+
+    const rows = res.data || [];
+    const labels = rows.map(r => r.username);
+    const data = rows.map(r => Number(r.balance || 0));
+
+    if (!balancesChart) {
+        balancesChart = new Chart(canvas.getContext('2d'), {
+            type: 'bar',
+            data: { labels, datasets: [{ label: t('dashboard.admin.overview.topBalances','Top Balances'), data, backgroundColor: 'rgba(75,192,192,0.6)'}] },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+    } else {
+        balancesChart.data.labels = labels;
+        balancesChart.data.datasets[0].data = data;
+        balancesChart.update();
+    }
+}
+
+async function loadAllowancesChart(months = 6) {
+    const canvas = document.getElementById('allowancesChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const res = await apiCall(`/api/admin/overview/allowances/monthly?months=${months}`);
+    if (!res.success) {
+        console.warn('Failed to load allowances');
+        return;
+    }
+
+    const rows = res.data || [];
+    const labels = rows.map(r => r.month);
+    const data = rows.map(r => Number(r.total || 0));
+
+    if (!allowancesChart) {
+        allowancesChart = new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: { labels, datasets: [{ label: t('dashboard.admin.overview.allowancesMonthly','Allowances'), data, borderColor: 'rgba(153,102,255,1)', backgroundColor: 'rgba(153,102,255,0.2)'}] },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+    } else {
+        allowancesChart.data.labels = labels;
+        allowancesChart.data.datasets[0].data = data;
+        allowancesChart.update();
+    }
+}
+
 async function loadDashboard() {
     if (document.getElementById('transactionUserFilter') || document.getElementById('allowanceUser')) {
         await loadUsers();
@@ -969,6 +1308,12 @@ async function loadDashboard() {
     }
     if (document.getElementById('allowancesTable')) {
         await loadAllowances();
+    }
+    // If the overview cards were just loaded, try to draw the chart
+    try {
+        await loadTransactionsChart(30);
+    } catch (err) {
+        console.warn('Error loading transactions chart', err);
     }
 }
 
