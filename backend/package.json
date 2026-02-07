@@ -30,6 +30,6 @@
     "nodemon": "^2.0.22",
     "supertest": "^6.3.3",
     "cross-env": "^7.0.3",
-    "puppeteer": "^21.3.8"
+    "puppeteer": "^24.15.0"
   }
 }
