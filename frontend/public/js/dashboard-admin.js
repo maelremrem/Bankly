@@ -59,14 +59,14 @@ async function apiCall(endpoint, options = {}) {
 
     if (response.status === 401) {
         redirectToLogin();
-        return { success: false, error: 'Unauthorized' };
+        return { success: false, error: t('messages.unauthorized', 'Unauthorized') };
     }
 
     try {
         return await response.json();
     } catch (error) {
         console.error('Invalid JSON response', error);
-        return { success: false, error: 'Invalid response' };
+        return { success: false, error: t('messages.invalidResponse', 'Invalid response') };
     }
 }
 
@@ -576,7 +576,7 @@ function getStatusTag(status) {
         pending: { label: t('common.pending'), className: 'warning' },
         approved: { label: t('common.approved'), className: 'success' },
         rejected: { label: t('common.rejected'), className: 'danger' },
-        cancelled: { label: t('common.cancelled') || 'Cancelled', className: 'neutral' }
+        cancelled: { label: t('common.cancelled'), className: 'neutral' }
     };
     const entry = map[status] || { label: status, className: 'neutral' };
     return `<span class="tag ${entry.className}">${escapeHtml(entry.label)}</span>`;
@@ -1013,7 +1013,7 @@ async function handleTaskSubmit(event) {
 
 async function generateDefaultTasks() {
     const btn = document.getElementById('taskGenerateBtn');
-    const confirmMessage = t('messages.confirmGenerateDefaultTasks') || 'Are you sure you want to generate default tasks? This will add new tasks if they don\'t already exist.';
+    const confirmMessage = t('messages.confirmGenerateDefaultTasks');
     const ok = await showConfirmModal(confirmMessage);
     if (!ok) return;
 
@@ -1021,7 +1021,7 @@ async function generateDefaultTasks() {
 
     try {
         if (btn) showBtnSpinner('taskGenerateBtn');
-        showToast(t('messages.loading') || 'Generating...');
+        showToast(t('messages.generatingTasks'));
         console.log('Generating default tasks (lang=', language, ')');
         const response = await apiCall('/api/tasks/generate-default', {
             method: 'POST',
@@ -1033,7 +1033,7 @@ async function generateDefaultTasks() {
             return;
         }
 
-        showToast(response.message || t('messages.saved') || 'Default tasks generated successfully');
+        showToast(response.message || t('messages.tasksGeneratedSuccess'));
         refreshSection('#tasksBody', 'refreshTasks');
     } catch (err) {
         console.error('Error generating default tasks', err);
