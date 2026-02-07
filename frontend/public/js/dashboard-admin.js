@@ -63,25 +63,38 @@ function redirectToLogin() {
 }
 
 async function apiCall(endpoint, options = {}) {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-        credentials: 'same-origin',
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        },
-        ...options
-    });
-
-    if (response.status === 401) {
-        redirectToLogin();
-        return { success: false, error: t('messages.unauthorized', 'Unauthorized') };
+    if (window.utils && typeof window.utils.showGlobalSpinner === 'function') {
+        try { window.utils.showGlobalSpinner(); } catch (e) {}
     }
 
     try {
-        return await response.json();
-    } catch (error) {
-        console.error('Invalid JSON response', error);
-        return { success: false, error: t('messages.invalidResponse', 'Invalid response') };
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            },
+            ...options
+        });
+
+        if (response.status === 401) {
+            redirectToLogin();
+            return { success: false, error: t('messages.unauthorized', 'Unauthorized') };
+        }
+
+        try {
+            return await response.json();
+        } catch (error) {
+            console.error('Invalid JSON response', error);
+            return { success: false, error: t('messages.invalidResponse', 'Invalid response') };
+        }
+    } catch (err) {
+        console.error('Network error', err);
+        return { success: false, error: t('messages.networkError', 'Network error') };
+    } finally {
+        if (window.utils && typeof window.utils.hideGlobalSpinner === 'function') {
+            try { window.utils.hideGlobalSpinner(); } catch (e) {}
+        }
     }
 }
 

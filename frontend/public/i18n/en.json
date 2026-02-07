@@ -25,6 +25,7 @@
     "pending": "Pending",
     "approved": "Approved",
     "rejected": "Rejected",
+    "autoApproved": "Auto-approved",
     "cancelled": "Cancelled"
   },
   "theme": {

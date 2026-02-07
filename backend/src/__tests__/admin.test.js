@@ -121,6 +121,13 @@ describe('Admin API', () => {
     expect(Array.isArray(res.body.data)).toBe(true);
   });
 
+  test('GET /api/admin/overview/html returns cards including pending completions', async () => {
+    const res = await adminAgent.get('/api/admin/overview/html');
+    expect(res.statusCode).toBe(200);
+    // It should include the Pending Task Reviews card heading (i18n string present in HTML)
+    expect(res.text).toMatch(/pending task reviews|Tâches en attente/i);
+  });
+
   test('GET /admin/dashboard.html is protected and requires cookie', async () => {
     // without cookie should redirect to root
     const res1 = await request(app).get('/admin/dashboard.html');

@@ -87,23 +87,32 @@ router.get('/overview/html', requireAuth, requireAdmin, async (req, res) => {
         const totalBalance = Number(userRow.totalBalance || 0).toFixed(2);
         const totalTransactions = txRow.totalTransactions || 0;
 
-        return res.send(`
-          <div class="overview-card">
-            <h3 data-i18n="dashboard.admin.overview.totalUsers">Total Users</h3>
-            <p>${escapeHtml(totalUsers)}</p>
-          </div>
-          <div class="overview-card">
-            <h3 data-i18n="dashboard.admin.overview.totalBalance">Total Balance</h3>
-            <p>${escapeHtml(totalBalance)}</p>
-          </div>
-          <div class="overview-card">
-            <h3 data-i18n="dashboard.admin.overview.totalTransactions">Total Transactions</h3>
-            <p>${escapeHtml(totalTransactions)}</p>
-          </div>
-          <div style="grid-column:1/-1;padding:0.5rem;color:var(--muted);font-size:0.9rem;">
-            <small data-i18n="dashboard.admin.overview.adminsExcluded">Admins are excluded from these totals</small>
-          </div>
-        `);
+        // Also include pending task completions count (exclude admins)
+        db.get(`SELECT COUNT(*) as pendingCompletions FROM task_completions tc JOIN users u ON tc.user_id = u.id WHERE tc.status = 'pending' AND u.role != ?`, ['admin'], (err3, compRow) => {
+          const pendingCompletions = compRow ? compRow.pendingCompletions || 0 : 0;
+
+          return res.send(`
+            <div class="overview-card">
+              <h3 data-i18n="dashboard.admin.overview.totalUsers">Total Users</h3>
+              <p>${escapeHtml(totalUsers)}</p>
+            </div>
+            <div class="overview-card">
+              <h3 data-i18n="dashboard.admin.overview.totalBalance">Total Balance</h3>
+              <p>${escapeHtml(totalBalance)}</p>
+            </div>
+            <div class="overview-card">
+              <h3 data-i18n="dashboard.admin.overview.totalTransactions">Total Transactions</h3>
+              <p>${escapeHtml(totalTransactions)}</p>
+            </div>
+            <div class="overview-card">
+              <h3 data-i18n="dashboard.admin.overview.pendingCompletions">Pending Task Reviews</h3>
+              <p>${escapeHtml(pendingCompletions)}</p>
+            </div>
+            <div style="grid-column:1/-1;padding:0.5rem;color:var(--muted);font-size:0.9rem;">
+              <small data-i18n="dashboard.admin.overview.adminsExcluded">Admins are excluded from these totals</small>
+            </div>
+          `);
+        });
       });
     });
   } catch (error) {

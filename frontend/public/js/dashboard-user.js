@@ -83,33 +83,46 @@ _greetingLangObserver.observe(document.documentElement, { attributes: true });
 
 // Helper function for API calls (send cookies)
 async function apiCall(endpoint, options = {}) {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-        credentials: 'same-origin',
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        },
-        ...options
-    });
-
-    if (response.status === 401) {
-        window.location.href = `/login.html?next=${encodeURIComponent(window.location.pathname)}`;
-        return;
+    if (window.utils && typeof window.utils.showGlobalSpinner === 'function') {
+        try { window.utils.showGlobalSpinner(); } catch (e) {}
     }
 
-    return response.json();
+    try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            },
+            ...options
+        });
+
+        if (response.status === 401) {
+            window.location.href = `/login.html?next=${encodeURIComponent(window.location.pathname)}`;
+            return { success: false, error: 'unauthorized' };
+        }
+
+        try {
+            return await response.json();
+        } catch (err) {
+            console.error('Invalid JSON response', err);
+            return { success: false, error: 'invalid_response' };
+        }
+    } catch (err) {
+        console.error('Network error', err);
+        return { success: false, error: 'network_error' };
+    } finally {
+        if (window.utils && typeof window.utils.hideGlobalSpinner === 'function') {
+            try { window.utils.hideGlobalSpinner(); } catch (e) {}
+        }
+    }
 }
 
 // Ensure user is authenticated
 (async function ensureAuthed() {
     try {
-        const res = await fetch('/auth/me', { credentials: 'same-origin' });
-        if (!res.ok) {
-            window.location.href = `/login.html?next=${encodeURIComponent(window.location.pathname)}`;
-            return;
-        }
-        const data = await res.json();
-        if (!data.success) {
+        const data = await apiCall('/auth/me');
+        if (!data || !data.success) {
             window.location.href = `/login.html?next=${encodeURIComponent(window.location.pathname)}`;
             return;
         }

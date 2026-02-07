@@ -468,7 +468,7 @@ router.get('/:id/completions/html', requireAuth, requireAdmin, [
 router.get('/completions/html', requireAuth, requireAdmin, async (req, res) => {
   try {
     const completions = await db.allAsync(`
-      SELECT tc.*, u.username, t.name as task_name
+      SELECT tc.*, u.username, t.name as task_name, t.requires_approval
       FROM task_completions tc
       JOIN users u ON tc.user_id = u.id
       JOIN tasks t ON tc.task_id = t.id
@@ -481,18 +481,26 @@ router.get('/completions/html', requireAuth, requireAdmin, async (req, res) => {
 
     const html = completions.map((completion) => {
       const status = completion.status || 'pending';
-      const statusTagMap = {
-        pending: 'warning',
-        approved: 'success',
-        rejected: 'danger'
-      };
-      const statusClass = statusTagMap[status] || 'neutral';
+      let statusText = status;
+      let statusClass = 'neutral';
+
+      if (status === 'approved') {
+        // Distinguish between manual approval and auto-approval
+        statusClass = 'success';
+        statusText = completion.requires_approval ? 'approved' : 'autoApproved';
+      } else {
+        const statusTagMap = {
+          pending: 'warning',
+          rejected: 'danger'
+        };
+        statusClass = statusTagMap[status] || 'neutral';
+      }
 
       return `
         <tr>
           <td>${escapeHtml(completion.username || '')}</td>
           <td>${escapeHtml(completion.task_name || '')}</td>
-          <td><span class="tag ${statusClass}" data-i18n="common.${status}">${escapeHtml(status)}</span></td>
+          <td><span class="tag ${statusClass}" data-i18n="common.${statusText}">${escapeHtml(statusText)}</span></td>
           <td>${escapeHtml(completion.submitted_at || completion.created_at || '')}</td>
           <td>${escapeHtml(completion.reviewed_at || '')}</td>
         </tr>

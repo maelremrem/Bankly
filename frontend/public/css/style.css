@@ -398,6 +398,46 @@ button[type="submit"]:disabled {
     border-radius: 6px;
     animation: shimmer 1.2s infinite linear;
 }
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: 200px 0; }
+}
+
+/* Loading overlay / spinner */
+.spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(0,0,0,0.08);
+    border-top-color: rgba(0,0,0,0.45);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Skeleton variants */
+.loading-skeleton { position: relative; }
+.skeleton-card { padding: 0.75rem; border-radius: 8px; background: linear-gradient(90deg,#f4f6f8,#f8fafc); }
+.skeleton-card .skeleton-line { height: 18px; margin-bottom: 0.5rem; }
+.skeleton-table-row { padding: 0.6rem 0; }
+.skeleton-table-row .skeleton-line { height: 14px; margin: 6px 0; }
+
+/* Small responsive helpers */
+.skeleton .skeleton-line[style] { background-size: 400px 100%; }
+
+/* Global network spinner placed in topbar */
+.global-spinner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.5rem;
+}
+.topbar .container { position: relative; }
+/* place spinner as a list item next to the brand */
+.topbar .container ul li.global-spinner { list-style: none; display: inline-flex; align-items: center; margin-left: 0.5rem; }
+.topbar .container .global-spinner .spinner { width: 20px; height: 20px; border-width: 2px; border-top-color: var(--muted-text); }
+
 .skeleton .skeleton-item {
     height: 60px;
     background: linear-gradient(90deg,#eee,#f6f6f6,#eee);
