@@ -44,6 +44,47 @@ describe('Admin API', () => {
     expect(res.body.data).toHaveProperty('totalBalance');
   });
 
+  test('GET /api/admin/overview excludes admin users from counts', async () => {
+    // Count non-admin users directly from DB
+    const row = await new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as cnt, COALESCE(SUM(balance),0) as sumBal FROM users WHERE role != 'admin'", [], (err, r) => err ? reject(err) : resolve(r));
+    });
+
+    const txRow = await new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as cnt FROM transactions t JOIN users u ON t.user_id = u.id WHERE u.role != 'admin'", [], (err, r) => err ? reject(err) : resolve(r));
+    });
+
+    const res = await adminAgent.get('/api/admin/overview');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('success', true);
+    const data = res.body.data;
+    expect(data.totalUsers).toBe(row.cnt);
+    expect(Number(data.totalBalance)).toBeCloseTo(Number(row.sumBal || 0));
+    expect(Number(data.totalTransactions)).toBe(txRow.cnt);
+  });
+
+  test('GET /api/admin/overview pending and averages exclude admins', async () => {
+    const advRow = await new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as cnt FROM advance_requests ar JOIN users u ON ar.user_id = u.id WHERE ar.status = 'pending' AND u.role != 'admin'", [], (err, r) => err ? reject(err) : resolve(r));
+    });
+
+    const compRow = await new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as cnt FROM task_completions tc JOIN users u ON tc.user_id = u.id WHERE tc.status = 'pending' AND u.role != 'admin'", [], (err, r) => err ? reject(err) : resolve(r));
+    });
+
+    const avgRow = await new Promise((resolve, reject) => {
+      db.get("SELECT COALESCE(AVG(a.amount),0) as avg FROM allowances a JOIN users u ON a.user_id = u.id WHERE a.enabled = 1 AND u.role != 'admin'", [], (err, r) => err ? reject(err) : resolve(r));
+    });
+
+    const res = await adminAgent.get('/api/admin/overview');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('success', true);
+    const data = res.body.data;
+    expect(data.pendingAdvances).toBe(advRow.cnt);
+    expect(data.pendingCompletions).toBe(compRow.cnt);
+    expect(Number(data.averageAllowance)).toBeCloseTo(Number(avgRow.avg || 0));
+  });
+
   test('GET /api/admin/users returns users array', async () => {
     const res = await adminAgent.get('/api/admin/users');
     expect(res.statusCode).toBe(200);

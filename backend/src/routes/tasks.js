@@ -61,10 +61,6 @@ router.get('/html', requireAuth, requireAdmin, async (req, res) => {
           <td>${escapeHtml(task.created_at)}</td>
           <td>
             <div class="table-actions">
-              <button data-action="review-task" data-id="${task.id}">
-                <span class="btn-icon">🧾</span>
-                <span data-i18n="dashboard.admin.tasks.review">Review Completions</span>
-              </button>
               <button data-action="edit-task" data-id="${task.id}">
                 <span class="btn-icon">✎</span>
                 <span data-i18n="common.edit">Edit</span>
@@ -464,6 +460,103 @@ router.get('/:id/completions/html', requireAuth, requireAdmin, [
     return res.send(html);
   } catch (error) {
     logger.error('Error fetching task completions html', { error, taskId: id });
+    res.status(500).send('');
+  }
+});
+
+// Get all task completions (admin only) - HTML fragment for HTMX
+router.get('/completions/html', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const completions = await db.allAsync(`
+      SELECT tc.*, u.username, t.name as task_name
+      FROM task_completions tc
+      JOIN users u ON tc.user_id = u.id
+      JOIN tasks t ON tc.task_id = t.id
+      ORDER BY tc.submitted_at DESC
+    `);
+
+    if (!completions || completions.length === 0) {
+      return res.send('<tr><td colspan="5" data-i18n="common.noData">No data</td></tr>');
+    }
+
+    const html = completions.map((completion) => {
+      const status = completion.status || 'pending';
+      const statusTagMap = {
+        pending: 'warning',
+        approved: 'success',
+        rejected: 'danger'
+      };
+      const statusClass = statusTagMap[status] || 'neutral';
+
+      return `
+        <tr>
+          <td>${escapeHtml(completion.username || '')}</td>
+          <td>${escapeHtml(completion.task_name || '')}</td>
+          <td><span class="tag ${statusClass}" data-i18n="common.${status}">${escapeHtml(status)}</span></td>
+          <td>${escapeHtml(completion.submitted_at || completion.created_at || '')}</td>
+          <td>${escapeHtml(completion.reviewed_at || '')}</td>
+        </tr>
+      `;
+    }).join('');
+
+    return res.send(html);
+  } catch (error) {
+    logger.error('Error fetching all task completions html', { error });
+    res.status(500).send('');
+  }
+});
+
+// Get pending task completions (admin only) - HTML fragment for HTMX
+router.get('/completions/pending/html', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const completions = await db.allAsync(`
+      SELECT tc.*, u.username, t.name as task_name
+      FROM task_completions tc
+      JOIN users u ON tc.user_id = u.id
+      JOIN tasks t ON tc.task_id = t.id
+      WHERE tc.status = 'pending'
+      ORDER BY tc.submitted_at DESC
+    `);
+
+    if (!completions || completions.length === 0) {
+      return res.send('<tr><td colspan="5" data-i18n="common.noData">No data</td></tr>');
+    }
+
+    const html = completions.map((completion) => {
+      const status = completion.status || 'pending';
+      const statusTagMap = {
+        pending: 'warning',
+        approved: 'success',
+        rejected: 'danger'
+      };
+      const statusClass = statusTagMap[status] || 'neutral';
+      const actions = status === 'pending'
+        ? `
+          <button data-action="approve-completion" data-id="${completion.id}">
+            <span class="btn-icon">✅</span>
+            <span data-i18n="common.approve">Approve</span>
+          </button>
+          <button class="danger" data-action="reject-completion" data-id="${completion.id}">
+            <span class="btn-icon">✖</span>
+            <span data-i18n="common.reject">Reject</span>
+          </button>
+        `
+        : '';
+
+      return `
+        <tr>
+          <td>${escapeHtml(completion.username || '')}</td>
+          <td>${escapeHtml(completion.task_name || '')}</td>
+          <td><span class="tag ${statusClass}" data-i18n="common.${status}">${escapeHtml(status)}</span></td>
+          <td>${escapeHtml(completion.submitted_at || completion.created_at || '')}</td>
+          <td><div class="table-actions">${actions}</div></td>
+        </tr>
+      `;
+    }).join('');
+
+    return res.send(html);
+  } catch (error) {
+    logger.error('Error fetching pending task completions html', { error });
     res.status(500).send('');
   }
 });

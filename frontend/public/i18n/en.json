@@ -127,7 +127,8 @@
         "txAmount": "Amount",
         "count": "Count",
         "amount": "Amount",
-        "averageAllowance": "Average Allowance"
+        "averageAllowance": "Average Allowance",
+        "adminsExcluded": "Admins are excluded from these totals"
       },
       "users": {
         "title": "Users",
@@ -153,12 +154,24 @@
         "cooldown": "Cooldown (s)",
         "createdAt": "Created",
         "review": "Review Completions",
-        "requiresApproval": "Requires Approval",
+        "createTab": "Create Tasks",
+        "approvalsTab": "Task Approvals",
+        "historyTab": "Task History",
+        "pendingApprovalsTitle": "Pending Task Approvals",
+        "historyTitle": "Task Completion History",
+        "reviewedAt": "Reviewed",
+        "completions": {
+          "who": "Who?",
+          "task": "Task",
+          "when": "When?",
+          "reviewedAt": "Reviewed"
+        },
         "autoApproval": "Auto Approval",
         "completionsTitle": "Task Completions",
         "reviewNotes": "Review Notes",
         "promptTitle": "Input",
-        "cooldownPlaceholder": "Seconds"
+        "cooldownPlaceholder": "Seconds",
+        "requiresApproval": "Requires Approval"
       },
       "allowances": {
         "title": "Allowances",
@@ -280,7 +293,11 @@
     "failedLoadUsers": "Failed to load users",
     "pinChangeError": "Error changing PIN",
     "requestError": "Request error",
-    "errorPrefix": "Error: "
+    "errorPrefix": "Error: ",
+    "loggedOutInactive": "You were logged out due to inactivity",
+    "idleWarning": "You will be logged out due to inactivity in %s seconds. Stay logged in?",
+    "stayLoggedIn": "Stay logged in",
+    "logoutNow": "Logout now"
   },
   "frequency": {
     "daily": "Daily",

@@ -54,6 +54,14 @@
         <section>
             <header class="section-header">
                 <h2 data-i18n="dashboard.admin.tasks.title">Tasks</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="approvals" data-i18n="dashboard.admin.tasks.approvalsTab">Task Approvals</button>
+                    <button class="tab-btn" data-tab="history" data-i18n="dashboard.admin.tasks.historyTab">Task History</button>
+                    <button class="tab-btn" data-tab="create" data-i18n="dashboard.admin.tasks.createTab">Create Tasks</button>
+                </div>
+            </header>
+
+            <div class="tab-content" id="tab-create" style="display: none;">
                 <div class="toolbar">
                     <button id="taskCreateBtn" type="button">
                         <span class="btn-icon">➕</span>
@@ -65,54 +73,79 @@
                         <span class="btn-spinner hidden" aria-hidden="true"></span>
                     </button>
                 </div>
-            </header>
-            <div class="table-scroll">
-                <table id="tasksTable">
-                    <thead>
-                        <tr>
-                            <th data-i18n="dashboard.admin.tasks.name">Name</th>
-                            <th data-i18n="dashboard.admin.tasks.description">Description</th>
-                            <th data-i18n="dashboard.admin.tasks.reward">Reward</th>
-                            <th data-i18n="dashboard.admin.tasks.approval">Approval</th>
-                            <th data-i18n="dashboard.admin.tasks.cooldown">Cooldown (s)</th>
-                            <th data-i18n="dashboard.admin.tasks.createdAt">Created</th>
-                            <th data-i18n="common.actions">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tasksBody" hx-get="/api/tasks/html" hx-trigger="load, refreshTasks" hx-target="#tasksBody" hx-swap="innerHTML">
-                        <tr>
-                            <td colspan="6" data-i18n="common.loading">Loading...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <article class="panel hidden" id="taskCompletionsPanel">
-                <header class="section-header">
-                    <h3 data-i18n="dashboard.admin.tasks.completionsTitle">Task Completions</h3>
-                    <button id="closeCompletions" class="secondary">
-                        <span class="btn-icon">✕</span>
-                        <span data-i18n="common.close">Close</span>
-                    </button>
-                </header>
                 <div class="table-scroll">
-                    <table>
+                    <table id="tasksTable">
                         <thead>
                             <tr>
-                                <th data-i18n="dashboard.admin.users.username">Username</th>
-                                <th data-i18n="dashboard.admin.tasks.name">Task</th>
-                                <th data-i18n="common.status">Status</th>
+                                <th data-i18n="dashboard.admin.tasks.name">Name</th>
+                                <th data-i18n="dashboard.admin.tasks.description">Description</th>
+                                <th data-i18n="dashboard.admin.tasks.reward">Reward</th>
+                                <th data-i18n="dashboard.admin.tasks.approval">Approval</th>
+                                <th data-i18n="dashboard.admin.tasks.cooldown">Cooldown (s)</th>
                                 <th data-i18n="dashboard.admin.tasks.createdAt">Created</th>
                                 <th data-i18n="common.actions">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="taskCompletionsBody">
+                        <tbody id="tasksBody" hx-get="/api/tasks/html" hx-trigger="load, refreshTasks" hx-target="#tasksBody" hx-swap="innerHTML">
                             <tr>
-                                <td colspan="5" data-i18n="common.loading">Loading...</td>
+                                <td colspan="7" data-i18n="common.loading">Loading...</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-            </article>
+            </div>
+
+            <div class="tab-content" id="tab-approvals">
+                <article class="panel">
+                    <header class="section-header">
+                        <h3 data-i18n="dashboard.admin.tasks.pendingApprovalsTitle">Pending Task Approvals</h3>
+                    </header>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-i18n="dashboard.admin.tasks.completions.who">Who?</th>
+                                    <th data-i18n="dashboard.admin.tasks.completions.task">Task</th>
+                                    <th data-i18n="common.status">Status</th>
+                                    <th data-i18n="dashboard.admin.tasks.completions.when">When?</th>
+                                    <th data-i18n="common.actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskCompletionsBody">
+                                <tr>
+                                    <td colspan="5" data-i18n="common.loading">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
+
+            <div class="tab-content" id="tab-history" style="display: none;">
+                <article class="panel">
+                    <header class="section-header">
+                        <h3 data-i18n="dashboard.admin.tasks.historyTitle">Task Completion History</h3>
+                    </header>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-i18n="dashboard.admin.tasks.completions.who">Who?</th>
+                                    <th data-i18n="dashboard.admin.tasks.completions.task">Task</th>
+                                    <th data-i18n="common.status">Status</th>
+                                    <th data-i18n="dashboard.admin.tasks.completions.when">When?</th>
+                                    <th data-i18n="dashboard.admin.tasks.completions.reviewedAt">Reviewed</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskHistoryBody">
+                                <tr>
+                                    <td colspan="5" data-i18n="common.loading">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
         </section>
         <div id="toast" class="toast" role="status" aria-live="polite"></div>
 

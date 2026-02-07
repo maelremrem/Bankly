@@ -10,6 +10,21 @@ if (window.htmx && window.htmx.config) {
     window.htmx.config.defaultFocusScroll = false;
 }
 
+// Update active menu link based on current URL
+function updateActiveMenuLink() {
+    const currentPath = window.location.pathname;
+    const menuLinks = document.querySelectorAll('.menu-links a');
+    
+    menuLinks.forEach(link => {
+        const linkPath = link.getAttribute('href');
+        if (linkPath === currentPath) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+}
+
 const state = {
     currentUser: null,
     overview: null,
@@ -711,8 +726,8 @@ async function handleDepositRejectSubmit(evt) {
     bindOnce(transactionsTable, 'click', handleTransactionsTableClick);
     const reversalsTable = document.getElementById('reversalsTable');
     bindOnce(reversalsTable, 'click', handleReversalsTableClick);
-    const taskCompletionsPanel = document.getElementById('taskCompletionsPanel');
-    bindOnce(taskCompletionsPanel, 'click', handleCompletionsTableClick);
+    const taskCompletionsBody = document.getElementById('taskCompletionsBody');
+    bindOnce(taskCompletionsBody, 'click', handleCompletionsTableClick);
 
     if (!state.eventsBound.htmx) {
         document.body.addEventListener('htmx:afterSwap', (event) => {
@@ -850,6 +865,14 @@ async function handleDepositRejectSubmit(evt) {
             }
         });
         state.eventsBound.documentClick = true;
+    }
+
+    // Initialize tabs for tasks page
+    initTabs();
+
+    // Load initial data for approvals tab if we're on tasks page
+    if (document.getElementById('taskCompletionsBody')) {
+        window.htmx.ajax('GET', '/api/tasks/completions/pending/html', { target: '#taskCompletionsBody', swap: 'innerHTML' });
     }
 }
 
@@ -1103,6 +1126,7 @@ async function handleTransactionSubmit(event) {
     }
     refreshSection('#transactionsBody', 'refreshTransactions');
     refreshSection('#reversalsBody', 'refreshReversals');
+}
 async function handleAdvanceRejectSubmit(event) {
     event.preventDefault();
     const advanceId = document.getElementById('advanceRejectId').value;
@@ -1171,18 +1195,6 @@ async function handleTasksTableClick(event) {
             showToast(response.error || t('messages.networkError'));
         }
     }
-
-    if (action === 'review-task') {
-        const completionBody = document.getElementById('taskCompletionsBody');
-        if (completionBody) {
-            completionBody.dataset.taskId = id;
-        }
-        if (window.htmx) {
-            window.htmx.ajax('GET', `/api/tasks/${id}/completions/html`, { target: '#taskCompletionsBody', swap: 'innerHTML' });
-        } else {
-            await loadTaskCompletions(id);
-        }
-    }
 }
 
 async function handleCompletionsTableClick(event) {
@@ -1200,12 +1212,9 @@ async function handleCompletionsTableClick(event) {
         });
         if (response.success) {
             showToast(t('messages.taskApproved'));
-            await loadTasks();
-            refreshSection('#tasksBody', 'refreshTasks');
-            const completionBody = document.getElementById('taskCompletionsBody');
-            const taskId = completionBody ? completionBody.dataset.taskId : null;
-            if (window.htmx && taskId) {
-                window.htmx.ajax('GET', `/api/tasks/${taskId}/completions/html`, { target: '#taskCompletionsBody', swap: 'innerHTML' });
+            // Refresh the approvals tab content
+            if (window.htmx) {
+                window.htmx.ajax('GET', '/api/tasks/completions/pending/html', { target: '#taskCompletionsBody', swap: 'innerHTML' });
             }
         } else {
             showToast(response.error || t('messages.networkError'));
@@ -1221,12 +1230,9 @@ async function handleCompletionsTableClick(event) {
         });
         if (response.success) {
             showToast(t('messages.taskRejected'));
-            await loadTasks();
-            refreshSection('#tasksBody', 'refreshTasks');
-            const completionBody = document.getElementById('taskCompletionsBody');
-            const taskId = completionBody ? completionBody.dataset.taskId : null;
-            if (window.htmx && taskId) {
-                window.htmx.ajax('GET', `/api/tasks/${taskId}/completions/html`, { target: '#taskCompletionsBody', swap: 'innerHTML' });
+            // Refresh the approvals tab content
+            if (window.htmx) {
+                window.htmx.ajax('GET', '/api/tasks/completions/pending/html', { target: '#taskCompletionsBody', swap: 'innerHTML' });
             }
         } else {
             showToast(response.error || t('messages.networkError'));
@@ -1279,6 +1285,30 @@ async function handleAdvancesTableClick(event) {
     if (action === 'reject-advance') {
         openAdvanceRejectModal(id);
     }
+
+    if (action === 'approve-deposit') {
+        const response = await apiCall(`/api/deposits/${id}/approve`, { method: 'POST' });
+        if (response.success) {
+            showToast(t('messages.saved'));
+            await loadDeposits();
+            refreshSection('#depositsBody', 'refreshDeposits');
+            await loadTransactions();
+            await loadUsers();
+        } else {
+            showToast(response.error || t('messages.networkError'));
+        }
+    }
+
+    if (action === 'reject-deposit') {
+        openDepositRejectModal(id);
+    }
+}
+
+async function handleDepositsTableClick(event) {
+    const button = event.target.closest('button');
+    if (!button) return;
+    const action = button.getAttribute('data-action');
+    const id = button.getAttribute('data-id');
 
     if (action === 'approve-deposit') {
         const response = await apiCall(`/api/deposits/${id}/approve`, { method: 'POST' });
@@ -1533,3 +1563,57 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+// Initialize tabs (show/hide sections) for tasks page
+function initTabs() {
+    const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+    if (!tabs.length) return; // not on a tabbed page
+    const contents = Array.from(document.querySelectorAll('.tab-content'));
+    function activate(name) {
+        tabs.forEach(b => {
+            const active = b.dataset.tab === name;
+            b.classList.toggle('active', active);
+            b.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        contents.forEach(c => {
+            // ensure the active tab content is shown; inline style overrides the .tab-content rule
+            if (c.id === ('tab-' + name)) {
+                c.style.display = 'block';
+            } else {
+                c.style.display = 'none';
+            }
+        });
+        const visible = document.getElementById('tab-' + name);
+        if (visible && window.i18n && typeof window.i18n.applyTranslations === 'function') window.i18n.applyTranslations(visible);
+        // Load data for approvals tab
+        if (name === 'approvals') {
+            window.htmx.ajax('GET', '/api/tasks/completions/pending/html', { target: '#taskCompletionsBody', swap: 'innerHTML' });
+        }
+        // Load data for history tab
+        if (name === 'history') {
+            window.htmx.ajax('GET', '/api/tasks/completions/html', { target: '#taskHistoryBody', swap: 'innerHTML' });
+        }
+    }
+    tabs.forEach(b => b.addEventListener('click', () => activate(b.dataset.tab)));
+    // default - only activate approvals if no tab is currently active
+    const hasActiveTab = tabs.some(b => b.classList.contains('active'));
+    if (tabs.length && !hasActiveTab) {
+        activate('approvals');
+    }
+}
+
+// Re-initialize tabs and update active menu after HTMX navigation
+document.addEventListener('DOMContentLoaded', () => {
+    initTabs();
+    updateActiveMenuLink();
+});
+if (window.htmx) {
+    document.addEventListener('htmx:afterSwap', (event) => {
+        // Only re-init if we're on a page with tabs
+        if (document.querySelectorAll('.tab-btn').length > 0) {
+            initTabs();
+        }
+        // Always update active menu link after navigation
+        updateActiveMenuLink();
+    });
+}

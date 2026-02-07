@@ -17,30 +17,32 @@ function escapeHtml(value) {
 // Overview stats
 router.get('/overview', requireAuth, requireAdmin, async (req, res) => {
   try {
-    db.get('SELECT COUNT(*) as totalUsers, COALESCE(SUM(balance),0) as totalBalance FROM users', [], (err, userRow) => {
+    // Exclude admin users from summary counts and balances
+    db.get("SELECT COUNT(*) as totalUsers, COALESCE(SUM(balance),0) as totalBalance FROM users WHERE role != 'admin'", [], (err, userRow) => {
       if (err) {
         console.error('Error fetching users summary', err);
         return res.status(500).json({ success: false, error: 'Server error' });
       }
 
-      db.get('SELECT COUNT(*) as totalTransactions FROM transactions', [], (err2, txRow) => {
+      // Only count transactions that belong to non-admin users
+      db.get('SELECT COUNT(*) as totalTransactions FROM transactions t JOIN users u ON t.user_id = u.id WHERE u.role != ?',[ 'admin' ], (err2, txRow) => {
         if (err2) {
           console.error('Error fetching transactions summary', err2);
           return res.status(500).json({ success: false, error: 'Server error' });
         }
 
-        // compute average allowance and pending counts
-        db.get('SELECT COUNT(*) as pendingAdvances FROM advance_requests WHERE status = ?',[ 'pending' ], (err3, advRow) => {
+        // compute average allowance and pending counts (exclude admins)
+        db.get("SELECT COUNT(*) as pendingAdvances FROM advance_requests ar JOIN users u ON ar.user_id = u.id WHERE ar.status = ? AND u.role != 'admin'", [ 'pending' ], (err3, advRow) => {
           if (err3) {
             console.error('Error fetching pending advances', err3);
             return res.json({ success: true, data: { totalUsers: userRow.totalUsers || 0, totalBalance: userRow.totalBalance || 0, totalTransactions: txRow.totalTransactions || 0 } });
           }
 
-          db.get(`SELECT COALESCE(AVG(amount),0) as avgAllowance FROM allowances WHERE enabled = 1`, [], (err4, avgRow) => {
+          db.get(`SELECT COALESCE(AVG(a.amount),0) as avgAllowance FROM allowances a JOIN users u ON a.user_id = u.id WHERE a.enabled = 1 AND u.role != 'admin'`, [], (err4, avgRow) => {
             const pendingAdvances = advRow ? advRow.pendingAdvances || 0 : 0;
             const avgAllowance = avgRow ? Number(avgRow.avgAllowance || 0) : 0;
 
-            db.get(`SELECT COUNT(*) as pendingCompletions FROM task_completions WHERE status = 'pending'`, [], (err5, compRow) => {
+            db.get(`SELECT COUNT(*) as pendingCompletions FROM task_completions tc JOIN users u ON tc.user_id = u.id WHERE tc.status = 'pending' AND u.role != 'admin'`, [], (err5, compRow) => {
               const pendingCompletions = compRow ? compRow.pendingCompletions || 0 : 0;
 
               return res.json({
@@ -68,13 +70,14 @@ router.get('/overview', requireAuth, requireAdmin, async (req, res) => {
 // Overview stats (HTML fragment for HTMX)
 router.get('/overview/html', requireAuth, requireAdmin, async (req, res) => {
   try {
-    db.get('SELECT COUNT(*) as totalUsers, COALESCE(SUM(balance),0) as totalBalance FROM users', [], (err, userRow) => {
+    // Exclude admin users from HTML overview counts and balances
+    db.get("SELECT COUNT(*) as totalUsers, COALESCE(SUM(balance),0) as totalBalance FROM users WHERE role != 'admin'", [], (err, userRow) => {
       if (err) {
         console.error('Error fetching users summary', err);
         return res.status(500).send('');
       }
 
-      db.get('SELECT COUNT(*) as totalTransactions FROM transactions', [], (err2, txRow) => {
+      db.get('SELECT COUNT(*) as totalTransactions FROM transactions t JOIN users u ON t.user_id = u.id WHERE u.role != ?', ['admin'], (err2, txRow) => {
         if (err2) {
           console.error('Error fetching transactions summary', err2);
           return res.status(500).send('');
@@ -97,6 +100,9 @@ router.get('/overview/html', requireAuth, requireAdmin, async (req, res) => {
             <h3 data-i18n="dashboard.admin.overview.totalTransactions">Total Transactions</h3>
             <p>${escapeHtml(totalTransactions)}</p>
           </div>
+          <div style="grid-column:1/-1;padding:0.5rem;color:var(--muted);font-size:0.9rem;">
+            <small data-i18n="dashboard.admin.overview.adminsExcluded">Admins are excluded from these totals</small>
+          </div>
         `);
       });
     });
@@ -114,9 +120,10 @@ router.get('/overview/transactions/daily', requireAuth, requireAdmin, (req, res)
 
     // Aggregate by date (ISO YYYY-MM-DD)
     db.all(
-      `SELECT date(created_at) as day, COUNT(*) as count, COALESCE(SUM(amount),0) as total
-       FROM transactions
-       WHERE date(created_at) >= date('now', ?)
+      `SELECT date(t.created_at) as day, COUNT(*) as count, COALESCE(SUM(t.amount),0) as total
+       FROM transactions t
+       JOIN users u ON t.user_id = u.id
+       WHERE date(t.created_at) >= date('now', ?) AND u.role != 'admin'
        GROUP BY day
        ORDER BY day ASC`,
       [offset],
@@ -139,7 +146,7 @@ router.get('/overview/balances/top', requireAuth, requireAdmin, (req, res) => {
   try {
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 10));
     db.all(
-      `SELECT username, balance FROM users ORDER BY balance DESC LIMIT ?`,
+      `SELECT username, balance FROM users WHERE role != 'admin' ORDER BY balance DESC LIMIT ?`,
       [limit],
       (err, rows) => {
         if (err) {
@@ -162,9 +169,10 @@ router.get('/overview/allowances/monthly', requireAuth, requireAdmin, (req, res)
     const offset = `- ${months - 1} months`;
 
     db.all(
-      `SELECT strftime('%Y-%m', created_at) as month, COALESCE(SUM(amount),0) as total
-       FROM transactions
-       WHERE type = 'allowance' AND date(created_at) >= date('now', ?)
+      `SELECT strftime('%Y-%m', t.created_at) as month, COALESCE(SUM(t.amount),0) as total
+       FROM transactions t
+       JOIN users u ON t.user_id = u.id
+       WHERE t.type = 'allowance' AND date(t.created_at) >= date('now', ?) AND u.role != 'admin'
        GROUP BY month
        ORDER BY month ASC`,
       [`-${months - 1} months`],

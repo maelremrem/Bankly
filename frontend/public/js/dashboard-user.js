@@ -178,6 +178,8 @@ async function loadDashboard() {
         const balanceEl = document.getElementById('balanceContent');
         if (balanceEl) balanceEl.textContent = t('errors.balanceLoadError', 'Error loading balance');
     } finally {
+        // Start idle timer after dashboard loaded
+        startIdleTimer();
         hideUserSkeleton();
     }
 }
@@ -681,11 +683,168 @@ function initTabs() {
         if (typeof onTabActivated === 'function') onTabActivated(name);
     }
     tabs.forEach(b => b.addEventListener('click', () => activate(b.dataset.tab)));
-    // default
-    if (tabs.length) activate(tabs[0].dataset.tab || 'tasks');
+    // default - only activate default if no tab is currently active
+    const hasActiveTab = tabs.some(b => b.classList.contains('active'));
+    if (tabs.length && !hasActiveTab) {
+        activate(tabs[0].dataset.tab || 'tasks');
+    }
+}
+
+// Initialize tabs when DOM is ready and after HTMX navigation
+document.addEventListener('DOMContentLoaded', initTabs);
+if (window.htmx) {
+    document.addEventListener('htmx:afterSwap', (event) => {
+        // Only re-init if we're on a page with tabs
+        if (document.querySelectorAll('.tab-btn').length > 0) {
+            initTabs();
+        }
+    });
 }
 
 initTabs();
+
+// Idle logout: configurable timeout + warning
+let IDLE_TIMEOUT_MS = 60 * 1000; // default 1 minute
+let IDLE_WARN_MS = 10 * 1000; // default 10s before logout
+let _idleTimer = null;
+let _warnTimer = null;
+function getClientIdleConfig() {
+    try {
+        if (window.BANKLY_CONFIG) {
+            const t = Number(window.BANKLY_CONFIG.clientIdleTimeoutMs);
+            const w = Number(window.BANKLY_CONFIG.clientIdleWarnMs);
+            IDLE_TIMEOUT_MS = Number.isFinite(t) && t >= 0 ? t : IDLE_TIMEOUT_MS;
+            IDLE_WARN_MS = Number.isFinite(w) && w >= 0 ? w : IDLE_WARN_MS;
+            // Warn must be less than timeout
+            if (IDLE_WARN_MS >= IDLE_TIMEOUT_MS) IDLE_WARN_MS = Math.max(0, IDLE_TIMEOUT_MS - 1000);
+        }
+    } catch (e) { /* ignore */ }
+}
+
+function clearWarnTimer() {
+    try { if (_warnTimer) clearTimeout(_warnTimer); } catch (e) { /* ignore */ }
+    _warnTimer = null;
+}
+
+function resetIdleTimer() {
+    try {
+        if (_idleTimer) clearTimeout(_idleTimer);
+        clearWarnTimer();
+        hideIdleToast();
+    } catch (e) { /* ignore */ }
+
+    // If timeout disabled (0 or negative) do nothing
+    if (!IDLE_TIMEOUT_MS || IDLE_TIMEOUT_MS <= 0) return;
+
+    if (IDLE_WARN_MS && IDLE_WARN_MS > 0) {
+        const warnAt = Math.max(0, IDLE_TIMEOUT_MS - IDLE_WARN_MS);
+        _warnTimer = setTimeout(onIdleWarn, warnAt);
+    }
+
+    _idleTimer = setTimeout(onIdleLogout, IDLE_TIMEOUT_MS);
+}
+
+function startIdleTimer() {
+    // Read config from server-injected object (client-config.js)
+    getClientIdleConfig();
+
+    // Clear any previous
+    stopIdleTimer();
+    // Events that indicate activity
+    ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach((ev) => {
+        document.addEventListener(ev, resetIdleTimer, { passive: true });
+    });
+    window.addEventListener('focus', resetIdleTimer);
+    resetIdleTimer();
+}
+function stopIdleTimer() {
+    try { if (_idleTimer) clearTimeout(_idleTimer); } catch (e) { /* ignore */ }
+    try { clearWarnTimer(); } catch (e) { /* ignore */ }
+    ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach((ev) => {
+        document.removeEventListener(ev, resetIdleTimer);
+    });
+    window.removeEventListener('focus', resetIdleTimer);
+    _idleTimer = null;
+}
+
+let _idleCountdownInterval = null;
+let _idleRemainingSeconds = 0;
+
+function clearIdleCountdown() {
+    try { if (_idleCountdownInterval) clearInterval(_idleCountdownInterval); } catch (e) { /* ignore */ }
+    _idleCountdownInterval = null;
+    _idleRemainingSeconds = 0;
+}
+
+function showIdleToast(seconds) {
+    try {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+
+        const stayLabel = escapeHtml(t('messages.stayLoggedIn', 'Stay logged in'));
+        const logoutLabel = escapeHtml(t('messages.logoutNow', 'Logout now'));
+        const msgText = t('messages.idleWarning', `You will be logged out due to inactivity in %s seconds. Stay logged in?`).replace('%s', seconds);
+
+        toast.innerHTML = `<span class="toast-msg">${escapeHtml(msgText)}</span> <button id="idleStayBtn" class="btn">${stayLabel}</button> <button id="idleLogoutBtn" class="secondary">${logoutLabel}</button>`;
+        toast.classList.add('show');
+
+        const stayBtn = document.getElementById('idleStayBtn');
+        const logoutBtn = document.getElementById('idleLogoutBtn');
+
+        function onStay() {
+            hideIdleToast();
+            resetIdleTimer();
+        }
+        function onLogout() {
+            hideIdleToast();
+            onIdleLogout();
+        }
+
+        if (stayBtn) stayBtn.addEventListener('click', onStay);
+        if (logoutBtn) logoutBtn.addEventListener('click', onLogout);
+
+        // Start countdown
+        clearIdleCountdown();
+        _idleRemainingSeconds = seconds;
+        _idleCountdownInterval = setInterval(() => {
+            _idleRemainingSeconds -= 1;
+            if (_idleRemainingSeconds <= 0) {
+                clearIdleCountdown();
+                hideIdleToast();
+                onIdleLogout();
+                return;
+            }
+            const msgEl = toast.querySelector('.toast-msg');
+            if (msgEl) msgEl.textContent = t('messages.idleWarning').replace('%s', _idleRemainingSeconds);
+        }, 1000);
+    } catch (e) { /* ignore */ }
+}
+
+function hideIdleToast() {
+    try {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.classList.remove('show');
+        toast.innerHTML = '';
+    } catch (e) { /* ignore */ }
+    clearIdleCountdown();
+}
+
+function onIdleWarn() {
+    try {
+        const secs = Math.ceil(IDLE_WARN_MS / 1000) || 1;
+        showIdleToast(secs);
+    } catch (e) { /* ignore */ }
+}
+
+function onIdleLogout() {
+    try {
+        stopIdleTimer();
+    } catch (e) { /* ignore */ }
+    // Redirect to login with reason param so login page can show a message
+    const next = '/login.html?reason=inactive';
+    window.location.href = next;
+}
 
 // Then load data
 // Initial load is triggered by ensureAuthed(); avoid double-loading here.

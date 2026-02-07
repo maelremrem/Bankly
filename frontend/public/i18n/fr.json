@@ -127,7 +127,8 @@
         "txAmount": "Montant",
         "count": "Nombre",
         "amount": "Montant",
-        "averageAllowance": "Allocation moyenne"
+        "averageAllowance": "Allocation moyenne",
+        "adminsExcluded": "Les administrateurs sont exclus de ces totaux"
       },
       "users": {
         "title": "Utilisateurs",
@@ -153,12 +154,24 @@
         "cooldown": "Durée (s)",
         "createdAt": "Créée le",
         "review": "Examiner les validations",
-        "requiresApproval": "Approbation requise",
+        "createTab": "Créer des tâches",
+        "approvalsTab": "Approbation des tâches",
+        "historyTab": "Historique des tâches",
+        "pendingApprovalsTitle": "Approbations en attente",
+        "historyTitle": "Historique des validations",
+        "reviewedAt": "Révisé le",
+        "completions": {
+          "who": "Qui ?",
+          "task": "Tâche",
+          "when": "Quand ?",
+          "reviewedAt": "Révisé le"
+        },
         "autoApproval": "Auto-approbation",
         "completionsTitle": "Validations de tâches",
         "reviewNotes": "Notes de validation",
         "promptTitle": "Saisie",
-        "cooldownPlaceholder": "Secondes"
+        "cooldownPlaceholder": "Secondes",
+        "requiresApproval": "Nécessite une approbation"
       },
       "allowances": {
         "title": "Allocations",
@@ -261,7 +274,11 @@
     "generatingTasks": "Génération en cours...",
     "tasksGeneratedSuccess": "Tâches par défaut générées avec succès",
     "unauthorized": "Non autorisé",
-    "invalidResponse": "Réponse invalide"
+    "invalidResponse": "Réponse invalide",
+    "loggedOutInactive": "Vous avez été déconnecté pour inactivité",
+    "idleWarning": "Vous serez déconnecté pour inactivité dans %s secondes. Rester connecté ?",
+    "stayLoggedIn": "Rester connecté",
+    "logoutNow": "Se déconnecter"
   },
   "errors": {
     "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères.",

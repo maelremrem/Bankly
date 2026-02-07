@@ -12,6 +12,16 @@ document.addEventListener('DOMContentLoaded', () => {
         setupKeypad();
     }
 
+    // If redirected due to inactivity, show a message (login page has #errorMessage element)
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const reason = params.get('reason');
+        if (reason === 'inactive') {
+            // showInfo will use the #errorMessage element and green text
+            showInfo(window.i18n ? window.i18n.t('messages.loggedOutInactive','You were logged out due to inactivity') : 'You were logged out due to inactivity', 5000);
+        }
+    } catch (e) { /* ignore */ }
+
     // Attach submit handler for username/password login form if present
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {

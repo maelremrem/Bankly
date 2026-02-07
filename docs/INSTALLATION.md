@@ -137,12 +137,53 @@ sudo chown -R 1000:1000 ./backend/data
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Server port | 3000 |
-| `NODE_ENV` | Environment | development |
-| `JWT_SECRET` | JWT signing secret | (required) |
-| `DATABASE_FILE` | SQLite database path | ./data/bankly.db |
+Bankly uses environment variables to configure both server and client behavior. Copy the provided `.env.example` to `.env` and edit values as needed. Values are read from the project root `.env` by the backend on startup.
+
+| Variable | Type | Default | Description |
+|---|---:|---|---|
+| `PORT` | number | `3000` | HTTP port the backend listens on. |
+| `NODE_ENV` | string | `development` | Node environment (`development`, `production`, `test`). Some services (scheduler, extra validation) are disabled in `test` mode. |
+| `JWT_SECRET` | string | **required** | Secret used to sign JWT tokens. Use a long, unpredictable value in production. |
+| `DATABASE_FILE` | path | `./data/bankly.db` | File path to the SQLite database used by the backend. |
+| `DEFAULT_LANGUAGE` | string | `en` | Default UI language (`en` or `fr`). |
+| `DEFAULT_CURRENCY` | string | `€` | Currency symbol or name used in UI. Can be a short symbol (`$`,`€`) or a word (`token`). |
+| `DEFAULT_CURRENCY_PATTERN` | string | (none) | Optional formatting pattern for currency. Use `%c` for currency and `%v` for numeric value (e.g., `%v %c` or `%c%v`). If unset, frontend uses a reasonable default. |
+| `CLIENT_IDLE_TIMEOUT_MS` | number (ms) | `60000` | Idle logout timeout for user dashboards in milliseconds. Set to `0` to disable client-side idle logout. |
+| `CLIENT_IDLE_WARN_MS` | number (ms) | `10000` | Warning period before logout (milliseconds). This should be less than `CLIENT_IDLE_TIMEOUT_MS`. The frontend shows a toast warning for this duration before redirecting to the login page. |
+| `RATE_LIMIT_WINDOW_MINUTES` | number | `15` | Time window in minutes used by the API rate limiter. |
+| `RATE_LIMIT_MAX` | number | `600` | Maximum number of requests allowed in the rate limiter window. |
+| `TASK_COOLDOWN_SECONDS` | number | `0` | Global default cooldown (in seconds) applied to task submissions. `0` disables the cooldown. Individual tasks can override frequency. |
+| `ALLOW_NEGATIVE_BALANCE` | boolean | `false` | Whether user balances are allowed to go below zero. Set to `true` to allow negative balances. |
+| `ADMIN_USERNAME` | string | `admin` | Username used by `scripts/seed-admin.js` when creating a default admin user. |
+| `ADMIN_PASSWORD` | string | `admin123` | Password used by `scripts/seed-admin.js` when creating the default admin user. Change after first boot. |
+| `SENTRY_DSN` | string | (none) | Optional Sentry DSN. If present, Sentry error reporting is enabled. |
+| `LOG_LEVEL` | string | `info` | Logging level (`debug`, `info`, `warn`, `error`). |
+| `TEST_VALIDATION` | boolean | (none) | Used by some test helpers to enable stricter validation paths during tests. Only set in test environments.
+
+Notes & Examples
+
+- Copy and edit the example file:
+  ```bash
+  cp .env.example .env
+  ```
+- Set environment variables when running locally:
+  - PowerShell (Windows):
+    ```powershell
+    $env:DATABASE_FILE = './data/bankly.db'
+    $env:JWT_SECRET = 'a-long-random-secret'
+    npm run dev
+    ```
+  - POSIX (macOS / Linux):
+    ```bash
+    DATABASE_FILE=./data/bankly.db JWT_SECRET='a-long-random-secret' npm run dev
+    ```
+- When using Docker / docker-compose, add variables to your `docker-compose.yml` or an `.env` file consumed by Docker Compose.
+
+Security & Best Practices
+
+- Always set a secure `JWT_SECRET` in production.
+- Do not commit secrets to git. Use a secret manager or environment-specific provisioning for production deployments.
+- For production deployments, set `NODE_ENV=production` and ensure `SENTRY_DSN` and `LOG_LEVEL` are configured as needed.
 
 ## Troubleshooting
 

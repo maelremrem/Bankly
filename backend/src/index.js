@@ -96,7 +96,11 @@ app.get('/js/client-config.js', (req, res) => {
     //  DEFAULT_CURRENCY_PATTERN="%c%v"  -> $12.34
     //  DEFAULT_CURRENCY_PATTERN="%v %c" -> 12.34 token
     // If unset, frontend fallbacks to heuristic (short currency -> prefix, word -> suffix).
-    currencyPattern: process.env.DEFAULT_CURRENCY_PATTERN || undefined
+    currencyPattern: process.env.DEFAULT_CURRENCY_PATTERN || undefined,
+    // Idle timeout for client dashboards (milliseconds). Set to 0 to disable.
+    clientIdleTimeoutMs: process.env.CLIENT_IDLE_TIMEOUT_MS ? Number(process.env.CLIENT_IDLE_TIMEOUT_MS) : 60000,
+    // Warning period before logout (milliseconds). Must be < clientIdleTimeoutMs. Default 10000 (10s).
+    clientIdleWarnMs: process.env.CLIENT_IDLE_WARN_MS ? Number(process.env.CLIENT_IDLE_WARN_MS) : 10000
   };
   res.send(`window.BANKLY_CONFIG = ${JSON.stringify(cfg)};`);
 });

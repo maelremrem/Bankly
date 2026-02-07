@@ -59,6 +59,7 @@
                     <span data-i18n="common.refresh">Refresh</span>
                 </button>
             </header>
+            <p style="color:var(--muted);font-size:0.95rem;margin-top:0.25rem;"><small data-i18n="dashboard.admin.overview.adminsExcluded">Admins are excluded from these totals</small></p>
             <div id="overviewCards" class="overview-grid" hx-get="/api/admin/overview/html" hx-trigger="load" hx-target="#overviewCards" hx-swap="innerHTML"></div>
 
             <!-- Stats section under the cards -->
