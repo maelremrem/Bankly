@@ -43,26 +43,37 @@ install_system_deps() {
     apt update && apt upgrade -y
 
     log_info "Installing system dependencies..."
-    apt install -y curl wget git build-essential
+    apt install -y curl wget git build-essential ca-certificates
 
-    # Node.js
+    # Node.js (LTS 18)
     log_info "Installing Node.js 18..."
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
     apt-get install -y nodejs
 
     # Python
     log_info "Installing Python and GPIO libraries..."
-    apt install -y python3 python3-pip python3-dev python3-rpi.gpio
+    apt install -y python3 python3-pip python3-dev
 
-    # System tools
-    log_info "Installing Chromium and display tools..."
-    apt install -y chromium-browser unclutter x11-xserver-utils
+    # Optionally install GUI and Chromium (kiosk)
+    if [[ "$INSTALL_GUI" == "yes" ]]; then
+        log_info "Installing Chromium and display tools (GUI mode)..."
+        apt install -y --no-install-recommends chromium-browser unclutter x11-xserver-utils lightdm
+        # Ensure display manager exists (lightdm) for kiosk autostart
+    else
+        log_info "Skipping GUI/browser installation (GUI mode disabled)"
+    fi
 
-    # Enable SPI and I2C for RFID
-    log_info "Enabling SPI and I2C..."
-    raspi-config nonint do_spi 0
-    raspi-config nonint do_i2c 0
-}
+    # Optionally enable SPI and I2C for RFID (ask only if scripts/rfid exists)
+    if [[ -d "$PROJECT_DIR/scripts/rfid" ]]; then
+        log_info "Enabling SPI and I2C (required for RFID hardware)..."
+        if command -v raspi-config >/dev/null 2>&1; then
+            raspi-config nonint do_spi 0 || log_warn "raspi-config failed to enable SPI"
+            raspi-config nonint do_i2c 0 || log_warn "raspi-config failed to enable I2C"
+        else
+            log_warn "raspi-config not found; please enable SPI/I2C via raspi-config manually if needed"
+        fi
+    fi
+} 
 
 setup_directories() {
     log_info "Setting up directories..."
@@ -87,42 +98,74 @@ install_dependencies() {
     cd "$INSTALL_DIR/backend"
     npm install --production
 
-    log_info "Installing Python dependencies..."
-    pip3 install -r "$INSTALL_DIR/scripts/rfid/requirements.txt"
+    # Make sure startup scripts are executable
+    chmod +x "$INSTALL_DIR/scripts/install"/*.sh || true
+    chmod +x "$INSTALL_DIR/scripts/install/start-"*.sh || true
+
+    # Python deps (only if requirements exists)
+    if [[ -f "$INSTALL_DIR/scripts/rfid/requirements.txt" ]]; then
+        log_info "Installing Python dependencies..."
+        pip3 install -r "$INSTALL_DIR/scripts/rfid/requirements.txt"
+    fi
+
+    # Ensure RFID reader script is executable
+    if [[ -f "$INSTALL_DIR/scripts/rfid/reader.py" ]]; then
+        chmod +x "$INSTALL_DIR/scripts/rfid/reader.py" || true
+    fi
 }
 
 configure_environment() {
     log_info "Configuring environment..."
 
-    # Create .env file
+    # Create .env file with generated secrets and optional admin credentials
+    ADMIN_USER=${ADMIN_USER:-admin}
+    ADMIN_PASSWORD=${ADMIN_PASSWORD:-$(openssl rand -base64 12 | tr -d '\n' | cut -c1-16)}
+
     cat > "$CONFIG_DIR/.env" << EOF
 NODE_ENV=production
 PORT=3000
 JWT_SECRET=$(openssl rand -hex 32)
 DATABASE_PATH=$DATA_DIR/database.sqlite
 LOG_LEVEL=info
+ADMIN_USERNAME=$ADMIN_USER
+ADMIN_PASSWORD=$ADMIN_PASSWORD
 EOF
 
-    # Create symbolic link
+    # Create symbolic link (idempotent)
     ln -sf "$CONFIG_DIR/.env" "$INSTALL_DIR/backend/.env"
-}
+
+    # Export for current shell so seed script picks it up
+    export ADMIN_USERNAME=$ADMIN_USER
+    export ADMIN_PASSWORD=$ADMIN_PASSWORD
+} 
 
 setup_database() {
     log_info "Setting up database..."
 
     cd "$INSTALL_DIR/backend"
 
-    # Initialize database
+    # Initialize database if missing
     if [ ! -f "$DATA_DIR/database.sqlite" ]; then
+        mkdir -p "$(dirname "$DATA_DIR/database.sqlite")"
         sqlite3 "$DATA_DIR/database.sqlite" < database/schema.sql
         log_info "Database initialized"
     else
         log_warn "Database already exists, skipping initialization"
     fi
 
-    # Seed admin user
-    npm run seed:admin
-}
+    # Seed admin user using environment vars set in /etc/bankly/.env (exported earlier)
+    log_info "Seeding admin user (if not present)..."
+    if npm run seed:admin; then
+        log_info "Seed completed. Admin username: $ADMIN_USER"
+        log_info "Admin password: $ADMIN_PASSWORD"
+    else
+        log_warn "Seed script returned non-zero exit code. Check logs."
+    fi
+
+    # Show instructions to change admin password later
+    echo ""
+    echo -e "${YELLOW}IMPORTANT:${NC} The admin credentials above are temporary. Please change them after first login via the admin UI."
+} 
 
 setup_services() {
     log_info "Setting up systemd services..."
@@ -137,8 +180,8 @@ After=network.target
 Type=simple
 User=pi
 WorkingDirectory=$INSTALL_DIR/backend
-Environment=NODE_ENV=production
-ExecStart=$INSTALL_DIR/scripts/install/start-server.sh
+EnvironmentFile=/etc/bankly/.env
+ExecStart=/bin/bash -lc 'cd $INSTALL_DIR/backend && npm start'
 Restart=always
 RestartSec=5
 
@@ -146,8 +189,9 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-    # Kiosk service
-    cat > /etc/systemd/system/bankly-kiosk.service << EOF
+    # Kiosk service (only enable if GUI requested)
+    if [[ "$INSTALL_GUI" == "yes" ]]; then
+        cat > /etc/systemd/system/bankly-kiosk.service << EOF
 [Unit]
 Description=Bankly Kiosk Mode
 After=network.target display-manager.service
@@ -164,9 +208,14 @@ RestartSec=5
 [Install]
 WantedBy=graphical.target
 EOF
+        systemctl enable bankly-kiosk || log_warn "Failed to enable kiosk service"
+    else
+        log_info "Kiosk service will not be enabled (GUI mode disabled)"
+    fi
 
-    # RFID service (optional)
-    cat > /etc/systemd/system/bankly-rfid.service << EOF
+    # RFID service (enable only if scripts/rfid exists)
+    if [[ -d "$INSTALL_DIR/scripts/rfid" ]]; then
+        cat > /etc/systemd/system/bankly-rfid.service << EOF
 [Unit]
 Description=Bankly RFID Reader
 After=network.target
@@ -183,27 +232,32 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
+        systemctl enable bankly-rfid || log_warn "Failed to enable RFID service"
+    fi
 
-    # Reload systemd
+    # Reload systemd and enable server
     systemctl daemon-reload
-
-    # Enable services
-    systemctl enable bankly-server
-    systemctl enable bankly-kiosk
-    systemctl enable bankly-rfid
-}
+    systemctl enable bankly-server || log_warn "Failed to enable bankly-server"
+} 
 
 configure_display() {
-    log_info "Configuring display settings..."
+    if [[ "$INSTALL_GUI" != "yes" ]]; then
+        log_info "Skipping display configuration (GUI not installed)"
+        return
+    fi
 
-    # Disable screen blanking
-    cat >> /etc/lightdm/lightdm.conf << EOF
+    log_info "Configuring display settings for kiosk..."
+
+    # Disable screen blanking (lightdm)
+    if [[ -f /etc/lightdm/lightdm.conf ]]; then
+        grep -q "xserver-command" /etc/lightdm/lightdm.conf || cat >> /etc/lightdm/lightdm.conf << EOF
 
 [SeatDefaults]
 xserver-command=X -s 0 -dpms
 EOF
+    fi
 
-    # Create X session script
+    # Create X session script for user 'pi'
     mkdir -p /home/pi/.config/lxsession/LXDE-pi/
     cat > /home/pi/.config/lxsession/LXDE-pi/autostart << EOF
 @unclutter -idle 0
@@ -211,11 +265,32 @@ EOF
 @xset -dpms
 @xset s noblank
 EOF
-    chown pi:pi /home/pi/.config/lxsession/LXDE-pi/autostart
+    chown -R pi:pi /home/pi/.config/lxsession/LXDE-pi || true
 }
 
 main() {
     log_info "Starting Bankly installation..."
+
+    # Parse CLI args (non-interactive options)
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            --with-gui) INSTALL_GUI="yes"; shift ;;
+            --no-gui) INSTALL_GUI="no"; shift ;;
+            --admin-user) ADMIN_USER="$2"; shift 2 ;;
+            --admin-pass) ADMIN_PASSWORD="$2"; shift 2 ;;
+            --help) echo "Usage: install.sh [--with-gui|--no-gui] [--admin-user <user>] [--admin-pass <pass>]"; exit 0 ;;
+            *) shift ;;
+        esac
+    done
+
+    # If not specified, prompt interactively about GUI
+    if [[ -z "$INSTALL_GUI" ]]; then
+        read -p "Install Graphical Kiosk (Chromium) and display manager? (y/N): " ans
+        case "$ans" in
+            [Yy]* ) INSTALL_GUI="yes" ;;
+            * ) INSTALL_GUI="no" ;;
+        esac
+    fi
 
     check_root
     install_system_deps
@@ -226,10 +301,47 @@ main() {
     setup_services
     configure_display
 
+    # Start services now (so admin can access immediately)
+    log_info "Starting Bankly services..."
+    systemctl start bankly-server || log_warn "Failed to start bankly-server; check journalctl -u bankly-server"
+    if [[ "$INSTALL_GUI" == "yes" ]]; then
+        systemctl start bankly-kiosk || log_warn "Failed to start bankly-kiosk; check journalctl -u bankly-kiosk"
+    fi
+    if [[ -d "$INSTALL_DIR/scripts/rfid" ]]; then
+        systemctl start bankly-rfid || log_warn "Failed to start bankly-rfid; check journalctl -u bankly-rfid"
+    fi
+
     log_info "Installation completed successfully!"
-    log_info "Please reboot the system to start services:"
-    log_info "sudo reboot"
+
+    # Detect primary IP address
+    HOST_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+    if [[ -z "$HOST_IP" ]]; then
+        HOST_IP=$(ip route get 8.8.8.8 2>/dev/null | awk '/src/ {print $7; exit}')
+    fi
+    if [[ -z "$HOST_IP" ]]; then
+        HOST_IP="<your-device-ip>"
+    fi
+
+    # Read PORT from env if present
+    PORT=$(grep '^PORT=' "$CONFIG_DIR/.env" 2>/dev/null | cut -d'=' -f2)
+    PORT=${PORT:-3000}
+
+    echo ""
+    echo -e "${GREEN}Quick start and admin access:${NC}"
+    echo "  - Open a browser on any device in your network and visit: http://$HOST_IP:$PORT"
+    echo "  - Login with the temporary admin account created by the installer:"
+    echo "      username: ${ADMIN_USER:-admin}"
+    echo "      password: ${ADMIN_PASSWORD:-<password>}"
+    echo ""
+    echo -e "${YELLOW}Note:${NC} For security, log in and change the admin password immediately, then create a real admin user for daily use."
+
+    echo ""
+    echo -e "${GREEN}If you installed GUI+kiosk, the kiosk will attempt to open the app automatically on the Raspberry Pi display.${NC}"
+    echo ""
+    echo -e "${GREEN}Reboot is recommended to ensure all services start cleanly:${NC}"
+    echo "  sudo reboot"
 }
+
 
 # Handle update flag
 if [[ "$1" == "--update" ]]; then

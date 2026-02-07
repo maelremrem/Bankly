@@ -106,6 +106,22 @@ Bankly is a pocket money bank simulator for Raspberry Pi that educates children 
 
 ### Manual Deployment
 
+#### One-line installer (recommended for Raspberry Pi)
+Run the installer script directly from your Raspberry Pi (replace the URL with the raw URL for this repo):
+
+```bash
+# Example: replace <raw-url> with actual raw GitHub URL to this script
+# curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/scripts/install/install.sh | sudo bash -s -- --with-gui
+```
+
+Options:
+- `--with-gui` : install graphical kiosk (Chromium) and configure autostart
+- `--no-gui` : skip GUI and kiosk setup
+- `--admin-user <username>` and `--admin-pass <password>` : set admin credentials non-interactively
+
+#### Manual Node.js + PM2 (alternative)
+If you prefer manual setup:
+
 1. Install Node.js on Raspberry Pi:
    ```bash
    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -

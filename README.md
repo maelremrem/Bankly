@@ -93,6 +93,22 @@ docker-compose up -d
 
 ---
 
+## 🪟 Raspberry Pi quick install (one-liner)
+You can install Bankly on a Raspberry Pi with a single command. Replace the URL with the raw path to this repository:
+
+```bash
+# Example (replace with actual raw URL):
+# curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/scripts/install/install.sh | sudo bash -s -- --with-gui
+```
+
+Options passed with `--` are forwarded to the installer:
+- `--with-gui` : install graphical kiosk (Chromium) and configure autostart
+- `--no-gui` : skip GUI and kiosk setup
+- `--admin-user <username>` and `--admin-pass <password>` to set admin credentials non-interactively
+
+After installation the script seeds a temporary admin user and prints the admin credentials and the IP address to visit the web UI.
+---
+
 ## 🖥️ Raspberry Pi & Hardware
 Bankly supports deployment on Raspberry Pi (3B+ or newer). The backend API and a local Python RFID reader script are implemented (`scripts/rfid/reader.py`), enabling kiosk-style login flows. Hardware GPIO wiring, systemd auto-start and field testing are **still pending** — see `docs/PRD.md` and `docs/FEATURES_TRACKING.md` for the current status and next steps. 🐧🔧
 
