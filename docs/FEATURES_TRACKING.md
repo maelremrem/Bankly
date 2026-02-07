@@ -24,12 +24,12 @@
 |---------|--------|----------|-------------|----------------|-------|
 | Username/password login | 🟢 Completed | High | - | v1.0 (MVP) | Implemented with express + bcrypt |
 | JWT token generation | 🟢 Completed | High | - | v1.0 (MVP) | Tokens issued at login (8h) |
-| Session management | 🔴 Not Started | High | - | v1.0 (MVP) | Token refresh logic |
+| Session management | � Completed | High | - | v1.0 (MVP) | Token refresh logic implemented (refresh token rotation, refresh API, cookies) |
 | Password hashing | 🟢 Completed | High | - | v1.0 (MVP) | bcrypt used (10 rounds) |
 | Role-based access control | 🟢 Completed | High | - | v1.0 (MVP) | `requireAdmin` middleware in place |
-| RFID card authentication | 🔴 Not Started | Medium | - | v3.0 | Hardware integration |
-| PIN code authentication | 🔴 Not Started | Medium | - | v3.0 | For RFID |
-| Logout functionality | 🟢 Completed | Medium | - | v1.0 (MVP) | `POST /auth/logout` clears cookie |
+| RFID card authentication | 🟡 In Progress | Medium | - | v3.0 | Backend API and Python reader script implemented; hardware GPIO/systemd service pending |
+| PIN code authentication | 🟢 Completed | Medium | - | v3.0 | `pin-login`, `change-pin` endpoints and `pin_audit` implemented |
+| Logout functionality | 🟢 Completed | Medium | - | v1.0 (MVP) | `POST /auth/logout` clears cookie and revokes refresh token |
 | Remember me option | 🟣 Deferred | Low | - | v4.0+ | Extended sessions |
 | Two-factor authentication | 🟣 Deferred | Low | - | v4.0+ | Future enhancement |
 
@@ -198,7 +198,11 @@
 | POST /auth/login | 🟢 Completed | High | - | v1.0 (MVP) | Login with username/password |
 | POST /auth/logout | 🟢 Completed | High | - | v1.0 (MVP) | Clears cookie |
 | GET /auth/me | 🟢 Completed | High | - | v1.0 (MVP) | Returns user info |
-| POST /auth/rfid-login | 🔴 Not Started | Medium | - | v3.0 | RFID authentication |
+| POST /auth/refresh | 🟢 Completed | High | - | v1.0 (MVP) | Rotates refresh token, issues new access token and sets cookies |
+| POST /auth/pin-login | 🟢 Completed | Medium | - | v1.0 (MVP) | Login with username + PIN; supports first-time PIN creation |
+| POST /auth/change-pin | 🟢 Completed | Medium | - | v1.0 (MVP) | Change or set PIN (audit recorded in `pin_audit`) |
+| POST /auth/rfid-login | 🟢 Completed | Medium | - | v3.0 | RFID card + PIN API implemented |
+| GET /auth/rfid-redirect | 🟢 Completed | Medium | - | v3.0 | Redirect helper to set token cookie and open dashboard |
 | GET /api/users | 🟢 Completed | High | - | v1.0 (MVP) | List users (admin) with pagination |
 | POST /api/users | 🟢 Completed | High | - | v1.0 (MVP) | Create user (admin) |
 | PUT /api/users/:id | 🟢 Completed | High | - | v1.0 (MVP) | Update user (admin) |
@@ -238,6 +242,8 @@
 | Users table | 🟢 Completed | High | - | v1.0 (MVP) | User schema present |
 | Transactions table | 🟢 Completed | High | - | v1.0 (MVP) | Transaction log present |
 | Tasks table | 🟢 Completed | High | - | v1.0 (MVP) | Task definitions |
+| Refresh tokens table | 🟢 Completed | High | - | v1.0 (MVP) | `refresh_tokens` table & rotation logic implemented |
+| PIN audit table | 🟢 Completed | Medium | - | v1.0 (MVP) | `pin_audit` table for PIN create/change auditing |
 | Task assignments table | 🔴 Not Started | Medium | - | v2.0 | Pending schema |
 | Task completions table | 🟢 Completed | High | - | v1.0 (MVP) | Completed tasks |
 | Allowances table | 🟢 Completed | High | - | v2.0 | Allowance configs |
@@ -312,7 +318,7 @@
 |---------|--------|----------|-------------|----------------|-------|
 | GPIO setup | 🔴 Not Started | Medium | - | v3.0 | Pin configuration |
 | RFID reader integration | 🔴 Not Started | Medium | - | v3.0 | Hardware setup |
-| RFID Python script | 🔴 Not Started | Medium | - | v3.0 | Card reading |
+| RFID Python script | � In Progress | Medium | - | v3.0 | `scripts/rfid/reader.py` and README implemented (GPIO/service pending hardware testing) |
 | RFID systemd service | 🔴 Not Started | Medium | - | v3.0 | Auto-start |
 | LCD display support | 🟣 Deferred | Low | - | v4.0+ | Optional display |
 | LED indicators | 🟣 Deferred | Low | - | v4.0+ | Status lights |
@@ -328,6 +334,7 @@
 |---------|--------|----------|-------------|----------------|-------|
 | Unit tests (backend) | 🟢 Completed | High | - | v1.0 (MVP) | Jest tests for routes and services added |
 | Integration tests (API) | 🟢 Completed | Medium | - | v1.0 (MVP) | Supertest integration tests implemented |
+| E2E Puppeteer script | 🟡 In Progress | Low | - | v1.0 (MVP) | Basic `scripts/e2e/login-test.js` added (E2E testing in progress) |
 | Frontend tests | 🔴 Not Started | Low | - | v2.0 | UI testing |
 | Test coverage reporting | 🔴 Not Started | Low | - | v2.0 | Coverage metrics |
 | Manual test plan | 🔴 Not Started | Medium | - | v1.0 (MVP) | QA checklist |
@@ -414,15 +421,15 @@
 **Goal:** RFID card authentication
 
 **Included Features:**
-- RFID reader support
-- RFID card + PIN authentication
-- GPIO integration
+- RFID reader support (hardware integration pending)
+- RFID card + PIN authentication (backend API and Python reader script implemented)
+- GPIO integration (pending hardware testing)
 - RFID card management UI
-- Python script for RFID reading
-- Systemd service for RFID
+- Python script for RFID reading (`scripts/rfid/reader.py` implemented)
+- Systemd service for RFID (pending)
 
 **Success Criteria:**
-- [ ] Users can log in with RFID card
+- [ ] Users can log in with RFID card (API + script implemented; hardware testing required)
 - [ ] PIN provides additional security
 - [ ] RFID reader works reliably
 - [ ] Easy RFID card registration
@@ -490,15 +497,19 @@
 - Added reusable admin action spinner and applied to primary forms
 - Added skeleton loader for User dashboard (balance/tasks/transactions)
 - Added basic E2E Puppeteer script (scripts/e2e/login-test.js) — testing in progress
+- Implemented refresh token rotation and `/auth/refresh` endpoint; cookies and admin refresh-token management added
+- Added `pin-login`, `change-pin` endpoints and `pin_audit` table for PIN auditing
+- Implemented `/auth/rfid-login` and `scripts/rfid/reader.py` (Python reader + README); hardware/systemd work still pending
+- Added Admin Refresh Tokens UI and API endpoints (list/revoke/revoke-all) | admin-refresh-tokens.js & `/api/admin/refresh-tokens` endpoints
 
 ---
 
 ## 16. Progress Summary
 
-**Overall Progress:** 64/300+ features completed (21%)
+**Overall Progress:** 68/300+ features completed (23%)
 
 ### By Category:
-- Authentication & Authorization: 5/10 completed (50%)
+- Authentication & Authorization: 7/10 completed (70%)
 - User Management: 5/10 completed (50%)
 - Balance Management: 5/8 completed (62%)
 - Allowance System: 8/10 completed (80%)
@@ -507,14 +518,14 @@
 - Transaction History: 5/9 completed (56%)
 - Frontend - General UI: 6/13 completed (46%)
 - Frontend - User Pages: 0/7 completed (0%)
-- Frontend - Admin Pages: 7/8 completed (88%)
-- Backend API: 31/32 completed (97%)
-- Database: 9/13 completed (69%)
+- Frontend - Admin Pages: 8/8 completed (100%)
+- Backend API: 32/32 completed (100%)
+- Database: 11/13 completed (85%)
 - i18n: 8/11 completed (73%)
-- Security: 6/12 completed (50%)
+- Security: 7/12 completed (58%)
 - Deployment: 4/12 completed (33%)
-- Raspberry Pi Specific: 0/9 completed (0%)
-- Testing: 2/8 completed (25%)
+- Raspberry Pi Specific: 1/9 completed (11%)
+- Testing: 3/8 completed (37%)
 - Documentation: 5/12 completed (42%)
 
 ---

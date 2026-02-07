@@ -33,6 +33,24 @@ Bankly is an educational pocket-money simulator built for families. It helps kid
 
 ---
 
+## 🆕 What's new (Feb 2026)
+- **Session management & refresh tokens**: refresh endpoint with rotation and admin management ✅
+- **PIN authentication**: `pin-login` and `change-pin` endpoints + `pin_audit` for tracking ✅
+- **RFID support**: backend `/auth/rfid-login` and local Python reader script added (`scripts/rfid/reader.py`) — hardware integration & systemd are pending 🟡
+- **Admin UI improvements**: Refresh Tokens admin page and reusable spinners in admin UI ✅
+- **Testing**: basic E2E Puppeteer script added (`scripts/e2e/login-test.js`) and frontend skeleton loaders implemented ✅
+
+---
+
+## 📚 Documentation
+- Product Requirements: `docs/PRD.md`
+- Features tracking (status & changelog): `docs/FEATURES_TRACKING.md`
+- API reference: `docs/API.md`
+- Installation & Raspberry Pi notes: `docs/INSTALLATION.md`
+- Developer guide & conventions: `docs/AI_DEVELOPMENT_GUIDE.md`
+
+---
+
 ## 🎨 Playful tour — screenshots
 
 Take a quick peek — perfect for showing parents and kids what to expect!
@@ -76,7 +94,7 @@ docker-compose up -d
 ---
 
 ## 🖥️ Raspberry Pi & Hardware
-Bankly supports deployment on Raspberry Pi (3B+ or newer). Optional RFID reader integration is included for hands-on, physical interactions (great for younger kids). See `scripts/rfid/` for details. 🐧🔧
+Bankly supports deployment on Raspberry Pi (3B+ or newer). The backend API and a local Python RFID reader script are implemented (`scripts/rfid/reader.py`), enabling kiosk-style login flows. Hardware GPIO wiring, systemd auto-start and field testing are **still pending** — see `docs/PRD.md` and `docs/FEATURES_TRACKING.md` for the current status and next steps. 🐧🔧
 
 ---
 
@@ -93,7 +111,7 @@ Bankly turns chores into real, meaningful learning. It makes allowance managemen
 ---
 
 ## 🤝 Contributing
-Contributions, bug reports and ideas are welcome. Please open issues or PRs and follow the repository guidelines. See `docs/` for design notes and feature tracking.
+Contributions, bug reports and ideas are welcome. Please open issues or PRs and follow the repository guidelines. See `docs/` for design notes and feature tracking. For API changes, consult `docs/API.md` and consider adding OpenAPI/Swagger specs or a Postman collection along with your PR.
 
 ---
 

@@ -2,8 +2,8 @@
 ## Bankly - Pocket Money Bank Simulator
 
 **Version:** 1.0  
-**Date:** February 4, 2026  
-**Status:** Draft
+**Date:** February 7, 2026  
+**Status:** Draft (updated)
 
 ---
 
@@ -104,13 +104,13 @@ Standard users (children) have limited access with the following features:
 **Primary Authentication Method**
 - Username and password login
 - Secure password storage (hashed)
-- Session management
+- Session management and refresh tokens (refresh endpoint, cookie-based refresh + token rotation)
 
 **Alternative Authentication Method**
 - RFID card + PIN code on Raspberry Pi
+- Backend RFID API and local Python reader script implemented; hardware GPIO integration and systemd auto-start remain pending
 - Each user assigned unique RFID card
-- 4-6 digit PIN for security
-- Hardware RFID reader connected to Raspberry Pi GPIO
+- 4-6 digit PIN for security; endpoints include `pin-login` and `change-pin` with audit logging (`pin_audit` table)
 
 ---
 
@@ -143,6 +143,7 @@ Standard users (children) have limited access with the following features:
 - Node.js runtime
 - Express.js or similar framework
 - RESTful API architecture
+- Refresh token rotation with cookie-based refresh endpoint (implemented)
 
 **Database**
 - SQLite
@@ -207,6 +208,12 @@ Standard users (children) have limited access with the following features:
 **Tasks Table**
 - id, name, description, reward_amount, requires_approval, created_at, updated_at
 
+**Refresh Tokens Table**
+- id, user_id, token_hash, expires_at, created_at (used for rotating refresh tokens and refresh endpoint)
+
+**PIN Audit Table**
+- id, user_id, action, performed_by, details, created_at (audit for PIN creation/change)
+
 **TaskAssignments Table**
 - id, task_id, user_id, frequency_limit, period_type, enabled
 
@@ -251,7 +258,7 @@ Standard users (children) have limited access with the following features:
 
 **US-U05**: As a user, I want to view my transaction history so that I can understand where my money comes from and goes.
 
-**US-U06**: As a user, I want to log in with my RFID card and PIN so that accessing the system is quick and easy.
+**US-U06**: As a user, I want to log in with my RFID card and PIN so that accessing the system is quick and easy (backend API and Python reader script implemented; hardware testing and deployment pending).
 
 ---
 
@@ -326,11 +333,12 @@ Standard users (children) have limited access with the following features:
 - Advance request system
 - French language support (i18n)
 - Improved UI/UX
+- Session management & refresh tokens (implemented)
 
 ### Phase 3: Hardware Integration
-- RFID card authentication
-- PIN code support
-- GPIO integration on Raspberry Pi
+- RFID card authentication (backend API and Python reader script implemented; hardware GPIO integration and systemd auto-start pending)
+- PIN code support (endpoints and audit implemented)
+- GPIO integration on Raspberry Pi (pending hardware testing)
 
 ### Phase 4: Enhancements
 - Reporting and analytics
