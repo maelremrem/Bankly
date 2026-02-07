@@ -77,6 +77,23 @@ Admin / Refresh Token Management
 - Body: { userId }
 - Behavior: delete all refresh tokens for a user
 
+Admin deployment / update
+-------------------------
+1. POST /api/admin/update
+- Auth: admin
+- Body: { branch?: string } (ignored unless server env `ALLOW_BRANCH=true`; defaults to `main`)
+- Behavior: Asynchronously starts an update on the device: `git fetch`/`git pull` from the `main` branch by default, runs `npm install` in `backend/`, and restarts systemd services (`bankly-server`, `bankly-rfid`, `bankly-kiosk` where present). The endpoint returns immediately with a log path.
+- Returns: { success: true, data: { message: 'Update started', branch, log: '/var/log/bankly-update.log' } }
+
+2. GET /api/admin/update/status
+- Auth: admin
+- Returns running boolean and tail of the update log:
+  { success: true, data: { running: boolean, log: "last lines of log" } }
+
+Notes & Security
+- These endpoints are **admin-only**. The update script runs on the server and requires that the install location is `/opt/bankly` and that the update script exists at `/opt/bankly/scripts/install/update.sh` (installer creates this script).
+- Because the repository is public, no deploy key is required; the device can pull from `origin/main` directly. For improved safety in production, consider CI-driven releases or restricting updates to tagged releases.
+
 User Management (Admin)
 -----------------------
 - GET /api/users (admin)

@@ -119,6 +119,7 @@ Options:
 - `--no-gui` : skip GUI and kiosk setup
 - `--admin-user <username>` and `--admin-pass <password>` : set admin credentials non-interactively
 
+Note: If your repository is public, no deploy key is required—the on-device update script will pull `origin/main` directly. If you need more controlled releases, consider CI/CD with GitHub Actions to push tagged releases and trigger a deploy workflow.
 #### Manual Node.js + PM2 (alternative)
 If you prefer manual setup:
 

@@ -267,6 +267,59 @@ router.post('/refresh-tokens/revoke', requireAuth, requireAdmin, async (req, res
     return res.status(500).json({ success: false, error: 'Server error' });
   }
 });
+
+// ===== Remote update / deployment endpoints =====
+const fs = require('fs');
+const { spawn } = require('child_process');
+
+// Start an asynchronous update (git pull, npm install, restart services)
+router.post('/update', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    // For public repos we force updates to main by default. To allow other branches set ALLOW_BRANCH=true in server env.
+    const requested = req.body.branch;
+    const branch = (process.env.ALLOW_BRANCH === 'true' && requested) ? requested : 'main';
+    const updateScript = '/opt/bankly/scripts/install/update.sh';
+    const logPath = '/var/log/bankly-update.log';
+
+    if (!fs.existsSync(updateScript)) {
+      return res.status(500).json({ success: false, error: 'Update script not found', code: 'NO_UPDATE_SCRIPT' });
+    }
+
+    // Spawn detached update process
+    const child = spawn('bash', [updateScript, branch], {
+      detached: true,
+      stdio: 'ignore'
+    });
+    child.unref();
+
+    return res.json({ success: true, data: { message: 'Update started', branch, log: logPath } });
+  } catch (error) {
+    console.error('Error starting update', error);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+// Get update status / tail of log
+router.get('/update/status', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const logPath = '/var/log/bankly-update.log';
+    const lockPath = '/var/run/bankly-update.lock';
+
+    const exists = fs.existsSync(logPath);
+    const running = fs.existsSync(lockPath);
+
+    let tail = '';
+    if (exists) {
+      const content = fs.readFileSync(logPath, 'utf8');
+      tail = content.split('\n').slice(-200).join('\n'); // last 200 lines
+    }
+
+    return res.json({ success: true, data: { running, log: tail } });
+  } catch (error) {
+    console.error('Error fetching update status', error);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
 // Users list (HTML fragment for HTMX)
 router.get('/users/html', requireAuth, requireAdmin, (req, res) => {
   const searchTerm = req.query.search ? `%${req.query.search}%` : null;

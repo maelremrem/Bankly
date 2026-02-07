@@ -378,6 +378,82 @@ function updateThemeLabel(theme) {
     label.textContent = t(isDark ? 'theme.dark' : 'theme.light');
 }
 
+// Admin update workflow
+async function showUpdatePrompt() {
+    const branch = 'main';
+    const confirmed = await showConfirmModal(`This will pull and deploy the latest code from branch ${branch}. Continue?`);
+    if (!confirmed) return;
+
+    showToast('Starting update...');
+
+    try {
+        const res = await fetch('/api/admin/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ branch }) });
+        const json = await res.json();
+        if (!json.success) {
+            showToast(json.error || 'Update failed to start');
+            return;
+        }
+        openUpdateLogModal();
+        pollUpdateStatus();
+    } catch (err) {
+        console.error('Update request failed', err);
+        showToast('Network error starting update');
+    }
+} 
+
+function openUpdateLogModal() {
+    const modalHtml = `
+        <div class="modal-content">
+            <button class="close" data-action="close" data-target="updateLogModal">&times;</button>
+            <h3>Update Logs</h3>
+            <pre id="updateLog" style="max-height:40vh;overflow:auto;background:#f6f8fa;padding:0.75rem;border-radius:6px;">Loading...</pre>
+            <div style="margin-top:0.5rem;display:flex;gap:0.5rem;justify-content:flex-end;">
+                <button id="updateCloseBtn" class="secondary">Close</button>
+            </div>
+        </div>
+    `;
+
+    // inject into a hidden modal shell
+    const modal = document.getElementById('confirmModal');
+    modal.querySelector('.modal-content').innerHTML = modalHtml;
+    modal.style.display = 'block';
+    modal.setAttribute('aria-hidden', 'false');
+
+    const closeBtn = modal.querySelector('#updateCloseBtn');
+    closeBtn.addEventListener('click', () => { closeModal('confirmModal'); });
+}
+
+let updatePollInterval = null;
+async function pollUpdateStatus() {
+    if (updatePollInterval) clearInterval(updatePollInterval);
+    async function fetchStatus() {
+        try {
+            const res = await fetch('/api/admin/update/status', { credentials: 'same-origin' });
+            const json = await res.json();
+            if (json && json.success) {
+                const logEl = document.getElementById('updateLog');
+                if (logEl) logEl.textContent = json.data.log || 'No log yet';
+                if (!json.data.running) {
+                    showToast('Update finished');
+                    clearInterval(updatePollInterval);
+                    updatePollInterval = null;
+                }
+            }
+        } catch (err) {
+            console.warn('Polling update status failed', err);
+        }
+    }
+    // poll immediately and then every 3s
+    await fetchStatus();
+    updatePollInterval = setInterval(fetchStatus, 3000);
+}
+
+// Bind update button
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('updateProject');
+    if (btn) btn.addEventListener('click', showUpdatePrompt);
+});
+
 function updatePageTitle() {
     const baseTitle = t('dashboard.admin.pageTitle', document.title);
     const heading = document.querySelector('main h2');
